@@ -229,29 +229,3 @@ class HDF5Reader():
                 lines.append(f"{indent_str} Data: {item[...]}")
 
         return lines
-        """Recursively process an HDF5 group and return its content as a string."""
-        lines = []
-        indent_str = "    " * indent
-
-        # Group name
-        lines.append(f"{indent_str} Group: {group.name}")
-        if group.attrs:
-            lines.append(f"{indent_str} Attributes:")
-            for key, value in group.attrs.items():
-                lines.append(f"{indent_str}    - {key}: {value}")
-
-        # Iterate through datasets and groups
-        for name, item in group.items():
-            if isinstance(item, h5py.Group):
-                lines.extend(self._dump_group(item, indent + 1))  # Recursive call
-            elif isinstance(item, h5py.Dataset):
-                lines.append(f"{indent_str} Dataset: {name}")
-                if item.attrs:
-                    lines.append(f"{indent_str} Attributes:")
-                    for key, value in item.attrs.items():
-                        lines.append(f"{indent_str}      - {key}: {value}")
-                lines.append(f"{indent_str} Shape: {item.shape}")
-                lines.append(f"{indent_str} Dtype: {item.dtype}")
-                lines.append(f"{indent_str} Data: {item[...]}")
-
-        return lines
