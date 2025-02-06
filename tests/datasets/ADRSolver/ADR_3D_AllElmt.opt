@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <COLLECTIONS>
+        <OPERATOR TYPE="BwdTrans">
+            <ELEMENT TYPE="A" ORDER="*" IMPTYPE="StdMat" />
+            <ELEMENT TYPE="P" ORDER="*" IMPTYPE="SumFac" />
+            <ELEMENT TYPE="R" ORDER="*" IMPTYPE="StdMat" />
+            <ELEMENT TYPE="H" ORDER="*" IMPTYPE="SumFac" />
+        </OPERATOR>
+        <OPERATOR TYPE="Helmholtz">
+            <ELEMENT TYPE="A" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="P" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="R" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="H" ORDER="*" IMPTYPE="MatrixFree" />
+        </OPERATOR>
+        <OPERATOR TYPE="LinearAdvectionDiffusionReaction">
+            <ELEMENT TYPE="A" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="P" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="R" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="H" ORDER="*" IMPTYPE="MatrixFree" />
+        </OPERATOR>
+        <OPERATOR TYPE="IProductWRTBase">
+            <ELEMENT TYPE="A" ORDER="*" IMPTYPE="StdMat" />
+            <ELEMENT TYPE="P" ORDER="*" IMPTYPE="SumFac" />
+            <ELEMENT TYPE="R" ORDER="*" IMPTYPE="StdMat" />
+            <ELEMENT TYPE="H" ORDER="*" IMPTYPE="SumFac" />
+        </OPERATOR>
+        <OPERATOR TYPE="IProductWRTDerivBase">
+            <ELEMENT TYPE="A" ORDER="*" IMPTYPE="StdMat" />
+            <ELEMENT TYPE="P" ORDER="*" IMPTYPE="SumFac" />
+            <ELEMENT TYPE="R" ORDER="*" IMPTYPE="StdMat" />
+            <ELEMENT TYPE="H" ORDER="*" IMPTYPE="SumFac" />
+        </OPERATOR>
+        <OPERATOR TYPE="PhysDeriv">
+            <ELEMENT TYPE="A" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="P" ORDER="*" IMPTYPE="StdMat" />
+            <ELEMENT TYPE="R" ORDER="*" IMPTYPE="MatrixFree" />
+            <ELEMENT TYPE="H" ORDER="*" IMPTYPE="MatrixFree" />
+        </OPERATOR>
+        <OPERATOR TYPE="PhysInterp1DScaled">
+            <ELEMENT TYPE="A" ORDER="*" IMPTYPE="NoCollection" />
+            <ELEMENT TYPE="P" ORDER="*" IMPTYPE="NoCollection" />
+            <ELEMENT TYPE="R" ORDER="*" IMPTYPE="NoCollection" />
+            <ELEMENT TYPE="H" ORDER="*" IMPTYPE="MatrixFree" />
+        </OPERATOR>
+    </COLLECTIONS>
+</NEKTAR>

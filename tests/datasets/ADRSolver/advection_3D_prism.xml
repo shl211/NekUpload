@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="3" SPACE="3" HDF5FILE="advection_3D_prism.nekg" />
+    <Metadata>
+        <Provenance>
+            <GitBranch>refs/heads/feature/CollectionPhysInterp</GitBranch>
+            <GitSHA1>088213cbc0e3402564af89e9db086211ed251f92</GitSHA1>
+            <Hostname>MacBook-Pro.local</Hostname>
+            <NektarVersion>5.0.0</NektarVersion>
+            <Timestamp>26-May-2021 23:33:45</Timestamp>
+        </Provenance>
+        <NekMeshCommandLine>nozzle1.xml tmp.xml:xml:uncompress</NekMeshCommandLine>
+    </Metadata>
+    <EXPANSIONS>
+        <E COMPOSITE="C[6]" NUMMODES="2" TYPE="MODIFIED" FIELDS="u" />
+    </EXPANSIONS>
+    <CONDITIONS>
+        <PARAMETERS>
+            <P>TimeStep = 0.001</P>
+            <P>NumSteps = 1</P>
+            <P>IO_CheckSteps = 0</P>
+            <P>IO_InfoSteps = 1</P>
+        </PARAMETERS>
+        <SOLVERINFO>
+            <I PROPERTY="EQType" VALUE="UnsteadyAdvection" />
+            <I PROPERTY="AdvectionAdvancement" VALUE="Explicit" />
+            <I PROPERTY="TimeIntegrationMethod" VALUE="ForwardEuler" />
+            <I PROPERTY="Projection" VALUE="DisContinuous" />
+            <I PROPERTY="AdvectionType" VALUE="WeakDG" />
+            <I PROPERTY="UpwindType" VALUE="Upwind" />
+        </SOLVERINFO>
+        <VARIABLES>
+            <V ID="0">u</V>
+        </VARIABLES>
+        <FUNCTION NAME="AdvectionVelocity">
+            <E VAR="Vx" VALUE="1.0" />
+            <E VAR="Vy" VALUE="0.0" />
+            <E VAR="Vz" VALUE="0.0" />
+        </FUNCTION>
+        <BOUNDARYREGIONS>
+            <B ID="1">C[1]</B>
+        </BOUNDARYREGIONS>
+        <BOUNDARYCONDITIONS>
+            <!-- Dirichlet -->
+            <REGION REF="1">
+                <D VAR="u" VALUE="1" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+        <FUNCTION NAME="InitialConditions">
+            <E VAR="u" VALUE="1.0" />
+        </FUNCTION>
+        <FUNCTION NAME="ExactSolution">
+            <E VAR="u" VALUE="1.0" />
+        </FUNCTION>
+    </CONDITIONS>
+</NEKTAR>
