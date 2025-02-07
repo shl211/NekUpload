@@ -4,13 +4,13 @@ import logging
 import os
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
 #also read logs to a file
 file_handler = logging.FileHandler("info.log", mode='w')
-file_handler.setLevel(logging.DEBUG)
+file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
 logging.getLogger().addHandler(file_handler)
