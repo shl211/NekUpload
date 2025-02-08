@@ -8,17 +8,18 @@ class invenioRDM(db):
     def __init__(self):
         pass
 
-    def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any]):        
+    def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],publish: bool=True) -> None:  
         #url expected to be db_url/api/records        
-        draft_response = self._create_draft_upload(url,token,metadata)
+        draft_response = self._create_draft_record(url,token,metadata)
         draft_files_url = self._get_draft_files_url(draft_response)
         for file_path in file_paths:
             self._upload_file(draft_files_url,token,file_path)
 
-        publish_records_url = self._get_publish_url(draft_response)
-        self._publish_draft(publish_records_url,token)
+        if publish:
+            publish_records_url = self._get_publish_url(draft_response)
+            self._publish_draft(publish_records_url,token)
 
-    def _create_draft_upload(self,records_url: str, token: str, metadata: Dict[str,Any]) -> requests.Response:  # Return the response object
+    def _create_draft_record(self,records_url: str, token: str, metadata: Dict[str,Any]) -> requests.Response:
         """Create a draft template in Invenio.
 
         Args:
@@ -38,11 +39,16 @@ class invenioRDM(db):
         try:
             response = requests.post(records_url, headers=header, json=metadata)
             response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
-            logging.info(f"Draft upload created successfully: {response.json()}")  # Log the response
-            return response # Return the response object
+            
+            if response.status_code == 201:
+                logging.info(f"Draft upload created successfully: {response.json()}")  # Log the response
+                return response
+            else:
+                logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
+                return None
         except requests.exceptions.RequestException as e:
             logging.error(f"Error creating draft upload: {e}")
-            return None  # Or handle the error as needed
+            return None
 
     def _upload_file(self, draft_files_url: str, token: str, file_path: str) -> requests.Response:
         """Upload a single file to the draft record
@@ -93,8 +99,13 @@ class invenioRDM(db):
         try:
             draft_files_response = requests.post(draft_files_url,headers=header, json=body)
             draft_files_response.raise_for_status()
-            logging.info(f"Draft file metadata for {file_name} created succesfully: {draft_files_response.json()}")
-            return draft_files_response
+
+            if draft_files_response.status_code == 201:
+                logging.info(f"Draft file metadata for {file_name} created succesfully: {draft_files_response.json()}")
+                return draft_files_response
+            else:
+                logging.error(f"Unexpected status code: {draft_files_response.status_code} - {draft_files_response.text}")
+                return None
         except requests.exceptions.RequestException as e:
             logging.error(f"Error creating draft file metadata for {file_name}: {e}")
             raise
@@ -121,8 +132,12 @@ class invenioRDM(db):
             try:
                 upload_response = requests.put(file_upload_url, headers=header, data=f)
                 upload_response.raise_for_status()
-                logging.info(f"File {file_path} uploaded successfully: {upload_response.json()}")
-                return upload_response
+                
+                if upload_response.status_code == 200:
+                    logging.info(f"File {file_path} uploaded successfully: {upload_response.json()}")
+                    return upload_response
+                else:
+                    logging.error(f"Unexpected status code: {upload_response.status_code} - {upload_response.text}")
             except requests.exceptions.RequestException as e:
                 logging.error(f"Error uploading file {file_path}: {e}")
                 raise 
@@ -144,8 +159,12 @@ class invenioRDM(db):
         try:
             commit_response = requests.post(file_commit_url, headers=header)
             commit_response.raise_for_status()
-            logging.info(f"File {file_path} committed successfully: {commit_response.json()}")
-            return commit_response
+            
+            if commit_response.status_code == 200:
+                logging.info(f"File {file_path} committed successfully: {commit_response.json()}")
+                return commit_response
+            else:
+                logging.error(f"Unexpected status code: {commit_response.status_code} - {commit_response.text}")
         except requests.exceptions.RequestException as e:
             logging.error(f"Error committing file {file_path}: {e}")
             raise
@@ -165,29 +184,33 @@ class invenioRDM(db):
 
         try:
             response = requests.post(publish_url, headers=header)
-            response.raise_for_status()
-            logging.info(f"Draft published successfully: {response.json()}")
-            return response
+            response.raise_for_status() #raise exception for bad status codes
+            
+            if response.status_code == 202:
+                logging.info(f"Draft published successfully: {response.json()}")
+            else:
+                logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
             logging.error(f"Error publishing draft: {e}")
             raise
     
-    def _delete_draft(self,draft_url: str, token: str) -> bool:
+    def _delete_draft(self,draft_url: str, token: str) -> requests.Response:
         header = {"Authorization": f"Bearer {token}"}
 
         try:
             response = requests.delete(draft_url, headers=header)
             response.raise_for_status() #raise exception for bad status codes
 
-            if response.status_code == 204: #denotes successful deletion
+            if response.status_code == 204:
                 logging.info(f"Draft record deleted successfully")
-                return True
+                return response
             else:
                 logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
+                return None
         except requests.exceptions.RequestException as e:
             logging.error(f"Error deleting draft record: {e}")
-            return False
-        
+            return None
+
     def _get_draft_files_url(self,draft_response: requests.Response) -> str:
         """Get the url for preparing a file to be uploaded to a draft record
 
