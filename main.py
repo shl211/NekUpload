@@ -8,7 +8,7 @@ token = os.getenv("INVENIO_RDM_DEMO_TOKEN")
 
 metadata = {
     "metadata": {
-        "title": "NEKTAR TEST UPLOAD",
+        "title": "NEKTAR TEST UPLOAD AND PUBLISH",
         "creators": [
             {
                 "person_or_org": {
@@ -31,4 +31,4 @@ files = ["tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad.xml",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
-database.upload_files(files,metadata,url,token)
+database.upload_files(url,token,files,metadata)
