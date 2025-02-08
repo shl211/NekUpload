@@ -4,19 +4,32 @@ import requests
 import logging
 import os
 
+# Note that all private functions will return requests.Response for flexibility and testing purposes
+# Each member function is responsible for handling that requests.Response and parsing relevant data, stored in class files
+
 class invenioRDM(db):
     def __init__(self):
-        pass
+        #instantiated after draft record is created
+        self.record_id: str = None
+        self.draft_url: str = None
+        self.publish_url: str = None
+
+        #track where files are added in records
+        self.record_file_name_url: Dict[str,str] = {} #file_name -> record_file_url
+        self.record_file_name_content_url: Dict[str,str] = {} #file_name -> file_content_url
+        self.record_file_name_commit_url: Dict[str,str] = {} #file_name -> file_commit_url
 
     def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],publish: bool=True) -> None:  
         #url expected to be db_url/api/records        
-        draft_response = self._create_draft_record(url,token,metadata)
-        draft_files_url = self._get_draft_files_url(draft_response)
+        
+        self._create_draft_record(url,token,metadata)
+
+        draft_files_url = self._get_draft_files_url()
         for file_path in file_paths:
             self._upload_file(draft_files_url,token,file_path)
 
         if publish:
-            publish_records_url = self._get_publish_url(draft_response)
+            publish_records_url = self._get_publish_url()
             self._publish_draft(publish_records_url,token)
 
     def _create_draft_record(self,records_url: str, token: str, metadata: Dict[str,Any]) -> requests.Response:
@@ -41,7 +54,8 @@ class invenioRDM(db):
             response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
             
             if response.status_code == 201:
-                logging.info(f"Draft upload created successfully: {response.json()}")  # Log the response
+                logging.info(f"Draft upload created successfully: {response.json()}")
+                self._handle_create_draft_response(response) #add relevant variables to class 
                 return response
             else:
                 logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
@@ -61,15 +75,14 @@ class invenioRDM(db):
         Returns:
             requests.Response: Commit repsonse object
         """
-        file_name = self._get_file_names(file_path)
-        
-        draft_files_response = self._prepare_upload(draft_files_url,token,file_name)
+        file_name = self._get_file_name(file_path)
+        self._prepare_upload(draft_files_url,token,file_name)
 
-        file_upload_url = self._get_draft_files_upload_content_url(draft_files_response,file_name)
+        file_upload_url = self._get_draft_files_upload_content_url(file_name)
         self._do_upload(file_upload_url,token,file_path)
 
         #this saves the uploaded file to the repository
-        file_commit_url = self._get_draft_files_upload_commit_url(draft_files_response,file_name)
+        file_commit_url = self._get_draft_files_upload_commit_url(file_name)
         commit_response = self._commit_upload(file_commit_url,token,file_path)
 
         return commit_response #not sure if this is most sensible response to return
@@ -102,6 +115,7 @@ class invenioRDM(db):
 
             if draft_files_response.status_code == 201:
                 logging.info(f"Draft file metadata for {file_name} created succesfully: {draft_files_response.json()}")
+                self._handle_prepare_upload_response(draft_files_response) #extract relevant urls from response
                 return draft_files_response
             else:
                 logging.error(f"Unexpected status code: {draft_files_response.status_code} - {draft_files_response.text}")
@@ -211,66 +225,45 @@ class invenioRDM(db):
             logging.error(f"Error deleting draft record: {e}")
             return None
 
-    def _get_draft_files_url(self,draft_response: requests.Response) -> str:
+    def _get_draft_files_url(self) -> str:
         """Get the url for preparing a file to be uploaded to a draft record
-
-        Args:
-            draft_response (requests.Response): Record draft response object
 
         Returns:
             str: url route for preparing a file to be uploaded to draft record
         """
-        draft_data = draft_response.json()
-        return draft_data["links"]["files"]
+        return self.draft_url
     
-    def _get_draft_files_upload_content_url(self,draft_files_response: requests.Response,file_name: str) -> str:
+    def _get_draft_files_upload_content_url(self,file_name: str) -> str:
         """Get the url location in the records where the specified file should be uploaded
 
         Args:
-            draft_files_response (requests.Response): Draft file response object
             file_name (str): Name of file to be uploaded
 
         Returns:
             str: url location of where in records specified file should be uploaded
         """
-        draft_files_data = draft_files_response.json()
-
-        # draft_files_data["entries"] is a list, and desired entry is generally at the end
-        # iterate from end of list to get associated dictionary associated with the file from the list
-        entry = next(entry for entry in reversed(draft_files_data["entries"]) if entry["key"] == file_name)
-        file_upload_url = entry["links"]["content"]
-        return file_upload_url
+        return self.record_file_name_content_url[file_name]
     
-    def _get_draft_files_upload_commit_url(self,draft_files_response: requests.Response, file_name: str) -> str:
+    def _get_draft_files_upload_commit_url(self, file_name: str) -> str:
         """Get the url location detailing which file in records is to be committed
 
         Args:
-            draft_files_response (requests.Response): Draft file response object
             file_name (str): Name of file to be uploaded
 
         Returns:
             str: url location detailing which file in records is to be committed
         """
-        draft_files_data = draft_files_response.json()
-        # draft_files_data["entries"] is a list, and desired entry is generally at the end
-        # iterate from end of list to get associated dictionary associated with the file from the list
-        entry = next(entry for entry in reversed(draft_files_data["entries"]) if entry["key"] == file_name)
-        file_commit_url = entry["links"]["commit"]
-        return file_commit_url
+        return self.record_file_name_commit_url[file_name]
 
-    def _get_publish_url(self,draft_response: requests.Response) -> str:
+    def _get_publish_url(self) -> str:
         """Get the url to publish the draft
-
-        Args:
-            draft_response (requests.Response): Draft response object
 
         Returns:
             str: url for publishing the draft
         """
-        draft_data = draft_response.json()
-        return draft_data["links"]["publish"]
+        return self.publish_url
 
-    def _get_file_names(self,file_path: str) -> str:
+    def _get_file_name(self,file_path: str) -> str:
         """Given a file path, extract the file name
 
         Args:
@@ -281,3 +274,35 @@ class invenioRDM(db):
         """
         file_name = os.path.basename(file_path)
         return file_name
+    
+    def _handle_create_draft_response(self,response: requests.Response) -> None:
+        """Handles response from creation of draft. Reads useful information into class variables
+
+        Args:
+            response (requests.Response): Create draft response
+        """
+        data = response.json()
+        self.record_id = data["id"]
+        self.draft_url = data["links"]["files"]
+        self.publish_url = data["links"]["publish"]
+
+    def _handle_prepare_upload_response(self,response: requests.Response) -> None:
+        """Handles response from preparing file upload. Reads useful information into class variables
+
+        Args:
+            response (requests.Response): Preparing upload response
+        """
+        data = response.json()
+        
+        #contains dictionary of file locations
+        #each dictionary has fields "key" (file_name) and "links"
+        entry_list: List[Dict[str,Any]] = data["entries"]
+
+        #search from back to front, as last entry usually the new one added
+        for entry in reversed(entry_list):
+            if entry["key"] not in self.record_file_name_url:
+                file_name = entry["key"]
+                self.record_file_name_url[file_name] = entry["links"]["self"]
+                self.record_file_name_content_url[file_name] = entry["links"]["content"]
+                self.record_file_name_commit_url[file_name] = entry["links"]["commit"]
+                break
