@@ -28,7 +28,7 @@ metadata = {
 
 database = invenioRDM()
 files = ["tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
-         "tests/datasets/ADRSolver/ADR_2D_TriQuad.xml"]
-         #"tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",
-         #"tests/datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
+         "tests/datasets/ADRSolver/ADR_2D_TriQuad.xml",
+         "tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",
+         "tests/datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
 database.upload_files(files,metadata,url,token)

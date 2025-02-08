@@ -15,6 +15,9 @@ class invenioRDM(db):
         for file_path in file_paths:
             upload_file_response = self._upload_file(draft_files_url,token,file_path)
 
+        publish_records_url = self._get_publish_url(draft_response)
+        self._publish_draft(publish_records_url,token)
+
     def _create_draft_upload(self,records_url: str, token: str, metadata: Dict[str,Any]) -> requests.Response:  # Return the response object
         header = {
             "Content-Type": "application/json",
@@ -84,8 +87,19 @@ class invenioRDM(db):
             logger.error(f"Error committing file {file_path}: {e}")
             raise
 
-    def _publish_draft(self):
-        pass
+    def _publish_draft(self,publish_url: str, token: str):
+        header = {"Authorization": f"Bearer ${token}"}
+
+        logger = logging.getLogger(__name__)
+        try:
+            response = requests.post(publish_url, headers=header)
+            logging.fatal(f"{response.status_code}")
+            logging.fatal(f"{response.text}")
+            response.raise_for_status()
+            logger.info(f"Draft published successfully: {response.json()}")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error publishing draft: {e}")
+            raise
     
     def _get_draft_files_url(self,draft_response: requests.Response) -> str:
         #this returns the url for initialising a file to be uploaded
@@ -107,6 +121,10 @@ class invenioRDM(db):
         entry = next(entry for entry in draft_files_data["entries"] if entry["key"] == file_name)  # Get the dictionary associated with the file from the list
         file_commit_url = entry["links"]["commit"] # Now you can access links
         return file_commit_url
+
+    def _get_publish_url(self,draft_response: requests.Response) -> str:
+        draft_data = draft_response.json()
+        return draft_data["links"]["publish"]
 
     def _get_file_names(self,file_path: str) -> str:
         file_name = os.path.basename(file_path)
