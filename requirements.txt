@@ -5,3 +5,5 @@ pytest==8.3.4
 numpy
 h5py
 lxml
+requests
+python-dotenv

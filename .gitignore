@@ -82,3 +82,6 @@ desktop.ini
 *.bak
 *.swp
 *.txt
+
+# Secrets
+*.env
