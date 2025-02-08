@@ -150,12 +150,15 @@ class invenioRDM(db):
             logging.error(f"Error committing file {file_path}: {e}")
             raise
 
-    def _publish_draft(self,publish_url: str, token: str):
+    def _publish_draft(self,publish_url: str, token: str) -> requests.Response:
         """Publish the specified draft on InvenioRDM
 
         Args:
             publish_url (str): url route to draft to be published
             token (str): User personal access token
+
+        Returns:
+            requests.Response: Publish response object
         """
         
         header = {"Authorization": f"Bearer {token}"}
@@ -164,10 +167,27 @@ class invenioRDM(db):
             response = requests.post(publish_url, headers=header)
             response.raise_for_status()
             logging.info(f"Draft published successfully: {response.json()}")
+            return response
         except requests.exceptions.RequestException as e:
             logging.error(f"Error publishing draft: {e}")
             raise
     
+    def _delete_draft(self,draft_url: str, token: str) -> bool:
+        header = {"Authorization": f"Bearer {token}"}
+
+        try:
+            response = requests.delete(draft_url, headers=header)
+            response.raise_for_status() #raise exception for bad status codes
+
+            if response.status_code == 204: #denotes successful deletion
+                logging.info(f"Draft record deleted successfully")
+                return True
+            else:
+                logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error deleting draft record: {e}")
+            return False
+        
     def _get_draft_files_url(self,draft_response: requests.Response) -> str:
         """Get the url for preparing a file to be uploaded to a draft record
 
