@@ -20,8 +20,18 @@ class invenioRDM(db):
         self.record_file_name_commit_url: Dict[str,str] = {} #file_name -> file_commit_url
 
     def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],publish: bool=True) -> None:  
-        #url expected to be db_url/api/records        
-        
+        """Upload files to an InvenioRDM repository
+
+        Args:
+            url (str): URL to the InvenioRDM records API endpoint.  Must include the full path.  For example: "https://my-invenio-rdm.example.com/api/records"            
+            token (str): User access token
+            file_paths (List[str]): List of paths of files to be uploaded
+            metadata (Dict[str,Any]): Metadata to be uploaded
+            publish (bool, optional): If True, will publish the record. Defaults to True.
+        """        
+        #prevent mixup of files from previous uploads
+        self._clear()
+
         self._create_draft_record(url,token,metadata)
 
         draft_files_url = self._get_draft_files_url()
@@ -306,3 +316,14 @@ class invenioRDM(db):
                 self.record_file_name_content_url[file_name] = entry["links"]["content"]
                 self.record_file_name_commit_url[file_name] = entry["links"]["commit"]
                 break
+
+    def _clear(self) -> None:
+        """Reset internal state of the invenioRDM uploader
+        """
+        self.record_id: str = None
+        self.draft_url: str = None
+        self.publish_url: str = None
+
+        self.record_file_name_url.clear()
+        self.record_file_name_content_url.clear()
+        self.record_file_name_commit_url.clear()
