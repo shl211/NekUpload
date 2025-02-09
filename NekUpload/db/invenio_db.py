@@ -47,7 +47,7 @@ class invenioRDM(db):
         community_uuid = self._get_community_uuid()
 
         review_url = self._get_review_url()
-        self._submit_record_to_community(token,review_url,community_uuid)
+        self._submit_record_to_community(review_url,token,community_uuid)
         self._submit_record_for_review(url,token)
 
 
@@ -221,6 +221,7 @@ class invenioRDM(db):
             
             if response.status_code == 202:
                 logging.info(f"Draft published successfully: {response.json()}")
+                return response
             else:
                 logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
@@ -285,7 +286,7 @@ class invenioRDM(db):
             logging.error(f"Error finding community with {community_url}")
             raise
         
-    def _submit_record_to_community(self,token: str,record_review_url: str,community_uuid:str) -> requests.Request:
+    def _submit_record_to_community(self,record_review_url: str,token: str,community_uuid:str) -> requests.Request:
         """Submit a record to a specified community
 
         Args:
