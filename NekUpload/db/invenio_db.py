@@ -13,26 +13,32 @@ class invenioRDM(db):
         self.record_id: str = None
         self.draft_url: str = None
         self.publish_url: str = None
+        self.review_url: str = None
 
         #track where files are added in records
         self.record_file_name_url: Dict[str,str] = {} #file_name -> record_file_url
         self.record_file_name_content_url: Dict[str,str] = {} #file_name -> file_content_url
         self.record_file_name_commit_url: Dict[str,str] = {} #file_name -> file_commit_url
 
-    def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],publish: bool=True) -> None:  
+        #community uuid extracted from get_community
+        self.community_uuid: str = None
+
+    def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],community_id: str,publish: bool=True) -> None:  
         """Upload files to an InvenioRDM repository
 
         Args:
-            url (str): URL to the InvenioRDM records API endpoint.  Must include the full path.  For example: "https://my-invenio-rdm.example.com/api/records"            
+            url (str): Base URL to the InvenioRDM repository.  For example: "https://my-invenio-rdm.example.com"            
             token (str): User access token
             file_paths (List[str]): List of paths of files to be uploaded
             metadata (Dict[str,Any]): Metadata to be uploaded
+            community_id (str): Invenio community id for upload or slug
             publish (bool, optional): If True, will publish the record. Defaults to True.
         """        
         #prevent mixup of files from previous uploads
         self._clear()
 
-        self._create_draft_record(url,token,metadata)
+        records_url = url + f"/api/records"
+        self._create_draft_record(records_url,token,metadata)
 
         draft_files_url = self._get_draft_files_url()
         for file_path in file_paths:
@@ -41,6 +47,14 @@ class invenioRDM(db):
         if publish:
             publish_records_url = self._get_publish_url()
             self._publish_draft(publish_records_url,token)
+
+        self._get_community(url,token,community_id)
+        community_uuid = self._get_community_uuid()
+
+        review_url = self._get_review_url()
+        self._submit_record_to_community(token,review_url,community_uuid)
+        self._submit_record_for_review(url,token)
+
 
     def _create_draft_record(self,records_url: str, token: str, metadata: Dict[str,Any]) -> requests.Response:
         """Create a draft template in Invenio.
@@ -235,6 +249,79 @@ class invenioRDM(db):
             logging.error(f"Error deleting draft record: {e}")
             return None
 
+    def _get_community(self,url:str, token: str,community_slug: str) -> requests.Response:
+        
+        community_url = url + f"/api/communities/{community_slug}"
+        
+        header = {
+            "Authorization": f"Bearer {token}"
+        }
+
+        try:
+            response = requests.get(community_url,headers=header)
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                logging.info(f"Successfully found community associated with {community_url}")
+                self._handle_community_response(response) #extract relevant data and store in class variables
+                return response
+            else:
+                logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
+        except:
+            logging.error(f"Error finding community with {community_url}")
+            raise
+        
+    def _submit_record_to_community(self,token: str,record_review_url: str,community_uuid:str) -> requests.Request:
+        
+        header = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}"
+            }
+
+        body =  {
+            "receiver" : {
+                "community": f"{community_uuid}"
+            },
+            "type": "community-submission"
+        }
+
+        try:
+            response = requests.put(record_review_url,headers=header,json=body)
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                logging.info(f"Successfully submitted record {record_review_url} to community {community_uuid}")
+                return response
+            else:
+                logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
+        except:
+            logging.error(f"Error submitting record {record_review_url} to community {community_uuid}")
+            raise
+
+    def _submit_record_for_review(self,base_url: str,token: str) -> requests.Response:
+        submit_url = base_url + f"/api/records/{self.record_id}/draft/actions/submit-review"
+
+        header = {"Authorization": f"Bearer {token}"}
+        body = {
+            "payload": {
+                "content": "This draft record was submitted via the Nektar Upload and Validation Pipeline.",
+                "format": "html"
+            },
+        }
+
+        try: 
+            response = requests.post(submit_url,headers=header,json=body)
+            response.raise_for_status()
+
+            if response.status_code == 202:
+                logging.info(f"Record {self.record_id} submitted for review to community {self.community_uuid}")
+                return response
+            else:
+                logging.error(f"Unexpected status code: {response.status_code} - {response.text}")
+        except:
+            logging.error(f"Error submitting record {self.record_id} for review to community {self.community_uuid}")
+            raise 
+
     def _get_draft_files_url(self) -> str:
         """Get the url for preparing a file to be uploaded to a draft record
 
@@ -254,6 +341,9 @@ class invenioRDM(db):
         """
         return self.record_file_name_content_url[file_name]
     
+    def _get_community_uuid(self) -> str:
+        return self.community_uuid
+
     def _get_draft_files_upload_commit_url(self, file_name: str) -> str:
         """Get the url location detailing which file in records is to be committed
 
@@ -273,6 +363,14 @@ class invenioRDM(db):
         """
         return self.publish_url
 
+    def _get_review_url(self) -> str:
+        """Get the url to submit a record for review to community
+
+        Returns:
+            str: Review url
+        """
+        return self.review_url
+
     def _get_file_name(self,file_path: str) -> str:
         """Given a file path, extract the file name
 
@@ -284,7 +382,7 @@ class invenioRDM(db):
         """
         file_name = os.path.basename(file_path)
         return file_name
-    
+
     def _handle_create_draft_response(self,response: requests.Response) -> None:
         """Handles response from creation of draft. Reads useful information into class variables
 
@@ -295,6 +393,7 @@ class invenioRDM(db):
         self.record_id = data["id"]
         self.draft_url = data["links"]["files"]
         self.publish_url = data["links"]["publish"]
+        self.review_url = data["links"]["review"]
 
     def _handle_prepare_upload_response(self,response: requests.Response) -> None:
         """Handles response from preparing file upload. Reads useful information into class variables
@@ -317,13 +416,20 @@ class invenioRDM(db):
                 self.record_file_name_commit_url[file_name] = entry["links"]["commit"]
                 break
 
+    def _handle_community_response(self,response: requests.Response) -> None:
+        data = response.json()
+        self.community_uuid = data["id"]
+
     def _clear(self) -> None:
         """Reset internal state of the invenioRDM uploader
         """
-        self.record_id: str = None
-        self.draft_url: str = None
-        self.publish_url: str = None
+        self.record_id = None
+        self.draft_url = None
+        self.publish_url = None
+        self.review_url = None
 
         self.record_file_name_url.clear()
         self.record_file_name_content_url.clear()
         self.record_file_name_commit_url.clear()
+
+        self.community_uuid = None

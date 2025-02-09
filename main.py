@@ -5,10 +5,10 @@ import os
 load_dotenv()
 url = os.getenv("INVENIO_RDM_DEMO_URL")
 token = os.getenv("INVENIO_RDM_DEMO_TOKEN")
-
+print(url)
 metadata = {
     "metadata": {
-        "title": "NEKTAR TEST UPLOAD AND PUBLISH 2",
+        "title": "NEKTAR TEST UPLOAD AND PUBLISH TO COMMUNITY",
         "creators": [
             {
                 "person_or_org": {
@@ -31,4 +31,6 @@ files = ["tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad.xml",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
-database.upload_files(url,token,files,metadata,publish=False)
+
+community_slug_id = "test_nekupload"
+database.upload_files(url,token,files,metadata,community_slug_id,publish=False)
