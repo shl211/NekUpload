@@ -334,10 +334,10 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,
     assert response.status_code == 202
 
 @pytest.mark.skip
-def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
+def test_invalid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     pass
 
-#integration test for upploading files
+#integration test for uploading files
 if __name__ == "__main__":
     load_dotenv()
     #currently use Invenio RDM demo instance

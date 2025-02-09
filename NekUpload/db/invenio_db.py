@@ -11,7 +11,8 @@ class invenioRDM(db):
     def __init__(self):
         #instantiated after draft record is created
         self.record_id: str = None
-        self.draft_url: str = None
+        self.draft_files_url: str = None #api/records/{id}/draft/files
+        self.draft_url: str = None #api/records/{id}/draft
         self.publish_url: str = None
         self.review_url: str = None
 
@@ -39,17 +40,21 @@ class invenioRDM(db):
         records_url = url + f"/api/records"
         self._create_draft_record(records_url,token,metadata)
 
-        draft_files_url = self._get_draft_files_url()
-        for file_path in file_paths:
-            self._upload_file(draft_files_url,token,file_path)
+        #after creation of draft, if any api calls fail, clean up the draft to prevent clutter
+        try:
+            draft_files_url = self._get_draft_files_url()
+            for file_path in file_paths:
+                self._upload_file(draft_files_url,token,file_path)
 
-        self._get_community(url,token,community_id)
-        community_uuid = self._get_community_uuid()
+            self._get_community(url,token,community_id)
+            community_uuid = self._get_community_uuid()
 
-        review_url = self._get_review_url()
-        self._submit_record_to_community(review_url,token,community_uuid)
-        self._submit_record_for_review(url,token)
-
+            review_url = self._get_review_url()
+            self._submit_record_to_community(review_url,token,community_uuid)
+            self._submit_record_for_review(url,token)
+        except Exception as e:
+            self._clean_up_erroneous_draft(token)
+            raise
 
     def _create_draft_record(self,records_url: str, token: str, metadata: Dict[str,Any]) -> requests.Response:
         """Create a draft template in Invenio.
@@ -362,7 +367,7 @@ class invenioRDM(db):
         Returns:
             str: url route for preparing a file to be uploaded to draft record
         """
-        return self.draft_url
+        return self.draft_files_url
     
     def _get_draft_files_upload_content_url(self,file_name: str) -> str:
         """Get the url location in the records where the specified file should be uploaded
@@ -430,9 +435,10 @@ class invenioRDM(db):
         """
         data = response.json()
         self.record_id = data["id"]
-        self.draft_url = data["links"]["files"]
+        self.draft_files_url = data["links"]["files"]
         self.publish_url = data["links"]["publish"]
         self.review_url = data["links"]["review"]
+        self.draft_url = data["links"]["self"]
 
     def _handle_prepare_upload_response(self,response: requests.Response) -> None:
         """Handles response from preparing file upload. Reads useful information into class variables
@@ -468,7 +474,7 @@ class invenioRDM(db):
         """Reset internal state of the invenioRDM uploader
         """
         self.record_id = None
-        self.draft_url = None
+        self.draft_files_url = None
         self.publish_url = None
         self.review_url = None
 
@@ -477,3 +483,13 @@ class invenioRDM(db):
         self.record_file_name_commit_url.clear()
 
         self.community_uuid = None
+
+    def _clean_up_erroneous_draft(self,token: str) -> None:
+        """Clean up a draft that is interrupted midway
+
+        Args:
+            token (str): _description_
+        """
+        self._delete_draft(self.draft_url,token)
+        logging.info(self.draft_files_url)
+        self._clear()
