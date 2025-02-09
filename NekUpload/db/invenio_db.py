@@ -23,8 +23,8 @@ class invenioRDM(db):
         #community uuid extracted from get_community
         self.community_uuid: str = None
 
-    def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],community_id: str,publish: bool=True) -> None:  
-        """Upload files to an InvenioRDM repository
+    def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],community_id: str) -> None:  
+        """Upload files to an InvenioRDM repository and submit to community for review
 
         Args:
             url (str): Base URL to the InvenioRDM repository.  For example: "https://my-invenio-rdm.example.com"            
@@ -32,7 +32,6 @@ class invenioRDM(db):
             file_paths (List[str]): List of paths of files to be uploaded
             metadata (Dict[str,Any]): Metadata to be uploaded
             community_id (str): Invenio community id for upload or slug
-            publish (bool, optional): If True, will publish the record. Defaults to True.
         """        
         #prevent mixup of files from previous uploads
         self._clear()
@@ -43,10 +42,6 @@ class invenioRDM(db):
         draft_files_url = self._get_draft_files_url()
         for file_path in file_paths:
             self._upload_file(draft_files_url,token,file_path)
-
-        if publish:
-            publish_records_url = self._get_publish_url()
-            self._publish_draft(publish_records_url,token)
 
         self._get_community(url,token,community_id)
         community_uuid = self._get_community_uuid()
@@ -233,6 +228,16 @@ class invenioRDM(db):
             raise
     
     def _delete_draft(self,draft_url: str, token: str) -> requests.Response:
+        """Delete a draft record
+
+        Args:
+            draft_url (str): url location of draft record
+            token (str): User access token
+
+        Returns:
+            requests.Response: Delete response object
+        """
+        
         header = {"Authorization": f"Bearer {token}"}
 
         try:
@@ -250,7 +255,16 @@ class invenioRDM(db):
             return None
 
     def _get_community(self,url:str, token: str,community_slug: str) -> requests.Response:
-        
+        """Get community specified by the community slug or id
+
+        Args:
+            url (str): Base url
+            token (str): User access token
+            community_slug (str): Community url slug or uuid
+
+        Returns:
+            requests.Response: Get community response
+        """
         community_url = url + f"/api/communities/{community_slug}"
         
         header = {
@@ -272,7 +286,16 @@ class invenioRDM(db):
             raise
         
     def _submit_record_to_community(self,token: str,record_review_url: str,community_uuid:str) -> requests.Request:
-        
+        """Submit a record to a specified community
+
+        Args:
+            token (str): Personal access token
+            record_review_url (str): Record review url
+            community_uuid (str): Community UUID
+
+        Returns:
+            requests.Request: Community submission response
+        """
         header = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}"
@@ -299,6 +322,16 @@ class invenioRDM(db):
             raise
 
     def _submit_record_for_review(self,base_url: str,token: str) -> requests.Response:
+        """Once record is submmitted to community, submit it now for review
+
+        Args:
+            base_url (str): Base url
+            token (str): Personal access token
+
+        Returns:
+            requests.Response: Record review submission response
+        """
+        
         submit_url = base_url + f"/api/records/{self.record_id}/draft/actions/submit-review"
 
         header = {"Authorization": f"Bearer {token}"}
@@ -342,6 +375,11 @@ class invenioRDM(db):
         return self.record_file_name_content_url[file_name]
     
     def _get_community_uuid(self) -> str:
+        """Get community UUID
+
+        Returns:
+            str: Community UUID
+        """
         return self.community_uuid
 
     def _get_draft_files_upload_commit_url(self, file_name: str) -> str:
@@ -417,6 +455,11 @@ class invenioRDM(db):
                 break
 
     def _handle_community_response(self,response: requests.Response) -> None:
+        """Handles get community request response
+
+        Args:
+            response (requests.Response): Get Community response
+        """
         data = response.json()
         self.community_uuid = data["id"]
 

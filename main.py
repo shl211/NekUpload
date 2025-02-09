@@ -33,4 +33,4 @@ files = ["tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
 
 community_slug_id = "test_nekupload"
-database.upload_files(url,token,files,metadata,community_slug_id,publish=False)
+database.upload_files(url,token,files,metadata,community_slug_id)
