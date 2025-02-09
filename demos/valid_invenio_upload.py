@@ -1,11 +1,13 @@
 from dotenv import load_dotenv
 import os
 from NekUpload.db import invenioRDM
+from memory_profiler import profile
 
 #integration test for uploading files
 #this one should fail, and draft deleted
 #on test instance, no record should be shown
-if __name__ == "__main__":
+#@profile #uncomment for memory profiler
+def demo():
     load_dotenv()
     #currently use Invenio RDM demo instance
     URL = os.getenv("INVENIO_RDM_DEMO_URL",None)
@@ -35,10 +37,10 @@ if __name__ == "__main__":
         }
 
         database = invenioRDM()
-        files = ["../datasets/ADRSolver/ADR_2D_TriQuad.nekg",
-                "../datasets/ADRSolver/ADR_2D_TriQuad.xml",
-                "../datasets/ADRSolver/ADR_2D_TriQuad.fld",
-                "../datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
+        files = ["../tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
+                "../tests/datasets/ADRSolver/ADR_2D_TriQuad.xml",
+                "../tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",
+                "../tests/datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
 
         #get absolute path from wherever this is run
         files_abs_paths = [os.path.join(os.path.dirname(__file__),f) for f in files]
@@ -47,3 +49,6 @@ if __name__ == "__main__":
             database.upload_files(URL,TOKEN,files_abs_paths,metadata,COMMUNITY_SLUG)
         except Exception as e:
             assert False, "The upload should have succeeded, but it failed."
+
+if __name__ == "__main__":
+    demo()
