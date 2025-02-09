@@ -2,11 +2,8 @@ import pytest
 import requests
 from NekUpload.db import invenioRDM
 from typing import Dict,Any
-from dotenv import load_dotenv
-import os
 
 #here we unit test each individual api call, even if they are private functions
-
 @pytest.fixture
 def sample_metadata() -> Dict[str,Any]:
     metadata =  {
@@ -336,43 +333,3 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,
 @pytest.mark.skip
 def test_invalid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     pass
-
-#integration test for uploading files
-if __name__ == "__main__":
-    load_dotenv()
-    #currently use Invenio RDM demo instance
-    URL = os.getenv("INVENIO_RDM_DEMO_URL",None)
-    TOKEN = os.getenv("INVENIO_RDM_DEMO_TOKEN",None)
-    COMMUNITY_SLUG = os.getenv("INVENIO_RDM_TEST_COMMUNITY_SLUG",None)
-
-    #only run this test if environment variables exist
-    if URL is not None and TOKEN is not None and COMMUNITY_SLUG is not None:
-        metadata = {
-            "metadata": {
-                "title": "NEKTAR TEST UPLOAD AND PUBLISH TO COMMUNITY",
-                "creators": [
-                    {
-                        "person_or_org": {
-                            "given_name": "Stephen",
-                            "family_name": "Liu",
-                            "type": "personal",
-                            "identifiers": [{"identifier": "0000-0002-1825-0097"}]
-                        },
-                        "affiliations": [{"name": "Imperial College London"}]
-                    }
-                ],
-                "publisher": "InvenioRDM",
-                "publication_date": "2024-05-14",
-                "resource_type": {"id": "dataset"}
-            }
-        }
-
-        database = invenioRDM()
-        #take tests/ as the root directory
-        files = ["datasets/ADRSolver/ADR_2D_TriQuad.nekg",
-                "datasets/ADRSolver/ADR_2D_TriQuad.xml",
-                "datasets/ADRSolver/ADR_2D_TriQuad.fld",
-                "datasets/ADRSolver/ADR_2D_TriQuad_0.chk"]
-
-        community_slug_id = "test_nekupload"
-        database.upload_files(URL,TOKEN,files,metadata,community_slug_id)
