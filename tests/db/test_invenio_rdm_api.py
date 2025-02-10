@@ -68,7 +68,7 @@ def test_valid_create_draft_record(mocker,sample_host_name,sample_metadata, samp
             "review": f"{sample_host_name}/api/records/{sample_record_id}/draft/review", #not included in draft docs, but is in quickstart docs
         }
     }
-    mocker.patch("requests.post",return_value=mock_response)
+    mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now test api call
     url = sample_host_name + "/api/records"
@@ -83,6 +83,12 @@ def test_valid_create_draft_record(mocker,sample_host_name,sample_metadata, samp
     assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft")
     assert(test_data["links"]["files"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files")
     assert(test_data["links"]["review"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/review")
+
+    #verify call
+    mock_post.assert_called_once()
+    call_args = mock_post.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
 
 def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -102,7 +108,7 @@ def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,samp
             },
         ]
     }
-    mocker.patch("requests.post",return_value=mock_response)
+    mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now test api call
     data = [{"key": "test.txt"}]
@@ -117,6 +123,13 @@ def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,samp
     assert(file_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt/content")
     assert(file_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt")
     assert(file_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt/commit")
+
+    #verify call
+    mock_post.assert_called_once()
+    call_args = mock_post.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+
 
 def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -134,7 +147,7 @@ def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token
             "commit": f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit"
         }
     }
-    mocker.patch("requests.put",return_value=mock_response)
+    mock_put = mocker.patch("requests.put",return_value=mock_response)
 
     #now test api call
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content"
@@ -147,6 +160,12 @@ def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token
     assert(test_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content")
     assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}")
     assert(test_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit")
+
+    #verify call
+    mock_put.assert_called_once()
+    call_args = mock_put.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
 
 def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -167,7 +186,7 @@ def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token
             "commit": f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit",
         }
     }
-    mocker.patch("requests.post",return_value=mock_response)
+    mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit"
@@ -180,6 +199,13 @@ def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token
     assert(test_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content")
     assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}")
     assert(test_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit")
+
+    #verify call
+    mock_post.assert_called_once()
+    call_args = mock_post.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+
 
 def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -195,7 +221,7 @@ def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_reco
             "files": f"{sample_host_name}/api/records/{sample_record_id}/files",
         }
     }
-    mocker.patch("requests.post",return_value=mock_response)
+    mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish"
@@ -209,19 +235,33 @@ def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_reco
     assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}")
     assert(test_data["links"]["files"] == f"{sample_host_name}/api/records/{sample_record_id}/files")
 
+    #verify call
+    mock_post.assert_called_once()
+    call_args = mock_post.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+
+
 def test_valid_delete_draft(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 204
 
     #no content returned 
     mock_response.json.return_value = {}
-    mocker.patch("requests.delete",return_value=mock_response)
+    mock_delete = mocker.patch("requests.delete",return_value=mock_response)
 
     #now make api call
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft"
     response = invenioAPI.delete_draft(url,sample_token)
 
     assert response.status_code == 204
+
+    #verify call
+    mock_delete.assert_called_once()
+    call_args = mock_delete.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+
 
 def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -240,13 +280,20 @@ def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_toke
             "self": f"{sample_host_name}/api/communities/{id}",
         }
     }
-    mocker.patch("requests.get",return_value=mock_response)
+    mock_get = mocker.patch("requests.get",return_value=mock_response)
 
     #now make api call
     url = f"{sample_host_name}/api/communities/{id}"
     response = invenioAPI.get_community(url,sample_token,community_slug)
 
     assert response.status_code == 200
+
+    #verify call
+    mock_get.assert_called_once()
+    call_args = mock_get.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+
 
 def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -268,7 +315,7 @@ def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadat
             "community": community_uuid
         }
     }
-    mocker.patch("requests.put",return_value=mock_response)
+    mock_put = mocker.patch("requests.put",return_value=mock_response)
 
     #now make api call
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/review"
@@ -276,12 +323,19 @@ def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadat
 
     assert response.status_code == 200
 
+    #verify call
+    mock_put.assert_called_once()
+    call_args = mock_put.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+
+
 def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 202
 
     mock_response.json.return_value = {}
-    mocker.patch("requests.post",return_value=mock_response)
+    mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
     url = sample_host_name + f"/api/records/{sample_record_id}/draft/actions/submit-review"
@@ -292,3 +346,9 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,
     response = invenioAPI.submit_record_for_review(url,sample_token,payload)
 
     assert response.status_code == 202
+
+    #verify call
+    mock_post.assert_called_once()
+    call_args = mock_post.call_args[0]
+    called_url = call_args[0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
