@@ -71,8 +71,7 @@ def test_valid_create_draft_record(mocker,sample_host_name,sample_metadata, samp
     mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now test api call
-    url = sample_host_name + "/api/records"
-    response = invenioAPI.create_record(url,sample_token,metadata=sample_metadata)
+    response = invenioAPI.create_record(sample_host_name,sample_token,metadata=sample_metadata)
 
     # check behaviour
     assert response.status_code == 201
@@ -83,8 +82,9 @@ def test_valid_create_draft_record(mocker,sample_host_name,sample_metadata, samp
     call_args = mock_post.call_args  # get all call arguments
     
     # Compare URLs
+    expected_url = sample_host_name + "/api/records"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     # Compare headers
     called_headers = call_args[1]['headers']
@@ -119,8 +119,7 @@ def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,samp
     mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now test api call
-    url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files"
-    response = invenioAPI.prepare_file_upload(url,sample_token,["test.txt"])
+    response = invenioAPI.prepare_file_upload(sample_host_name,sample_token,sample_record_id,["test.txt"])
 
     #assert correct behaviour
     assert response.status_code == 201
@@ -131,8 +130,9 @@ def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,samp
     call_args = mock_post.call_args#get all call arguments
     
     # Compare URLs
+    expected_url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #compare headers
     called_headers = call_args[1]['headers']
@@ -166,8 +166,7 @@ def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token
     mock_put = mocker.patch("requests.put",return_value=mock_response)
 
     #now test api call
-    url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content"
-    response = invenioAPI.upload_file(url,sample_token,file_path)
+    response = invenioAPI.upload_file(sample_host_name,sample_token,sample_record_id,file_path)
 
     #assert correct behaviour
     assert response.status_code == 200
@@ -178,8 +177,9 @@ def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token
     call_args = mock_put.call_args#get all call arguments
     
     #compare url
+    expected_url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #compare headers, no body for this one
     called_headers = call_args[1]['headers']
@@ -211,8 +211,7 @@ def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token
     mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
-    url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit"
-    response = invenioAPI.commit_file_upload(url,sample_token,file)
+    response = invenioAPI.commit_file_upload(sample_host_name,sample_token,sample_record_id,file)
 
     #assert correct behaviour
     assert response.status_code == 200
@@ -223,8 +222,9 @@ def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token
     call_args = mock_post.call_args#get all call arguments
     
     #compare urls
+    expected_url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #compare headers, no body for this one
     called_headers = call_args[1]['headers']
@@ -248,8 +248,7 @@ def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_reco
     mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
-    url = f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish"
-    response = invenioAPI.publish_draft(url,sample_token)
+    response = invenioAPI.publish_draft(sample_host_name,sample_token,sample_record_id)
 
     #assert correct behaviour
     assert response.status_code == 202
@@ -260,8 +259,9 @@ def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_reco
     call_args = mock_post.call_args#get all call arguments
     
     #compare urls
+    expected_url = f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #compare headers, no body to check for this one
     called_headers = call_args[1]['headers']
@@ -277,8 +277,7 @@ def test_valid_delete_draft(mocker,sample_host_name,sample_record_id,sample_toke
     mock_delete = mocker.patch("requests.delete",return_value=mock_response)
 
     #now make api call
-    url = f"{sample_host_name}/api/records/{sample_record_id}/draft"
-    response = invenioAPI.delete_draft(url,sample_token)
+    response = invenioAPI.delete_draft(sample_host_name,sample_token,sample_record_id)
 
     #assert correct behaviour
     assert response.status_code == 204
@@ -289,8 +288,9 @@ def test_valid_delete_draft(mocker,sample_host_name,sample_record_id,sample_toke
     call_args = mock_delete.call_args#get all call arguments
     
     #compare urls
+    expected_url = f"{sample_host_name}/api/records/{sample_record_id}/draft"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #compare headers, no body for this one 
     called_headers = call_args[1]['headers']
@@ -317,8 +317,7 @@ def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_toke
     mock_get = mocker.patch("requests.get",return_value=mock_response)
 
     #now make api call
-    url = f"{sample_host_name}/api/communities/{id}"
-    response = invenioAPI.get_community(url,sample_token,community_slug)
+    response = invenioAPI.get_community(sample_host_name,sample_token,community_slug)
 
     #assert correct behaviour
     assert response.status_code == 200
@@ -329,8 +328,9 @@ def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_toke
     call_args = mock_get.call_args#get all call arguments
     
     #compare urls
+    expected_url = f"{sample_host_name}/api/communities/{id}"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #compare headers,  no body to check for this
     called_headers = call_args[1]['headers']
@@ -360,8 +360,7 @@ def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadat
     mock_put = mocker.patch("requests.put",return_value=mock_response)
 
     #now make api call
-    url = f"{sample_host_name}/api/records/{sample_record_id}/draft/review"
-    response = invenioAPI.submit_record_to_community(url,sample_token,community_uuid)
+    response = invenioAPI.submit_record_to_community(sample_host_name,sample_token,community_uuid,sample_record_id)
 
     #assert correct behaviour
     assert response.status_code == 200
@@ -372,8 +371,9 @@ def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadat
     call_args = mock_put.call_args#get all call arguments
     
     #compare urls
+    expected_url = f"{sample_host_name}/api/records/{sample_record_id}/draft/review"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #compare headers
     called_headers = call_args[1]['headers']
@@ -393,7 +393,7 @@ def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadat
     called_body = call_args[1]['json']
     assert called_body == expected_data
 
-def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
+def test_valid_submit_record_for_review(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 202
 
@@ -401,12 +401,11 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,
     mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
-    url = sample_host_name + f"/api/records/{sample_record_id}/draft/actions/submit-review"
     payload = {
         "content": "TEST",
         "format": "html"
     }
-    response = invenioAPI.submit_record_for_review(url,sample_token,payload)
+    response = invenioAPI.submit_record_for_review(sample_host_name,sample_token,sample_record_id,payload)
 
     #assert correct behaviour
     assert response.status_code == 202
@@ -417,8 +416,9 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,
     call_args = mock_post.call_args#get all call arguments
     
     #compare urls
+    expected_url = sample_host_name + f"/api/records/{sample_record_id}/draft/actions/submit-review"
     called_url = call_args[0][0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
 
     #copmare headers
     called_headers = call_args[1]['headers']

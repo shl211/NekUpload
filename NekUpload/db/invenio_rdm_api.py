@@ -6,26 +6,19 @@ import re
 import os
 
 """
-This file contains python wrapping of API calls for ease of use. Should be same as the InvenioRDM API docs.
+This file contains python wrapping of API calls for ease of use.
 Not using class here as each method should be atomic and stateless, much like REST API.
 All inputs stated in the documentation should be provided.
 Always return a response, so clients have flexibility to choose how they want to process things.
 For now, lets not worry about other error codes
 """
 
-def create_record(url: str, 
-                  token: str,
-                  access: Dict[str,Any]=None,
-                  files: Dict[str,Any]=None,
-                  metadata: Dict[str,Any]=None,
-                  custom_fields:Dict[str,Any] = None) -> requests.Response:
+def create_record(url: str, token: str,metadata: Dict[str,Any]=None,custom_fields:Dict[str,Any] = None) -> requests.Response:
     """Create a record draft in InvenioRDM. Not fully implemented with access, files and custom_fields yet.
 
     Args:
-        url (str): url route to the invenio database, of form base_url/api/records
+        url (str): Base url route to the invenio database, of form http:// or https://
         token (str): Personal access token
-        access (Dict[str,Any]): Record access options
-        files (Dict[str,Any]): Files options for the record
         metadata (Dict[str,Any]): Metadata to be uploaded
         custom_fields (Dict[str,Any]): Custom fields metadata for record (v10 and newer)
 
@@ -36,9 +29,9 @@ def create_record(url: str,
         APIError: If an error occurs during the API call. 
         ClientError: If an error occurs due to invalid message parameters
     """
-    
-    if not _is_valid_url(url,"/api/records"):
-        msg = f"url: {url} is invalid, should be of form base_url/api/records. API call terminated."
+
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
         logging.error(msg)
         raise ClientError(msg)
 
@@ -52,8 +45,12 @@ def create_record(url: str,
         "Authorization": f"Bearer {token}"
     }
 
+    if url.endswith('/'):
+        url = url[:-1]
+    records_url = url + "/api/records"
+
     try:
-        response = requests.post(url, headers=header, json=metadata)
+        response = requests.post(records_url, headers=header, json=metadata)
         response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
         
         if response.status_code == 201:
@@ -68,12 +65,13 @@ def create_record(url: str,
         logging.error(err_msg)
         raise APIError(err_msg)
 
-def prepare_file_upload(url: str,token: str,file_name_list: List[str]) -> requests.Response:
-    """Creates a location in the Invenio database record to store the files
+def prepare_file_upload(url: str,token: str,record_id: str,file_name_list: List[str]) -> requests.Response:
+    """Creates a location in the Invenio database record to store the files. Capable of batch file preparation.
 
     Args:
-        url (str): url route to the invenio record draft, of form base_url/api/records/{record_id}/draft/files
+        url (str): Base url route to the invenio database, of form http:// or https://
         token (str): Personal access token
+        record_id(str): Id of record to be prepared for file upload
         file_name_list (List[str[]): List of names of file to be uploaded
 
     Returns:
@@ -85,9 +83,8 @@ def prepare_file_upload(url: str,token: str,file_name_list: List[str]) -> reques
     """
     
     #sanitise incoming data
-    valid_url_pattern = r".*/api/records/[^/]+/draft/files$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/records/record_id/draft/files. API call terminated."
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
         logging.error(msg)
         raise ClientError(msg)
     
@@ -105,8 +102,12 @@ def prepare_file_upload(url: str,token: str,file_name_list: List[str]) -> reques
     #convert to JSON array with []
     body = [{"key": file_name} for file_name in file_name_list]
     
+    if url.endswith('/'):
+        url = url[:-1]
+    record_url = url + f"/api/records/{record_id}/draft/files"
+
     try:
-        response = requests.post(url,headers=header, json=body)
+        response = requests.post(record_url,headers=header, json=body)
         response.raise_for_status()
 
         if response.status_code == 201:
@@ -121,12 +122,13 @@ def prepare_file_upload(url: str,token: str,file_name_list: List[str]) -> reques
         logging.error(err_msg)
         raise APIError(err_msg)
 
-def upload_file(url: str, token: str, file_path: str) -> requests.Response:
+def upload_file(url: str, token: str, record_id: str, file_path: str) -> requests.Response:
     """Upload the specified file to the records location specified in the url
 
     Args:
-        url (str): url route to location in records where file will be stored, of form baser_url/api/records/{record_id}/draft/files/{filename}/content
+        url (str): Base url route to the invenio database, of form http:// or https://
         token (str): User personal access token
+        record_id(str): Id of record to be prepared for file upload
         file_path (str): Path of file to be uploaded
 
     Returns:
@@ -138,11 +140,8 @@ def upload_file(url: str, token: str, file_path: str) -> requests.Response:
     """
 
     #sanitise incoming data
-    file_name = file_path.split('/')[-1]
-
-    valid_url_pattern = rf".*/api/records/[^/]+/draft/files/{file_name}/content$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/records/record_id/draft/files/{file_name}/content. API call terminated."
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
         logging.error(msg)
         raise ClientError(msg)
 
@@ -157,10 +156,15 @@ def upload_file(url: str, token: str, file_path: str) -> requests.Response:
         "Authorization": f"Bearer {token}"
     }
 
+    filename = file_path.split('/')[-1]
+    if url.endswith('/'):
+        url = url[:-1]
+    file_upload_url = url + f"/api/records/{record_id}/draft/files/{filename}/content"
+
     #open in binary mode, requests behaviour is file is streamed for upload, avoiding memory issues
     with open(file_path, "rb") as f:
         try:
-            response = requests.put(url, headers=header, data=f)
+            response = requests.put(file_upload_url, headers=header, data=f)
             response.raise_for_status()
             
             if response.status_code == 200:
@@ -175,12 +179,13 @@ def upload_file(url: str, token: str, file_path: str) -> requests.Response:
             logging.error(err_msg)
             raise APIError(err_msg)
 
-def commit_file_upload(url: str, token: str, filename: str) -> requests.Response:
+def commit_file_upload(url: str, token: str, record_id: str, filename: str) -> requests.Response:
     """Save uploaded file in the specified url location to the repository
 
     Args:
-        url (str): url route to location in records where file will be stored base_url/api/records/{record_id}/draft/files/{filename}/commit
-        token (str): Personal access token
+        url (str): Base url route to the invenio database, of form http:// or https://
+        token (str): User personal access token
+        record_id(str): Id of record to be prepared for file upload
         filename (str): Name of file to be uploaded
 
     Returns:
@@ -191,21 +196,24 @@ def commit_file_upload(url: str, token: str, filename: str) -> requests.Response
         ClientError: If an error occurs due to invalid message parameters
     """
     #sanitise incoming data
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+    
     if '/' in filename:
         msg = f"filename: {filename} is a path, not file"
         logging.error(msg)
         raise ClientError(msg)
 
-    valid_url_pattern = rf".*/api/records/[^/]+/draft/files/{filename}/commit$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/records/record_id/draft/files/{filename}/commit. API call terminated."
-        logging.error(msg)
-        raise ClientError(msg)
-
     header = {"Authorization": f"Bearer {token}"}
+    
+    if url.endswith('/'):
+        url = url[:-1]
+    file_commit_url = url + f"/api/records/{record_id}/draft/files/{filename}/commit"
 
     try:
-        response = requests.post(url, headers=header)
+        response = requests.post(file_commit_url, headers=header)
         response.raise_for_status()
         
         if response.status_code == 200:
@@ -220,12 +228,13 @@ def commit_file_upload(url: str, token: str, filename: str) -> requests.Response
             logging.error(err_msg)
             raise APIError(err_msg)
 
-def publish_draft(url: str, token: str) -> requests.Response:
+def publish_draft(url: str, token: str, record_id: str) -> requests.Response:
     """Publish the specified draft on InvenioRDM
 
     Args:
         url (str): url route to draft to be published base_url/api/records/{record_id}/draft/actions/publish
         token (str): User personal access token
+        record_id(str): Id of record to be prepared for file upload
 
     Returns:
         requests.Response: Publish response object
@@ -236,16 +245,19 @@ def publish_draft(url: str, token: str) -> requests.Response:
     """
     
     #sanitise incoming data
-    valid_url_pattern = rf".*/api/records/[^/]+/draft/actions/publish$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/records/record_id/draft/actions/publish. API call terminated."
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
         logging.error(msg)
         raise ClientError(msg)
-
+    
     header = {"Authorization": f"Bearer {token}"}
+    
+    if url.endswith('/'):
+        url = url[:-1]
+    publish_url = url + f"/api/records/{record_id}/draft/actions/publish"
 
     try:
-        response = requests.post(url, headers=header)
+        response = requests.post(publish_url, headers=header)
         response.raise_for_status() #raise exception for bad status codes
         
         if response.status_code == 202:
@@ -260,12 +272,13 @@ def publish_draft(url: str, token: str) -> requests.Response:
         logging.error(err_msg)
         raise APIError(err_msg)
 
-def delete_draft(url: str, token: str) -> requests.Response:
+def delete_draft(url: str, token: str, record_id: str) -> requests.Response:
     """Delete a draft record
 
     Args:
-        draft_url (str): url location of draft record base_url/api/records/{record_id}/draft
+        url (str): Base url route to the invenio database, of form http:// or https://
         token (str): Personal access token
+        record_id(str): Id of record to be prepared for file upload
 
     Returns:
         requests.Response: Delete response object
@@ -276,16 +289,19 @@ def delete_draft(url: str, token: str) -> requests.Response:
     """
 
     #sanitise incoming data
-    valid_url_pattern = rf".*/api/records/[^/]+/draft$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/records/record_id/draft. API call terminated."
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
         logging.error(msg)
         raise ClientError(msg)
+
+    if url.endswith('/'):
+        url = url[:-1]
+    delete_url = url + f"/api/records/{record_id}/draft"
 
     header = {"Authorization": f"Bearer {token}"}
 
     try:
-        response = requests.delete(url, headers=header)
+        response = requests.delete(delete_url, headers=header)
         response.raise_for_status() #raise exception for bad status codes
 
         if response.status_code == 204:
@@ -304,7 +320,7 @@ def get_community(url:str, token: str,community_slug: str) -> requests.Response:
     """Get community specified by the community slug or id
 
     Args:
-        url (str): url to communities base_url/api/communities/community-id
+        url (str): Base url route to the invenio database, of form http:// or https://
         token (str): Personal access token
         community_slug (str): Community url slug or uuid
 
@@ -317,16 +333,19 @@ def get_community(url:str, token: str,community_slug: str) -> requests.Response:
     """
     
     #sanitise incoming data
-    valid_url_pattern = rf".*/api/communities/{community_slug}$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/communities/community-id. API call terminated."
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
         logging.error(msg)
         raise ClientError(msg)
 
     header = {"Authorization": f"Bearer {token}"}
 
+    if url.endswith('/'):
+        url = url[:-1]
+    community_url = url + f"/api/communities/{community_slug}"
+
     try:
-        response = requests.get(url,headers=header)
+        response = requests.get(community_url,headers=header)
         response.raise_for_status()
 
         if response.status_code == 200:
@@ -341,13 +360,14 @@ def get_community(url:str, token: str,community_slug: str) -> requests.Response:
         logging.error(err_msg)
         raise APIError(err_msg)
 
-def submit_record_to_community(url: str,token: str,community_uuid:str) -> requests.Request:
+def submit_record_to_community(url: str,token: str,community_uuid:str, record_id:str) -> requests.Request:
     """Submit a record to a specified community
 
     Args:
-        url (str): Record review url base_url/api/records/{record_id}/draft/review
+        url (str): Base url route to the invenio database, of form http:// or https://
         token (str): Personal access token
         community_uuid (str): Community UUID
+        record_id(str): Id of record to be prepared for file upload
 
     Returns:
         requests.Request: Community submission response
@@ -358,11 +378,14 @@ def submit_record_to_community(url: str,token: str,community_uuid:str) -> reques
     """
     
     #sanitise incoming data
-    valid_url_pattern = rf".*/api/records/[^/]+/draft/review$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/records/record_id/draft/review. API call terminated."
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
         logging.error(msg)
         raise ClientError(msg)
+
+    if url.endswith('/'):
+        url = url[:-1]
+    community_url = url + f"/api/records/{record_id}/draft/review"
 
     header = {
         "Content-Type": "application/json",
@@ -377,11 +400,11 @@ def submit_record_to_community(url: str,token: str,community_uuid:str) -> reques
     }
 
     try:
-        response = requests.put(url,headers=header,json=body)
+        response = requests.put(community_url,headers=header,json=body)
         response.raise_for_status()
 
         if response.status_code == 200:
-            _log_debug_response(f"Successfully submitted record {url} to community {community_uuid}",response)
+            _log_debug_response(f"Successfully submitted record {record_id} to community {community_uuid}",response)
             return response
         else:
             err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
@@ -392,12 +415,13 @@ def submit_record_to_community(url: str,token: str,community_uuid:str) -> reques
         logging.error(err_msg)
         raise APIError(err_msg)
 
-def submit_record_for_review(url: str,token: str,payload: Dict[str,str]) -> requests.Response:
+def submit_record_for_review(url: str,token: str,record_id: str,payload: Dict[str,str]) -> requests.Response:
     """Once record is submmitted to community, submit it now for review
 
     Args:
-        base_url (str): Base url base_url/api/records/{record_id}/draft/actions/submit-review
+        url (str): Base url route to the invenio database, of form http:// or https://
         token (str): Personal access token
+        record_id(str): Id of record to be prepared for file upload
         payload(str): Contains content and format
         
     Returns:
@@ -409,22 +433,25 @@ def submit_record_for_review(url: str,token: str,payload: Dict[str,str]) -> requ
     """
     
     #sanitise incoming data
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+    
     if not _is_valid_comment_payload(payload):
         msg = f"Current payload {payload} is invalid. Should contain 'content': str and 'format': 'html'"
         logging.error(msg)
         raise ClientError(msg)
-
-    valid_url_pattern = rf".*/api/records/[^/]+/draft/actions/submit-review$"
-    if re.search(valid_url_pattern,url) is None:
-        msg = f"url: {url} is invalid, should be of form base_url/api/records/record_id/draft/review. API call terminated."
-        logging.error(msg)
-        raise ClientError(msg)
         
+    if url.endswith('/'):
+        url = url[:-1]
+    submit_review_url = url + f"/api/records/{record_id}/draft/actions/submit-review"
+
     header = {"Authorization": f"Bearer {token}"}
     body = {"payload": payload}
 
     try: 
-        response = requests.post(url,headers=header,json=body)
+        response = requests.post(submit_review_url,headers=header,json=body)
         response.raise_for_status()
 
         if response.status_code == 202:
@@ -438,25 +465,6 @@ def submit_record_for_review(url: str,token: str,payload: Dict[str,str]) -> requ
         err_msg = f"Request Error: {e}"
         logging.error(err_msg)
         raise APIError(err_msg)
-
-def _is_valid_url(url:str,expected_ending:Optional[str]=None) -> bool:
-    """Check whether url is of correct form i.e. base_url/expected_ending.
-    If expected_ending is empty or None, then expect of form base_url 
-
-    Args:
-        url (str): url to check
-        expected_ending (str): expected ending route
-
-    Returns:
-        bool: Whether the url is a valid API route
-    """
-    if url.endswith('/'):
-        return False
-
-    if expected_ending:
-        return url.endswith(expected_ending)
-    
-    return True
 
 def _log_debug_response(msg: str, response: requests.Response) -> None:
     """Log a debug statement to logger, with message and response.
@@ -520,3 +528,14 @@ def _is_valid_comment_payload(payload: Dict[str,str]) -> bool:
         return False
     
     return True
+
+def _is_valid_base_url(url: str) -> bool:
+    """Check if the base URL is valid (starts with http:// or https://).
+
+    Args:
+        url (str): The URL to check.
+
+    Returns:
+        bool: True if the URL is valid, False otherwise.
+    """
+    return url.startswith("http://") or url.startswith("https://")
