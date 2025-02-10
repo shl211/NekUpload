@@ -74,21 +74,29 @@ def test_valid_create_draft_record(mocker,sample_host_name,sample_metadata, samp
     url = sample_host_name + "/api/records"
     response = invenioAPI.create_record(url,sample_token,metadata=sample_metadata)
 
-    #assert for only information that code needs
+    # check behaviour
     assert response.status_code == 201
-    test_data = response.json()
-    assert(test_data["id"] == sample_record_id)
-    assert(test_data["metadata"] == sample_metadata)
-    assert(test_data["links"]["publish"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish")
-    assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft")
-    assert(test_data["links"]["files"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files")
-    assert(test_data["links"]["review"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/review")
+    assert response.json() == mock_response.json.return_value
 
-    #verify call
+    # verify call
     mock_post.assert_called_once()
-    call_args = mock_post.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_post.call_args  # get all call arguments
+    
+    # Compare URLs
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+
+    # Compare headers
+    called_headers = call_args[1]['headers']
+    expected_headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {sample_token}"
+    }
+    assert called_headers == expected_headers
+
+    # Compare body
+    called_body = call_args[1]['json']
+    assert called_body == sample_metadata
 
 def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -111,25 +119,33 @@ def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,samp
     mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now test api call
-    data = [{"key": "test.txt"}]
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files"
     response = invenioAPI.prepare_file_upload(url,sample_token,["test.txt"])
 
-    #assert for only information that code needs
+    #assert correct behaviour
     assert response.status_code == 201
-    test_data = response.json()
-    file_data = test_data["entries"][0]
-    assert(file_data["key"] == "test.txt")
-    assert(file_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt/content")
-    assert(file_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt")
-    assert(file_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt/commit")
+    assert response.json() == mock_response.json.return_value
 
     #verify call
     mock_post.assert_called_once()
-    call_args = mock_post.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_post.call_args#get all call arguments
+    
+    # Compare URLs
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
 
+    #compare headers
+    called_headers = call_args[1]['headers']
+    expected_headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {sample_token}"
+    }
+    assert called_headers == expected_headers
+
+    #compare body
+    expected_data = [{"key": "test.txt"}]
+    called_body = call_args[1]['json']
+    assert called_body == expected_data
 
 def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -153,19 +169,25 @@ def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content"
     response = invenioAPI.upload_file(url,sample_token,file_path)
 
-    #assert for only information that code needs
+    #assert correct behaviour
     assert response.status_code == 200
-    test_data = response.json()
-    assert(test_data["key"] == file)
-    assert(test_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content")
-    assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}")
-    assert(test_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit")
+    assert response.json() == mock_response.json.return_value
 
     #verify call
     mock_put.assert_called_once()
-    call_args = mock_put.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_put.call_args#get all call arguments
+    
+    #compare url
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+
+    #compare headers, no body for this one
+    called_headers = call_args[1]['headers']
+    expected_headers = {
+        "Content-Type": "application/octet-stream",
+        "Authorization": f"Bearer {sample_token}"
+    }
+    assert called_headers == expected_headers
 
 def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -192,20 +214,22 @@ def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit"
     response = invenioAPI.commit_file_upload(url,sample_token,file)
 
-    #assert for only information that is needed
+    #assert correct behaviour
     assert response.status_code == 200
-    test_data = response.json()
-    assert(test_data["key"] == "test.txt")
-    assert(test_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content")
-    assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}")
-    assert(test_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit")
-
+    assert response.json() == mock_response.json.return_value
+    
     #verify call
     mock_post.assert_called_once()
-    call_args = mock_post.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_post.call_args#get all call arguments
+    
+    #compare urls
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
 
+    #compare headers, no body for this one
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
 
 def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -227,20 +251,22 @@ def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_reco
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish"
     response = invenioAPI.publish_draft(url,sample_token)
 
-    #assert for only information that is needed
+    #assert correct behaviour
     assert response.status_code == 202
-    test_data = response.json()
-    assert test_data["id"] == sample_record_id
-    assert test_data["metadata"] == sample_metadata
-    assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}")
-    assert(test_data["links"]["files"] == f"{sample_host_name}/api/records/{sample_record_id}/files")
+    assert response.json() == mock_response.json.return_value
 
     #verify call
     mock_post.assert_called_once()
-    call_args = mock_post.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_post.call_args#get all call arguments
+    
+    #compare urls
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
 
+    #compare headers, no body to check for this one
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
 
 def test_valid_delete_draft(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -254,14 +280,22 @@ def test_valid_delete_draft(mocker,sample_host_name,sample_record_id,sample_toke
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft"
     response = invenioAPI.delete_draft(url,sample_token)
 
+    #assert correct behaviour
     assert response.status_code == 204
+    assert response.json() == mock_response.json.return_value
 
     #verify call
     mock_delete.assert_called_once()
-    call_args = mock_delete.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_delete.call_args#get all call arguments
+    
+    #compare urls
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
 
+    #compare headers, no body for this one 
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
 
 def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -286,14 +320,22 @@ def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_toke
     url = f"{sample_host_name}/api/communities/{id}"
     response = invenioAPI.get_community(url,sample_token,community_slug)
 
+    #assert correct behaviour
     assert response.status_code == 200
+    assert response.json() == mock_response.json.return_value
 
     #verify call
     mock_get.assert_called_once()
-    call_args = mock_get.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_get.call_args#get all call arguments
+    
+    #compare urls
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
 
+    #compare headers,  no body to check for this
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
 
 def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -321,14 +363,35 @@ def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadat
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/review"
     response = invenioAPI.submit_record_to_community(url,sample_token,community_uuid)
 
+    #assert correct behaviour
     assert response.status_code == 200
+    assert response.json() == mock_response.json.return_value
 
     #verify call
     mock_put.assert_called_once()
-    call_args = mock_put.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_put.call_args#get all call arguments
+    
+    #compare urls
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
 
+    #compare headers
+    called_headers = call_args[1]['headers']
+    expected_headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {sample_token}"
+    }
+    assert called_headers == expected_headers
+
+    #compare body
+    expected_data = {
+        "receiver" : {
+            "community": f"{community_uuid}"
+        },
+        "type": "community-submission"
+    }
+    called_body = call_args[1]['json']
+    assert called_body == expected_data
 
 def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -345,10 +408,24 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,
     }
     response = invenioAPI.submit_record_for_review(url,sample_token,payload)
 
+    #assert correct behaviour
     assert response.status_code == 202
+    assert response.json() == mock_response.json.return_value
 
     #verify call
     mock_post.assert_called_once()
-    call_args = mock_post.call_args[0]
-    called_url = call_args[0]
-    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}" # Compare URLs
+    call_args = mock_post.call_args#get all call arguments
+    
+    #compare urls
+    called_url = call_args[0][0]
+    assert called_url == url, f"Expected URL: {url}, Actual URL: {called_url}"
+
+    #copmare headers
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
+
+    #compare body
+    expected_data = {"payload": payload}
+    called_body = call_args[1]['json']
+    assert called_body == expected_data
