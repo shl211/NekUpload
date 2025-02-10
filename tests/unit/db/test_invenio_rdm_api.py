@@ -429,3 +429,111 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_record_id
     expected_data = {"payload": payload}
     called_body = call_args[1]['json']
     assert called_body == expected_data
+
+def test_valid_get_record(mocker,sample_host_name,sample_metadata, sample_record_id,sample_token):
+    mock_response: requests.Response = mocker.Mock()
+    mock_response.status_code = 200
+    
+    #include critical details in response
+    mock_response.json.return_value = {
+        "metadata": sample_metadata,
+        "id": sample_record_id,
+        "links": {
+            "latest": f"{sample_host_name}/api/records/{sample_record_id}/versions/latest",
+            "versions": f"{sample_host_name}/api/records/{sample_record_id}/versions",
+            "self_html": f"{sample_host_name}/uploads/{sample_record_id}",
+            "publish": f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish",
+            "latest_html": f"{sample_host_name}/records/{sample_record_id}/latest",
+            "self": f"{sample_host_name}/api/records/{sample_record_id}/draft",
+            "files": f"{sample_host_name}/api/records/{sample_record_id}/draft/files",
+            "access_links": f"{sample_host_name}/api/records/{sample_record_id}/access/links",
+            "review": f"{sample_host_name}/api/records/{sample_record_id}/draft/review", #not included in draft docs, but is in quickstart docs
+        }
+    }
+    mock_get = mocker.patch("requests.get",return_value=mock_response)
+
+    #now test api call
+    response = invenioAPI.get_record(sample_host_name,sample_token,sample_record_id)
+
+    # check behaviour
+    assert response.status_code == 200
+    assert response.json() == mock_response.json.return_value
+
+    # verify call
+    mock_get.assert_called_once()
+    call_args = mock_get.call_args  # get all call arguments
+    
+    # Compare URLs
+    expected_url = sample_host_name + f"/api/records/{sample_record_id}/draft"
+    called_url = call_args[0][0]
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
+
+    # Compare headers, no body in this one
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
+
+def test_valid_delete_review_request(mocker,sample_host_name,sample_metadata, sample_record_id,sample_token):
+    mock_response: requests.Response = mocker.Mock()
+    mock_response.status_code = 204
+    
+    #include critical details in response
+    mock_response.json.return_value = {}
+    mock_delete = mocker.patch("requests.delete",return_value=mock_response)
+
+    #now test api call
+    response = invenioAPI.delete_review_request(sample_host_name,sample_token,sample_record_id)
+
+    # check behaviour
+    assert response.status_code == 204
+    assert response.json() == mock_response.json.return_value
+
+    # verify call
+    mock_delete.assert_called_once()
+    call_args = mock_delete.call_args  # get all call arguments
+    
+    # Compare URLs
+    expected_url = sample_host_name + f"/api/records/{sample_record_id}/draft/review"
+    called_url = call_args[0][0]
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
+
+    # Compare headers, no body in this one
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
+
+def test_valid_cancel_review_request(mocker,sample_host_name,sample_metadata, sample_record_id,sample_token):
+    mock_response: requests.Response = mocker.Mock()
+    mock_response.status_code = 200
+    
+    #include critical details in response
+    mock_response.json.return_value = {}
+    mock_post = mocker.patch("requests.post",return_value=mock_response)
+
+    #now test api call
+    request_id = "1234"
+    payload = {"content": "Didn't mean to do that!", "format": "html"}
+    response = invenioAPI.cancel_review_request(sample_host_name,sample_token,request_id,payload)
+
+    # check behaviour
+    assert response.status_code == 200
+    assert response.json() == mock_response.json.return_value
+
+    # verify call
+    mock_post.assert_called_once()
+    call_args = mock_post.call_args  # get all call arguments
+    
+    # Compare URLs
+    expected_url = sample_host_name + f"/api/requests/{request_id}/actions/cancel"
+    called_url = call_args[0][0]
+    assert called_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {called_url}"
+
+    # Compare headers, no body in this one
+    called_headers = call_args[1]['headers']
+    expected_headers = {"Authorization": f"Bearer {sample_token}"}
+    assert called_headers == expected_headers
+
+    #compare body
+    expected_data = {"payload": payload}
+    called_body = call_args[1]['json']
+    assert called_body == expected_data

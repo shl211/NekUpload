@@ -1,8 +1,7 @@
 import logging
-from typing import Dict,Any,Optional,Union,List
+from typing import Dict,Any,List
 import requests
 from .custom_exceptions import APIError,ClientError
-import re
 import os
 
 """
@@ -466,6 +465,142 @@ def submit_record_for_review(url: str,token: str,record_id: str,payload: Dict[st
         logging.error(err_msg)
         raise APIError(err_msg)
 
+def get_record(url: str, token: str, record_id: str) -> requests.Response:
+    """Get record associated with record_id
+
+    Args:
+        url (str): Base url route to the invenio database, of form http:// or https://
+        token (str): Personal access token
+        record_id(str): Id of desired record
+        
+    Returns:
+        requests.Response: Record review submission response
+    
+    Raises:
+        APIError: If an error occurs during the API call. 
+        ClientError: If an error occurs due to invalid message parameters
+    """
+    #sanitise incoming data
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+
+    if url.endswith('/'):
+        url = url[:-1]
+    draft_url = url + f"/api/records/{record_id}/draft"
+
+    header = {"Authorization": f"Bearer {token}"}
+    
+    try: 
+        response = requests.get(draft_url,headers=header)
+        response.raise_for_status()
+
+        if response.status_code == 200:
+            _log_debug_response(f"Record {record_id} acquired",response)
+            return response
+        else:
+            err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
+            logging.error(err_msg)
+            raise APIError(err_msg,response=response)     
+    except requests.exceptions.RequestException as e:
+        err_msg = f"Request Error: {e}"
+        logging.error(err_msg)
+        raise APIError(err_msg)    
+
+def delete_review_request(url:str,token:str,record_id:str) -> requests.Response:
+    """Get community review request associated with record_id
+
+    Args:
+        url (str): Base url route to the invenio database, of form http:// or https://
+        token (str): Personal access token
+        record_id(str): Id of desired record
+        
+    Returns:
+        requests.Response: Record review submission response
+    
+    Raises:
+        APIError: If an error occurs during the API call. 
+        ClientError: If an error occurs due to invalid message parameters
+    """
+    #sanitise incoming data
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+
+    if url.endswith('/'):
+        url = url[:-1]
+    review_url = url + f"/api/records/{record_id}/draft/review"
+
+    header = {"Authorization": f"Bearer {token}"}
+
+    try: 
+        response = requests.delete(review_url,headers=header)
+        response.raise_for_status()
+
+        if response.status_code == 204:
+            _log_debug_response(f"Record {record_id} acquired",response)
+            return response
+        else:
+            err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
+            logging.error(err_msg)
+            raise APIError(err_msg,response=response)     
+    except requests.exceptions.RequestException as e:
+        err_msg = f"Request Error: {e}"
+        logging.error(err_msg)
+        raise APIError(err_msg)   
+
+def cancel_review_request(url:str,token:str,request_id:str,payload: Dict[str,str]) -> requests.Response:
+    """Cancel a user-submitted review request. Only request's creator can cancel it
+
+    Args:
+        url (str): Base url route to the invenio database, of form http:// or https://
+        token (str): Personal access token
+        request_id(str): Id of request
+        payload(str): Contains content and format
+
+    Returns:
+        requests.Response: Record review submission response
+    
+    Raises:
+        APIError: If an error occurs during the API call. 
+        ClientError: If an error occurs due to invalid message parameters
+    """
+    #sanitise incoming data
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+    
+    if not _is_valid_comment_payload(payload):
+        msg = f"Current payload {payload} is invalid. Should contain 'content': str and 'format': 'html'"
+        logging.error(msg)
+        raise ClientError(msg)
+        
+    if url.endswith('/'):
+        url = url[:-1]
+    cancel_request = url + f"/api/requests/{request_id}/actions/cancel"
+
+    header = {"Authorization": f"Bearer {token}"}
+    body = {"payload": payload}
+
+    try: 
+        response = requests.post(cancel_request,headers=header,json=body)
+        response.raise_for_status()
+
+        if response.status_code == 200:
+            _log_debug_response(f"Request {request_id} cancelled.",response)
+            return response
+        else:
+            err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
+            logging.error(err_msg)
+            raise APIError(err_msg,response=response)     
+    except requests.exceptions.RequestException as e:
+        err_msg = f"Request Error: {e}"
+        logging.error(err_msg)
+        raise APIError(err_msg)   
+    
 def _log_debug_response(msg: str, response: requests.Response) -> None:
     """Log a debug statement to logger, with message and response.
     Will take form msg: response. For long responses, they are shortened when logged. 

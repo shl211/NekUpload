@@ -16,6 +16,9 @@ class invenioRDM(db):
         #community uuid extracted from get_community
         self.community_uuid: str = None
 
+        #acquired after submitting request to community
+        self.request_id: str = None
+
     def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],community_id: str) -> None:  
         """Upload files to an InvenioRDM repository and submit to community for review
 
@@ -50,7 +53,8 @@ class invenioRDM(db):
             #get community uuid, then submit record to communtiy for review
             community_request = invenioAPI.get_community(url,token,community_id)
             self._handle_community_response(community_request)
-            invenioAPI.submit_record_to_community(url,token,self.community_uuid,self.record_id)
+            create_review_request_response = invenioAPI.submit_record_to_community(url,token,self.community_uuid,self.record_id)
+            self._handle_create_review_request_response(create_review_request_response)
 
             payload = {
                 "content": "This record was submitted via the Nektar++ validation and upload pipeline",
@@ -102,8 +106,18 @@ class invenioRDM(db):
         data = response.json()
         self.community_uuid = data["id"]
 
+    def _handle_create_review_request_response(self,response: requests.Response) -> None:
+        """Handles create review request response
+
+        Args:
+            response (requests.Response): Create review request response
+        """
+        data = response.json()
+        self.request_id = data["id"]
+
     def _clear(self) -> None:
         """Reset internal state of the invenioRDM uploader
         """
         self.record_id = None
         self.community_uuid = None
+        self.request_id = None

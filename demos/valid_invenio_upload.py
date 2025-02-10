@@ -5,7 +5,6 @@ from memory_profiler import profile
 
 #integration test for uploading files
 #this one should fail, and draft deleted
-#on test instance, no record should be shown
 #@profile #uncomment for memory profiler
 def demo():
     load_dotenv()
