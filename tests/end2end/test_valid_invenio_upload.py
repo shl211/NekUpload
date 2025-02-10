@@ -9,6 +9,12 @@ import socket
 
 @pytest.fixture()
 def load_env() -> Tuple[str,str,str]:
+    URL,TOKEN,COMMUNITY_SLUG = load_env_helper()
+
+    return URL,TOKEN,COMMUNITY_SLUG
+
+#does exact same thing as fixture, but this is for pytest.mark.skipif condition
+def load_env_helper()-> Tuple[str,str,str]:
     load_dotenv()
     
     #currently use Invenio RDM demo instance
@@ -18,20 +24,20 @@ def load_env() -> Tuple[str,str,str]:
 
     return URL,TOKEN,COMMUNITY_SLUG
 
-@pytest.fixture
-def has_internet():
+def has_internet_helper() -> bool:
+    URL,_,_ = load_env_helper()
     try:
         # Try to open a connection using requests (more robust)
-        requests.get("http://www.google.com", timeout=5) 
+        requests.get(URL, timeout=5) 
         return True
     except (requests.exceptions.RequestException, socket.timeout):
         return False
-
-#@pytest.mark.skipif(
-#    any(x is None for x in load_env) or not has_internet(),  # Combined condition
-#    reason="Missing required environment variables or no internet connection"
-#)
-#@pytest.mark.skip
+    
+#test skipped if no internet or server unavailable or no environment variables
+@pytest.mark.skipif(
+    any(x is None for x in load_env_helper()) or not has_internet_helper(),  # Combined condition
+    reason="Missing required environment variables or no internet connection"
+)
 def test_valid_invenio_upload(load_env):
     URL,TOKEN,COMMUNITY_SLUG = load_env
     
