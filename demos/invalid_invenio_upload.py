@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from NekUpload.db import invenioRDM
+from NekUpload.uploadModule import invenioRDM
 
 #integration test for uploading files
 #this one should fail, and draft deleted

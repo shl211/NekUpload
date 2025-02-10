@@ -1,4 +1,4 @@
-import NekUpload.db.invenio_rdm_api as invenioAPI
+import NekUpload.uploadModule.invenio_rdm_api as invenioAPI
 import pytest
 from typing import Dict,Any
 import requests

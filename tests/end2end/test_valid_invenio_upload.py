@@ -1,8 +1,8 @@
 import pytest
 from dotenv import load_dotenv
 import os
-from NekUpload.db import invenioRDM
-import NekUpload.db.invenio_rdm_api as invenioAPI 
+from NekUpload.uploadModule import invenioRDM
+import NekUpload.uploadModule.invenio_rdm_api as invenioAPI 
 from typing import Tuple
 import requests
 import socket

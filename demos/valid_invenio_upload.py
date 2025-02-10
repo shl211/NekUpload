@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from NekUpload.db import invenioRDM
+from NekUpload.uploadModule import invenioRDM
 from memory_profiler import profile
 
 #integration test for uploading files

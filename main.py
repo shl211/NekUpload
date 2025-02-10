@@ -1,4 +1,4 @@
-from NekUpload.db.invenio_db import invenioRDM
+from NekUpload.uploadModule.invenio_db import invenioRDM
 from dotenv import load_dotenv
 import os
 
