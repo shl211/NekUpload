@@ -1,9 +1,8 @@
+import NekUpload.db.invenio_rdm_api as invenioAPI
 import pytest
-import requests
-from NekUpload.db import invenioRDM
 from typing import Dict,Any
+import requests
 
-#here we unit test each individual api call, even if they are private functions
 @pytest.fixture
 def sample_metadata() -> Dict[str,Any]:
     metadata =  {
@@ -49,6 +48,42 @@ def sample_host_name() -> str:
 def sample_token() -> str:
     return "token12345"
 
+def test_valid_create_draft_record(mocker,sample_host_name,sample_metadata, sample_record_id,sample_token):
+    mock_response: requests.Response = mocker.Mock()
+    mock_response.status_code = 201
+    
+    #include critical details in response
+    mock_response.json.return_value = {
+        "metadata": sample_metadata,
+        "id": sample_record_id,
+        "links": {
+            "latest": f"{sample_host_name}/api/records/{sample_record_id}/versions/latest",
+            "versions": f"{sample_host_name}/api/records/{sample_record_id}/versions",
+            "self_html": f"{sample_host_name}/uploads/{sample_record_id}",
+            "publish": f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish",
+            "latest_html": f"{sample_host_name}/records/{sample_record_id}/latest",
+            "self": f"{sample_host_name}/api/records/{sample_record_id}/draft",
+            "files": f"{sample_host_name}/api/records/{sample_record_id}/draft/files",
+            "access_links": f"{sample_host_name}/api/records/{sample_record_id}/access/links",
+            "review": f"{sample_host_name}/api/records/{sample_record_id}/draft/review", #not included in draft docs, but is in quickstart docs
+        }
+    }
+    mocker.patch("requests.post",return_value=mock_response)
+
+    #now test api call
+    url = sample_host_name + "/api/records"
+    response = invenioAPI.create_record(url,sample_token,metadata=sample_metadata)
+
+    #assert for only information that code needs
+    assert response.status_code == 201
+    test_data = response.json()
+    assert(test_data["id"] == sample_record_id)
+    assert(test_data["metadata"] == sample_metadata)
+    assert(test_data["links"]["publish"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish")
+    assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft")
+    assert(test_data["links"]["files"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files")
+    assert(test_data["links"]["review"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/review")
+
 def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 201
@@ -70,10 +105,9 @@ def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,samp
     mocker.patch("requests.post",return_value=mock_response)
 
     #now test api call
-    db = invenioRDM()
     data = [{"key": "test.txt"}]
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files"
-    response = db._prepare_upload(url,sample_token,"test.txt")
+    response = invenioAPI.prepare_file_upload(url,sample_token,["test.txt"])
 
     #assert for only information that code needs
     assert response.status_code == 201
@@ -84,10 +118,6 @@ def test_valid_prepare_file_upload(mocker,sample_host_name,sample_record_id,samp
     assert(file_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt")
     assert(file_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/files/text.txt/commit")
 
-@pytest.mark.skip
-def test_invalid_prepare_file_upload(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
-    pass
-
 def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 200
@@ -96,7 +126,7 @@ def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token
     file = "ADR_2D_TriQuad.xml"
     file_path = f"datasets/ADRSolver/{file}" #relative to tests root
     mock_response.json.return_value = {
-        "key": "test.txt",
+        "key": file,
         "status": "pending",
         "links": {
             "content": f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content",
@@ -107,22 +137,16 @@ def test_valid_upload_file(mocker,sample_host_name,sample_record_id,sample_token
     mocker.patch("requests.put",return_value=mock_response)
 
     #now test api call
-    db = invenioRDM()
-    data = [{"key": "test.txt"}]
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content"
-    response = db._do_upload(url,sample_token,file_path)
+    response = invenioAPI.upload_file(url,sample_token,file_path)
 
     #assert for only information that code needs
     assert response.status_code == 200
     test_data = response.json()
-    assert(test_data["key"] == "test.txt")
+    assert(test_data["key"] == file)
     assert(test_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content")
     assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}")
     assert(test_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit")
-
-@pytest.mark.skip
-def test_invalid_upload_file(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
-    pass
 
 def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -146,9 +170,8 @@ def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token
     mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
-    db = invenioRDM()
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit"
-    response = db._commit_upload(url,sample_token,file_path)
+    response = invenioAPI.commit_file_upload(url,sample_token,file)
 
     #assert for only information that is needed
     assert response.status_code == 200
@@ -157,10 +180,6 @@ def test_valid_commit_file(mocker,sample_host_name,sample_record_id,sample_token
     assert(test_data["links"]["content"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/content")
     assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}")
     assert(test_data["links"]["commit"] == f"{sample_host_name}/api/records/{sample_record_id}/draft/files/{file}/commit")
-
-@pytest.mark.skip
-def test_invalid_commit_file(mocker,sample_host_name,sample_record_id,sample_token):
-    pass
 
 def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -179,9 +198,8 @@ def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_reco
     mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
-    db = invenioRDM()
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/actions/publish"
-    response = db._publish_draft(url,sample_token)
+    response = invenioAPI.publish_draft(url,sample_token)
 
     #assert for only information that is needed
     assert response.status_code == 202
@@ -191,11 +209,7 @@ def test_valid_publish_draft(mocker,sample_host_name,sample_metadata,sample_reco
     assert(test_data["links"]["self"] == f"{sample_host_name}/api/records/{sample_record_id}")
     assert(test_data["links"]["files"] == f"{sample_host_name}/api/records/{sample_record_id}/files")
 
-@pytest.mark.skip
-def test_invalid_publish_draft(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
-    pass
-
-def test_valid_delete_draft(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
+def test_valid_delete_draft(mocker,sample_host_name,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 204
 
@@ -204,17 +218,12 @@ def test_valid_delete_draft(mocker,sample_host_name,sample_metadata,sample_recor
     mocker.patch("requests.delete",return_value=mock_response)
 
     #now make api call
-    db = invenioRDM()
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft"
-    response = db._delete_draft(url,sample_token)
+    response = invenioAPI.delete_draft(url,sample_token)
 
     assert response.status_code == 204
 
-@pytest.mark.skip
-def test_invalid_delete_draft(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
-    pass
-
-def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
+def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 200
     
@@ -234,21 +243,16 @@ def test_valid_get_community(mocker,sample_host_name,sample_metadata,sample_reco
     mocker.patch("requests.get",return_value=mock_response)
 
     #now make api call
-    db = invenioRDM()
     url = f"{sample_host_name}/api/communities/{id}"
-    response = db._get_community(url,sample_token,community_slug)
+    response = invenioAPI.get_community(url,sample_token,community_slug)
 
     assert response.status_code == 200
-
-@pytest.mark.skip
-def test_invalid_get_community(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
-    pass
 
 def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
     mock_response.status_code = 200
 
-    #keep most relevasnte data
+    #keep most relevant data
     request_id = "12345"
     community_uuid = "a1b2c3"
     mock_response.json.return_value = {
@@ -267,15 +271,10 @@ def test_valid_submit_record_to_community(mocker,sample_host_name,sample_metadat
     mocker.patch("requests.put",return_value=mock_response)
 
     #now make api call
-    db = invenioRDM()
     url = f"{sample_host_name}/api/records/{sample_record_id}/draft/review"
-    response = db._submit_record_to_community(url,sample_token,community_uuid)
+    response = invenioAPI.submit_record_to_community(url,sample_token,community_uuid)
 
     assert response.status_code == 200
-    
-@pytest.mark.skip
-def test_invalid_submit_record_to_community(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
-    pass
 
 def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
     mock_response: requests.Response = mocker.Mock()
@@ -285,11 +284,11 @@ def test_valid_submit_record_for_review(mocker,sample_host_name,sample_metadata,
     mocker.patch("requests.post",return_value=mock_response)
 
     #now make api call
-    db = invenioRDM()
-    response = db._submit_record_for_review(sample_host_name,sample_token)
+    url = sample_host_name + f"/api/records/{sample_record_id}/draft/actions/submit-review"
+    payload = {
+        "content": "TEST",
+        "format": "html"
+    }
+    response = invenioAPI.submit_record_for_review(url,sample_token,payload)
 
     assert response.status_code == 202
-
-@pytest.mark.skip
-def test_invalid_submit_record_for_review(mocker,sample_host_name,sample_metadata,sample_record_id,sample_token):
-    pass
