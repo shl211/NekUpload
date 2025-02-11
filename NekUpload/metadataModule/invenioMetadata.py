@@ -14,7 +14,7 @@ class InvenioMetadata(Metadata):
         self.info: Dict[str,Any] = {
             "title": title,
             "publication_date": publication_date,
-            "resource_type": resource_type,
+            "resource_type": {"id": resource_type},
             "creators": creators_payload
         }
 
