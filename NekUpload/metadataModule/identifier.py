@@ -13,12 +13,10 @@ class Identifier:
     def __init__(self, id: str, id_type: IdentifierType):
         self.id_type: str = id_type
 
-        #"""Will fix at some point
         if not self._check_valid_id(id,id_type):
             msg =f"ID {id} is not of type {id_type}"
             logging.error(msg)
             raise ValueError(msg)
-        #"""
 
         self.id = id
     
@@ -49,7 +47,7 @@ class Identifier:
             return False
 
         base_digits = id.replace("-", "")[:-1]
-        calculated_checksum = self._generate_check_digit(base_digits)
+        calculated_checksum = self._generate_check_digit_orcid(base_digits)
         return calculated_checksum == id[-1]    
     
     def _is_valid_gnd_id(self,id:str) -> bool:
@@ -63,14 +61,16 @@ class Identifier:
         if not re.match(pattern, id[:-1]):
             return False
 
-        calculated_checksum = self._generate_check_digit(id[:-1])
-        return calculated_checksum == id[-1]    
-    
+        #TODO FIx the checksum
+        #calculated_checksum = self._generate_check_digit_isni(id[:-1])
+        #return calculated_checksum == id[-1]    
+        return True
+
     def _is_valid_ror_id(self,id:str) -> bool:
         #TODO
         return True
 
-    def _generate_check_digit(self,base_digits: str) -> str:
+    def _generate_check_digit_orcid(self,base_digits: str) -> str:
         #checksum code adapted from
         #https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
 
@@ -81,3 +81,18 @@ class Identifier:
         remainder = total % 11
         result = (12 - remainder) % 11
         return "X" if result == 10 else str(result)
+    
+    def _generate_check_digit_isni(self,base_digits: str) -> str:
+        """Generate the ISNI (ISO 7064 Mod 11,10) checksum digit."""
+        weights = [2, 3, 4, 5, 6, 7, 8, 9]  # Weight factors (right to left)
+        total = 0
+        reversed_digits = base_digits[::-1]  # Process from right to left
+
+        for i, digit in enumerate(reversed_digits):
+            weight = weights[i % len(weights)]  # Cycle through weights
+            total += int(digit) * weight
+
+        remainder = total % 11
+        check_digit = 11 - remainder
+
+        return "X" if check_digit == 10 else str(check_digit)

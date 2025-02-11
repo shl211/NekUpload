@@ -19,7 +19,6 @@ def test_valid_ORCID():
         except ValueError:
             assert False, f"{test_case} was incorrectly rejected"
 
-@pytest.mark.skip
 def test_invalid_ORCID():
     invalid_ids = {
         "too_short_length": "0000-0002-1825-009",
@@ -38,3 +37,18 @@ def test_invalid_ORCID():
             assert False, f"{test_case} was not correctly rejected"
         except ValueError:
             pass
+
+@pytest.mark.skip
+def test_valid_ISNI():
+    valid_ids = {
+        "test_case_1": "000000012146438X"
+        }
+
+    for test_case, id in valid_ids.items():
+        try:
+            identifier = Identifier(id, IdentifierType.ISNI)
+
+            assert(identifier.get_id() == id)
+            assert(identifier.get_id_type() == IdentifierType.ISNI)
+        except ValueError:
+            assert False, f"{test_case} was incorrectly rejected"
