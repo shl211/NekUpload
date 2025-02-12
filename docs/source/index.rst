@@ -3,13 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-NekUpload documentation
+NekUpload Documentation
 =======================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+**NekUpload** is a Python package for uploading `Nektar++ <https://nektar.info>`_ datasets to a specified database. Automated validation and metadata extraction will occur, and the datasets will be submitted to the database admin for review. There are multiple ways to utilise the program. Users can utilise this with an interactive GUI for local file uploads. For larger file uploads, it is recommended that shell scripting be used for submission to HPC systems.
 
+.. note::
+   This project is under active development.
 
 .. toctree::
    :maxdepth: 2
