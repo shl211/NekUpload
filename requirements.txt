@@ -9,3 +9,4 @@ lxml
 requests
 python-dotenv
 memory_profiler
+sphinx==8.1.3
