@@ -18,4 +18,5 @@ NekUpload Documentation
    :caption: Contents:
 
    usage
+   developer
    api

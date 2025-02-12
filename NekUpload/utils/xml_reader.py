@@ -21,6 +21,13 @@ class XMLReader:
         self.tree = None
 
     def get_structure(self) -> List[str]:
+        """_summary_
+
+        :raises XMLReaderException: _description_
+        :return: _description_
+        :rtype: List[str]
+        """
+        
         if not self.tree:
             raise XMLReaderException("XML tree is not loaded.")
         
