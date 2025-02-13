@@ -17,8 +17,11 @@ class NekUploadGUI:
         #static fields
         self.title: StringVar = StringVar()
         self.publication_date: StringVar = StringVar()
-        self.is_api_key_exist: StringVar = StringVar()
-        self.is_host_name_exist: StringVar = StringVar()
+
+        self.is_read_user_guide: StringVar = StringVar()
+        self.api_key_env_var: StringVar = StringVar()
+        self.host_name: StringVar = StringVar()
+        self.community_slug: StringVar = StringVar()
 
         #dynamic fields
         self.dirname: StringVar = StringVar()
@@ -68,18 +71,29 @@ class NekUploadGUI:
         static_fields_frame: ttk.Labelframe = ttk.Labelframe(self.mainframe,text="Basic Info")
         static_fields_frame.grid(column=0, row=1, sticky=(N, W, E, S))
 
-        #tick box to serve as reminder for user to set API key environment variable
-        api_key_check: ttk.Checkbutton = ttk.Checkbutton(static_fields_frame,text="Have you set environment variable NEKTAR_DB_API_KEY?",
-                                       command=None,variable=self.is_api_key_exist,
-                                       onvalue="True",offvalue="False",
-                                       )
-        api_key_check.grid(row=1,column=0,sticky=W,padx=5,pady=.5)
-
         #tick box to serve as reminder for user to set host name environment variable
-        host_name_check: ttk.Checkbutton = ttk.Checkbutton(static_fields_frame,text="Have you set environment variable NEKTAR_DB_HOST?",
-                                       command=None,variable=self.is_host_name_exist,
+        read_user_info_check: ttk.Checkbutton = ttk.Checkbutton(static_fields_frame,text="Have you read User Guide for setting up environment variables?",
+                                       command=None,variable=self.is_read_user_guide,
                                        onvalue="True",offvalue="False")
-        host_name_check.grid(row=2,column=0,sticky=W,padx=5,pady=.5)
+        read_user_info_check.grid(row=0,column=0,sticky=W,padx=5,pady=.5)
+
+        #ask user for what the environment variables are for the api key
+        api_key_env_label = ttk.Label(static_fields_frame,text="Environment Variable for API Key: ")
+        api_key_env_label.grid(row=1,column=0,sticky=W,padx=5,pady=.5)
+        api_key_entry = ttk.Entry(static_fields_frame,textvariable=self.api_key_env_var)
+        api_key_entry.grid(row=1,column=1,sticky=E,padx=5,pady=.5)
+
+        #ask user for host name
+        host_label = ttk.Label(static_fields_frame,text="Host Name URL: ")
+        host_label.grid(row=2,column=0,sticky=W,padx=5,pady=.5)
+        host_name_entry = ttk.Entry(static_fields_frame,textvariable=self.host_name)
+        host_name_entry.grid(row=2,column=1,sticky=E,padx=5,pady=.5)
+
+        #ask user for community url slug
+        community_label = ttk.Label(static_fields_frame,text="Community (URL slug or UUID): ")
+        community_label.grid(row=3,column=0,sticky=W,padx=5,pady=.5)
+        community_entry = ttk.Entry(static_fields_frame,textvariable=self.community_slug)
+        community_entry.grid(row=3,column=1,sticky=E,padx=5,pady=.5)
 
         #ask for title of the dataset
         title_label: ttk.Label = ttk.Label(static_fields_frame, text="Title: ")
@@ -401,10 +415,16 @@ class NekUploadGUI:
 
     def submit_form(self) -> None: 
         
+        is_read_user_guide = self.is_read_user_guide.get()
+        if not is_read_user_guide or is_read_user_guide == "False":
+            print("ERROR")
+            return
+        print(is_read_user_guide)
+
         title: str = self.title.get()
         publication_date: str = self.publication_date.get()
-
-        #ASSIGN USERS        
+        
+        #ASSIGN USERS
         author_list: List[InvenioOrgInfo | InvenioPersonInfo] = []
         for author in self.authors:
             author_info: InvenioOrgInfo | InvenioPersonInfo = None
@@ -440,28 +460,18 @@ class NekUploadGUI:
         #first see if dirname is empty, if not, use directory to upload
         upload_manager = invenioRDM()
         
+        URL = self.host_name.get()
+        COMMUNITY_SLUG = self.community_slug.get()
+        API_KEY_ENV_VAR = self.api_key_env_var.get()
+
+        load_dotenv()
         if dirname:
-            print("DIRECTORY UPLOAD")
             files_to_upload = [os.path.join(dirname, f) for f in os.listdir(dirname) if os.path.isfile(os.path.join(dirname, f))]
-            #hard code these paths for now, in future may ask user to specify the environment variable to extract
-            URL = os.getenv("INVENIO_RDM_DEMO_URL",None)
-            TOKEN = os.getenv("INVENIO_RDM_DEMO_TOKEN",None)
-            COMMUNITY_SLUG = os.getenv("INVENIO_RDM_TEST_COMMUNITY_SLUG",None)
-            
-            upload_manager.upload_files(URL,TOKEN,files_to_upload,metadata_json,COMMUNITY_SLUG)
+            upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),files_to_upload,metadata_json,COMMUNITY_SLUG)
         elif file_list:
-            print("FILES UPLOAD")
-            #hard code these paths for now, in future may ask user to specify the environment variable to extract
-            URL = os.getenv("INVENIO_RDM_DEMO_URL",None)
-            TOKEN = os.getenv("INVENIO_RDM_DEMO_TOKEN",None)
-            COMMUNITY_SLUG = os.getenv("INVENIO_RDM_TEST_COMMUNITY_SLUG",None)
-            
-            upload_manager.upload_files(URL,TOKEN,file_list,metadata_json,COMMUNITY_SLUG)
-            
+            upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),file_list,metadata_json,COMMUNITY_SLUG)
         else:
             print("Failed to upload as no files detected")
-
-
 
 def main() -> None:
     root: Tk = Tk() 
