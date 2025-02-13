@@ -16,8 +16,9 @@ class NekUploadGUI:
 
         #dynamic fields
         self.dirname: StringVar = StringVar()
+        self.filenames: Variable = Variable()
         self.dir_label: ttk.Label = None #created in dynamic fields frame
-
+        self.file_listbox: Listbox = None
 
         self.create_header_frame()
         self.create_static_fields_frame()
@@ -89,23 +90,31 @@ class NekUploadGUI:
         return today.isoformat()
 
     def create_dynamic_fields_frame(self) -> None:
-        dynamic_fields_frame: ttk.Frame = ttk.Frame(self.mainframe)  
-        dynamic_fields_frame.grid(column=1, row=1, sticky=(E))
+        dynamic_fields_frame: ttk.LabelFrame = ttk.LabelFrame(self.mainframe,text="Author(s)")  
+        dynamic_fields_frame.grid(column=1, row=1, sticky=(N,S))
 
-        placeholder_label: ttk.Label = ttk.Label(dynamic_fields_frame, text="PLACEHOLDER") 
-        placeholder_label.grid(row=0, column=0, sticky=W)
+        #allow addition of author as a person
+        create_author_person_button: ttk.Button = ttk.Button(dynamic_fields_frame,text="Create Person",command=self._create_author_person)
+        create_author_person_button.grid(row=0,column=0,sticky=W)
+
+        #allow additiong of author as an organisation
+        create_author_org_button: ttk.Button = ttk.Button(dynamic_fields_frame,text="Create Org",command=self._create_author_org)
+        create_author_org_button.grid(row=0,column=1,sticky=W)
+
+    def _create_author_person(self) -> None:
+        print("Create Person")
+    
+    def _create_author_org(self) -> None:
+        print("Create Organisation")
 
     def _create_directory_upload_frame(self,parent:ttk.Frame) -> ttk.Frame:
         file_selector_frame: ttk.Frame = ttk.Frame(parent) 
         file_selector_frame.grid(column=0, row=2, columnspan=2, sticky=(N,E,S,W))
 
-        file_header_label: ttk.Label = ttk.Label(file_selector_frame, text="Select Dataset")
-        file_header_label.grid(column=0, row=0, sticky=W)
-
         find_dir_button: ttk.Button = ttk.Button(
             file_selector_frame,
             text="Select Directory",
-            command=self._select_directory #
+            command=self._select_directory
         )
         find_dir_button.grid(column=0, row=0, sticky=W)
 
@@ -114,13 +123,41 @@ class NekUploadGUI:
 
         return file_selector_frame
 
+    def _create_files_upload_frame(self,parent:ttk.Frame) -> ttk.Frame:
+        file_selector_frame: ttk.Frame = ttk.Frame(parent) 
+        file_selector_frame.grid(column=0, row=2, columnspan=2, sticky=(N,E,S,W))
+
+        # Configure grid weights for the frame's columns and rows
+        file_selector_frame.grid_rowconfigure(0, weight=1)  # Row with Listbox expands
+        file_selector_frame.grid_columnconfigure(2, weight=1)  # Column with Listbox expands
+
+        find_files_button: ttk.Button = ttk.Button(
+            file_selector_frame,
+            text="Select Files",
+            command=self._select_files_listbox
+        )
+        find_files_button.grid(column=0, row=0, sticky=W)
+
+        #set up list box with scroller for displaying files
+        self.file_listbox: Listbox = Listbox(file_selector_frame,selectmode=MULTIPLE)
+        scrollbar: Scrollbar = Scrollbar(file_selector_frame,command=self.file_listbox.yview)
+        scrollbar_horizontal: Scrollbar = Scrollbar(file_selector_frame,command=self.file_listbox.xview,orient=HORIZONTAL) #help view full path 
+        self.file_listbox.config(yscrollcommand=scrollbar.set,xscrollcommand=scrollbar_horizontal.set)
+        scrollbar.config(command=self.file_listbox.yview)
+        scrollbar_horizontal.config(command=self.file_listbox.xview)
+        self.file_listbox.grid(row=0,column=2,sticky=(N,S,E,W))
+        scrollbar.grid(row=0,column=3,sticky=(N,S))
+        scrollbar_horizontal.grid(row=1,column=2,sticky=(W,E))
+
+        return file_selector_frame
+
     def create_file_selector_frame(self) -> None:
-        n = ttk.Notebook(self.mainframe)
+        n: ttk.Notebook = ttk.Notebook(self.mainframe)
         f1 = self._create_directory_upload_frame(n)
-        f2 = ttk.Frame(n)
+        f2 = self._create_files_upload_frame(n)
         n.add(f1,text="Upload by Directory")
         n.add(f2,text="Upload by Files")
-        n.grid(row=5,column=0)
+        n.grid(row=5,column=0,sticky=(E,W))
 
     def _select_directory(self) -> None:
         selected_dir = filedialog.askdirectory()
@@ -132,6 +169,40 @@ class NekUploadGUI:
             self.dirname.set("")
             self.dir_label.config(text="Selected Directory: None")  # Update text
             print("No directory selected")
+    
+    def _select_files_listbox(self) -> None:
+            selected_files = filedialog.askopenfilenames(title="Select Files",
+                                                filetypes=(("Nektar Files",("*.xml","*.nekg","*.fld","*.fce","*.chk"),),
+                                                ("Supporting Files",("*.pdf","*.png","*.jpg",".jpegs")),
+                                                ("All Files","*.*"),),    
+                                            )
+
+            #insert files in listbox
+            self.filenames = selected_files
+            if selected_files:
+                self.file_listbox.delete(0,END)
+                for file in selected_files:
+                    self.file_listbox.insert(END,file)
+                print(f"filenames.get(): {self.filenames}")
+            else:
+                self.filenames=()
+                print("No Files Selected")
+
+    def _select_files(self) -> None:
+        selected_files = filedialog.askopenfilenames(title="Select Files",
+                                                filetypes=(("Nektar Files",("*.xml","*.nekg","*.fld","*.fce","*.chk"),),
+                                                ("Supporting Files",("*.pdf","*.png","*.jpg",".jpegs")),
+                                                ("All Files","*.*"),),    
+                                            )
+        
+        if selected_files:
+            self.filenames = selected_files
+            formatted_filenames = "\n".join(selected_files) # Format to multiple lines
+            self.files_label.config(text=f"Selected Files:\n{formatted_filenames}")
+        else:
+            self.filenames = ()
+            self.files_label.config(text="Selected Files: None")  # Update text
+            print("No Files selected")
 
     def submit_form(self) -> None: 
         print(self.title.get()) 
