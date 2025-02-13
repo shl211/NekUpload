@@ -3,6 +3,12 @@ from tkinter import filedialog
 from tkinter import ttk #holds the more modern widgets
 from datetime import date
 
+from typing import List
+from NekUpload.metadataModule import *
+from NekUpload.uploadModule import invenioRDM
+import os
+from dotenv import load_dotenv
+
 class NekUploadGUI:
     def __init__(self,root: Tk) -> None:
         self.root: Tk = root
@@ -394,9 +400,68 @@ class NekUploadGUI:
                 print("No Files Selected")
 
     def submit_form(self) -> None: 
-        print(self.title.get()) 
-        print(self.publication_date.get())
-        print(self.dirname.get())        
+        
+        title: str = self.title.get()
+        publication_date: str = self.publication_date.get()
+
+        #ASSIGN USERS        
+        author_list: List[InvenioOrgInfo | InvenioPersonInfo] = []
+        for author in self.authors:
+            author_info: InvenioOrgInfo | InvenioPersonInfo = None
+            
+            if author["type"] == "personal":
+                given_name = author["given_name"]
+                last_name = author["last_name"]
+                author_info = InvenioPersonInfo(given_name,last_name)
+            elif author["type"] == "organizational":
+                name = author["name"]
+                author_info = InvenioOrgInfo(name)
+
+            if author["id"] != "":
+                mapping = {"ORCID" : IdentifierType.ORCID}
+                id = Identifier(author["id"],mapping[author["id_type"]])
+                author_info.add_identifier(id)
+                
+            #also affiliations, but not supported in backend for now
+            author_list.append(author_info)
+
+        #create metadata
+        metadata = InvenioMetadata(title,publication_date,author_list,"dataset")
+        metadata.add_publisher("NekUpload App")
+        metadata.add_description("This was uploaded via NekUpload app")
+        metadata_payload = metadata.get_metadata_payload()
+        metadata_json = {"metadata": metadata_payload}
+        print(metadata_json)
+
+        #only one of the following is not empty
+        dirname = self.dirname.get()
+        file_list = [self.file_listbox.get(i) for i in range(self.file_listbox.size())]
+
+        #first see if dirname is empty, if not, use directory to upload
+        upload_manager = invenioRDM()
+        
+        if dirname:
+            print("DIRECTORY UPLOAD")
+            files_to_upload = [os.path.join(dirname, f) for f in os.listdir(dirname) if os.path.isfile(os.path.join(dirname, f))]
+            #hard code these paths for now, in future may ask user to specify the environment variable to extract
+            URL = os.getenv("INVENIO_RDM_DEMO_URL",None)
+            TOKEN = os.getenv("INVENIO_RDM_DEMO_TOKEN",None)
+            COMMUNITY_SLUG = os.getenv("INVENIO_RDM_TEST_COMMUNITY_SLUG",None)
+            
+            upload_manager.upload_files(URL,TOKEN,files_to_upload,metadata_json,COMMUNITY_SLUG)
+        elif file_list:
+            print("FILES UPLOAD")
+            #hard code these paths for now, in future may ask user to specify the environment variable to extract
+            URL = os.getenv("INVENIO_RDM_DEMO_URL",None)
+            TOKEN = os.getenv("INVENIO_RDM_DEMO_TOKEN",None)
+            COMMUNITY_SLUG = os.getenv("INVENIO_RDM_TEST_COMMUNITY_SLUG",None)
+            
+            upload_manager.upload_files(URL,TOKEN,file_list,metadata_json,COMMUNITY_SLUG)
+            
+        else:
+            print("Failed to upload as no files detected")
+
+
 
 def main() -> None:
     root: Tk = Tk() 
