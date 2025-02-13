@@ -50,6 +50,13 @@ class invenioRDM(db):
                 invenioAPI.commit_file_upload(url,token,self.record_id,filename)
                 logging.info(f"File {file} has been uploaded and committed to record {self.record_id}")
 
+        except Exception as e:
+            invenioAPI.delete_draft(url,token,self.record_id)
+            logging.info(f"Record draft {self.record_id} has been deleted due to error: {e}")
+            raise
+
+        #now try submitting to community, if fails here, ask user to manuallyu submit to community
+        try:
             #get community uuid, then submit record to communtiy for review
             community_request = invenioAPI.get_community(url,token,community_id)
             self._handle_community_response(community_request)
@@ -64,10 +71,9 @@ class invenioRDM(db):
             invenioAPI.submit_record_for_review(url,token,self.record_id,payload)
             logging.info(f"Record {self.record_id} has been submitted to community {self.community_uuid} for review")
         except Exception as e:
-            invenioAPI.delete_draft(url,token,self.record_id)
-            logging.info(f"Record draft {self.record_id} has been deleted due to error: {e}")
+            logging.info(f"Failed to submit to community, please manually attempt on IvenioRDM, due to error: {e}")
             raise
-    
+
     def _get_community_uuid(self) -> str:
         """Get community UUID
 
