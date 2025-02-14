@@ -43,7 +43,7 @@ To run the GUI application, execute the following command:
 
 .. code-block::
 
-    nekupload
+    nekupload-app
 
 .. note::
     If this fails, check that your **tkinter** version is greater than v8.5. Python installations are usually bundled with this version. To update your **tkinter** version, see `TkDocs <https://tkdocs.com/tutorial/install.html>`_ for upgrading.

@@ -1,5 +1,5 @@
 from abc import ABC,abstractmethod
-from typing import Dict,Any,List,Set
+from typing import Dict,Any,List,Set,Type
 import logging
 from .identifier import Identifier,IdentifierType
 
@@ -73,6 +73,9 @@ class InvenioPersonInfo(UserInfo):
     def get_info(self) -> Dict[str,Any]:
         return self.info
     
+    def __str__(self):
+        return f"Person: {self.info['given_name']} {self.info['family_name']}"
+
 class InvenioOrgInfo(UserInfo):
     """_summary_
 
@@ -122,3 +125,6 @@ class InvenioOrgInfo(UserInfo):
 
         self.id_schemes.add(id_type)
         self.info.setdefault("identifiers", []).append(id_payload)
+
+    def __str__(self):
+        return f"Organisation: {self.info['name']}"

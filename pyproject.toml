@@ -34,4 +34,5 @@ classifiers = [
 nektar = "https://nektar.info"
 
 [project.scripts]
-nekupload = "NekUpload.app:main"
+nekupload-app = "NekUpload.app:main"
+nekupload = "NekUpload.cli:main"
