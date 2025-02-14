@@ -52,3 +52,26 @@ def test_valid_ISNI():
             assert(identifier.get_id_type() == IdentifierType.ISNI)
         except ValueError:
             assert False, f"{test_case} was incorrectly rejected"
+
+def test_serialisation():
+    id = "0000-0001-5109-3700"
+    identifier = Identifier(id, IdentifierType.ORCID)
+
+    json = identifier.to_json_serialisable()
+    json_expected = {
+        "id": id,
+        "id_type": "orcid"
+    }
+
+    assert json == json_expected
+
+def test_deserialisation():
+    json = {
+        "id": "0000-0001-5109-3700",
+        "id_type": "orcid"
+    }
+
+    identifier = Identifier.from_json(json)
+
+    assert identifier.id == json["id"]
+    assert identifier.id_type == IdentifierType.ORCID

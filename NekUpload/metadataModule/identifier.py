@@ -2,6 +2,7 @@ from abc import ABC,abstractmethod
 from enum import Enum
 import re
 import logging
+from typing import Dict,Any,Type
 
 class IdentifierType(Enum):
     ORCID = "orcid"
@@ -11,7 +12,7 @@ class IdentifierType(Enum):
 
 class Identifier:
     def __init__(self, id: str, id_type: IdentifierType):
-        self.id_type: str = id_type
+        self.id_type: IdentifierType = id_type
 
         if not self._check_valid_id(id,id_type):
             msg =f"ID {id} is not of type {id_type}"
@@ -20,6 +21,32 @@ class Identifier:
 
         self.id = id
     
+    def to_json_serialisable(self) -> Dict[str,Any]:
+        """_summary_
+
+        Returns:
+            Dict[str,Any]: _description_
+        """
+        return {
+            "id": self.id,
+            "id_type": self.id_type.value
+        }
+
+    @classmethod
+    def from_json(cls: Type['Identifier'],data: Dict[str,Any]) -> 'Identifier':
+        id = data["id"]
+        id_type_value = data["id_type"]
+        print(id_type_value)
+        try:
+            id_type = IdentifierType(id_type_value)
+        except ValueError:
+            msg = f"Invalid identifier type: {id_type_value}"
+            logging.error(msg)
+            raise ValueError(msg)
+
+        return cls(id, id_type)  # Create and return the Identifier object
+        
+
     def get_id_type(self) -> IdentifierType:
         return self.id_type
     
