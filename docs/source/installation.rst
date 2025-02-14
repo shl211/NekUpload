@@ -45,7 +45,7 @@ To install the NekUpload package, run:
 
 .. code-block:: console
 
-   pip install -r requirements.txt .
+   pip install .
 
 To test whether the installation is successful, run the test suite with
 
@@ -61,4 +61,3 @@ Next Steps
 ----------
 
 There are currently two entry points for executing the upload and validation pipeline. An app with GUI interface is provided for local file uploads. This is designed for small file uploads. For larger datasets it is recommended to utilise shell scripting and submit to a HPC system.
-
