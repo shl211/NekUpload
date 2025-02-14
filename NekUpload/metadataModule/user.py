@@ -34,18 +34,18 @@ class InvenioPersonInfo(UserInfo):
         Raises:
             TypeError: _description_
         """
-        self.id_schemes: Set[IdentifierType] = set()
 
         if not isinstance(given_name, str) or not isinstance(family_name, str):
             msg = "Given name and family name must be strings."
             logging.error(msg)
             raise TypeError(msg)
         
-        self.info: Dict[str, Any] = {
-            "type": "personal",
-            "given_name": given_name, 
-            "family_name": family_name
-            }
+        self.id_schemes: Set[IdentifierType] = set()
+
+        self.type: str = "personal"
+        self.given_name: str = given_name
+        self.family_name: str = family_name
+        self.identifiers: List[Identifier] = []
 
     def add_identifier(self,identifier: Identifier) -> None:
         """_summary_
@@ -56,25 +56,42 @@ class InvenioPersonInfo(UserInfo):
         Raises:
             ValueError: _description_
         """
-        id: str = identifier.get_id()
         id_type: IdentifierType = identifier.get_id_type()
-
-        id_payload = {
-            "scheme": id_type.value.lower(),
-            "identifier": id
-        }
         
         if id_type in self.id_schemes:
-            raise ValueError(f"Cannot have duplicate identifiers of same type for one person {id_type}")        
+            raise ValueError(f"Cannot have duplicate identifiers of same type for one organisation {id_type}")        
 
         self.id_schemes.add(id_type)
-        self.info.setdefault("identifiers", []).append(id_payload)
+        self.identifiers.append(identifier)
 
     def get_info(self) -> Dict[str,Any]:
-        return self.info
+        """_summary_
+
+        Returns:
+            Dict[str,Any]: _description_
+        """
+
+        identifier_payload = []
+        for identifier in self.identifiers:
+            payload = {
+                "scheme": identifier.get_id_type().value.lower(),
+                "identifier": identifier.get_id()
+            }
+            identifier_payload.append(payload)
+
+        data = {
+            "type": self.type,
+            "given_name": self.given_name,
+            "family_name": self.family_name,
+        }
+
+        if identifier_payload != []:
+            data["identifiers"] = identifier_payload 
+
+        return data
     
     def __str__(self):
-        return f"Person: {self.info['given_name']} {self.info['family_name']}"
+        return f"Person: {self.given_name} {self.family_name}"
 
 class InvenioOrgInfo(UserInfo):
     """_summary_
@@ -89,11 +106,9 @@ class InvenioOrgInfo(UserInfo):
             name (str): _description_
         """
         self.id_schemes: Set[IdentifierType] = set()
-        
-        self.info: Dict[str,Any] = {
-            "type": "organizational",
-            "name": name
-        }
+        self.type: str = "organizational"
+        self.name: str = name
+        self.identifiers: List[Identifier] = []
 
     def get_info(self) -> Dict[str,Any]:
         """_summary_
@@ -101,7 +116,24 @@ class InvenioOrgInfo(UserInfo):
         Returns:
             Dict[str,Any]: _description_
         """
-        return self.info
+
+        identifier_payload = []
+        for identifier in self.identifiers:
+            payload = {
+                "scheme": identifier.get_id_type().value.lower(),
+                "identifier": identifier.get_id()
+            }
+            identifier_payload.append(payload)
+
+        data = {
+            "type": self.type,
+            "name": self.name,
+        }
+
+        if identifier_payload != []:
+            data["identifiers"] = identifier_payload 
+
+        return data
     
     def add_identifier(self,identifier: Identifier) -> None:
         """_summary_
@@ -112,19 +144,13 @@ class InvenioOrgInfo(UserInfo):
         Raises:
             ValueError: _description_
         """
-        id: str = identifier.get_id()
         id_type: IdentifierType = identifier.get_id_type()
-
-        id_payload = {
-            "scheme": id_type.value.lower(),
-            "identifier": id
-        }
         
         if id_type in self.id_schemes:
             raise ValueError(f"Cannot have duplicate identifiers of same type for one organisation {id_type}")        
 
         self.id_schemes.add(id_type)
-        self.info.setdefault("identifiers", []).append(id_payload)
+        self.identifiers.append(identifier)
 
     def __str__(self):
-        return f"Organisation: {self.info['name']}"
+        return f"Organisation: {self.name}"
