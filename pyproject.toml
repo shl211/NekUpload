@@ -36,3 +36,8 @@ nektar = "https://nektar.info"
 [project.scripts]
 nekupload-app = "NekUpload.app:main"
 nekupload = "NekUpload.cli:main"
+
+[tool.pytest.ini_options]
+log_cli = false
+log_cli_level = "DEBUG"
+testpaths = ["tests"]
