@@ -30,3 +30,6 @@ classifiers = [
 
 [project.urls]
 nektar = "https://nektar.info"
+
+[project.scripts]
+nekupload = "NekUpload.app:main"
