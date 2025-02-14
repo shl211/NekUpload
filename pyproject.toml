@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "NekUpload"
+dynamic = ["version"]
+authors = [
+    { name="Stephen Liu", email="stephen.liu21@imperial.ac.uk" },
+]
+description = "Upload and validation pipeline for Nektar++ datasets to an online repository"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "h5py",
+    "lxml",
+    "requests",
+    "python-dotenv",
+    "iniconfig",
+    "packaging",
+    "pytest",
+    "pytest-mock",
+    "memory_profiler",
+    "click"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+]
+
+[project.urls]
+nektar = "https://nektar.info"
+
+
+[tools.setuptools.dynamic]
+version = {attr = "NekUpload.__version__"} #read from __init__.py
