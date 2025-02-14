@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "NekUpload"
-dynamic = ["version"]
+version = "0.1.0"
 authors = [
     { name="Stephen Liu", email="stephen.liu21@imperial.ac.uk" },
 ]
@@ -30,7 +30,3 @@ classifiers = [
 
 [project.urls]
 nektar = "https://nektar.info"
-
-
-[tools.setuptools.dynamic]
-version = {attr = "NekUpload.__version__"} #read from __init__.py
