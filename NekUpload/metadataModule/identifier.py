@@ -36,7 +36,7 @@ class Identifier:
     def from_json(cls: Type['Identifier'],data: Dict[str,Any]) -> 'Identifier':
         id = data["id"]
         id_type_value = data["id_type"]
-        print(id_type_value)
+
         try:
             id_type = IdentifierType(id_type_value)
         except ValueError:

@@ -1,5 +1,5 @@
 from abc import ABC,abstractmethod
-from typing import Dict,Any,List,Set,Type
+from typing import Dict,Any,List,Set,Union
 import logging
 from .identifier import Identifier,IdentifierType
 
@@ -17,6 +17,22 @@ class UserInfo(ABC):
             Dict[str,Any]: _description_
         """
         pass
+
+    @classmethod
+    @abstractmethod
+    def from_json(cls,data: Dict[str,Any]) -> Union['InvenioOrgInfo','InvenioPersonInfo']:
+        """Factory method for deserialising. 
+
+        Args:
+            data (Dict[str,Any]): _description_
+
+        Returns:
+            UserInfo: _description_
+        """
+        if data["type"] == "personal":
+            return  InvenioPersonInfo.from_json(data)
+        elif data["type"] == "organizational":
+            return InvenioOrgInfo.from_json(data)
 
 class InvenioPersonInfo(UserInfo):
     """_summary_
@@ -98,8 +114,12 @@ class InvenioPersonInfo(UserInfo):
             "type": self.type,
             "given_name": self.given_name,
             "family_name": self.family_name,
-            "identifiers": [id.to_json_serialisable() for id in self.identifiers]
         }
+
+        #do not add empty fields
+        identifiers = [id.to_json_serialisable() for id in self.identifiers]
+        if identifiers != []:
+            data["identifiers"] = identifiers
 
         return data
     
@@ -107,7 +127,9 @@ class InvenioPersonInfo(UserInfo):
     def from_json(cls,data: Dict[str,Any]) -> 'InvenioPersonInfo':
         given_name = data["given_name"]
         family_name = data["family_name"]
-        identifiers: List[Identifier] = [Identifier.from_json(id) for id in data["identifiers"]]
+
+        data_identifiers = data.get("identifiers",[])#in case not present in dict
+        identifiers: List[Identifier] = [Identifier.from_json(id) for id in data_identifiers]
         
         person = InvenioPersonInfo(given_name,family_name)
 
@@ -177,3 +199,30 @@ class InvenioOrgInfo(UserInfo):
 
     def __str__(self):
         return f"Organisation: {self.name}"
+    
+    def to_json_serialisable(self):
+        data = {
+            "type": self.type,
+            "name": self.name,
+        }
+
+        #do not add empty fields
+        identifiers = [id.to_json_serialisable() for id in self.identifiers]
+        if identifiers != []:
+            data["identifiers"] = identifiers
+
+        return data
+    
+    @classmethod
+    def from_json(cls,data: Dict[str,Any]) -> 'InvenioOrgInfo':
+        name = data["name"]
+
+        data_identifiers = data.get("identifiers",[])#in case not present in dict
+        identifiers: List[Identifier] = [Identifier.from_json(id) for id in data_identifiers]
+        
+        org = InvenioOrgInfo(name)
+
+        for identifier in identifiers:
+            org.add_identifier(identifier)
+
+        return org
