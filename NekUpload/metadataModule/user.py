@@ -93,6 +93,29 @@ class InvenioPersonInfo(UserInfo):
     def __str__(self):
         return f"Person: {self.given_name} {self.family_name}"
 
+    def to_json_serialisable(self):
+        data = {
+            "type": self.type,
+            "given_name": self.given_name,
+            "family_name": self.family_name,
+            "identifiers": [id.to_json_serialisable() for id in self.identifiers]
+        }
+
+        return data
+    
+    @classmethod
+    def from_json(cls,data: Dict[str,Any]) -> 'InvenioPersonInfo':
+        given_name = data["given_name"]
+        family_name = data["family_name"]
+        identifiers: List[Identifier] = [Identifier.from_json(id) for id in data["identifiers"]]
+        
+        person = InvenioPersonInfo(given_name,family_name)
+
+        for identifier in identifiers:
+            person.add_identifier(identifier)
+
+        return person
+
 class InvenioOrgInfo(UserInfo):
     """_summary_
 

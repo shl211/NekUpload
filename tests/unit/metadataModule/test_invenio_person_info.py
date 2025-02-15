@@ -54,3 +54,46 @@ def test_add_duplicate_identifiers():
 @pytest.mark.skip
 def test_add_two_identifier_types():
     pass
+
+def test_serialisation():
+    given_name = "John"
+    family_name = "Smith"
+
+    user_info = InvenioPersonInfo(given_name,family_name)
+    
+    #create an identifier
+    orcid = "0000-0002-1694-233X"
+    identifier = Identifier(orcid,IdentifierType.ORCID)
+
+    user_info.add_identifier(identifier)
+
+    json: Dict[str,Any] = user_info.to_json_serialisable()
+
+    json_expected = {
+        "type": "personal",
+        "given_name": given_name,
+        "family_name": family_name,
+        "identifiers": [identifier.to_json_serialisable()]
+    }
+
+    assert json == json_expected
+
+def test_deserialisation():    
+    #create an identifier
+    orcid = "0000-0002-1694-233X"
+    identifier = Identifier(orcid,IdentifierType.ORCID)
+
+    json = {
+        "type": "personal",
+        "given_name": "John",
+        "family_name": "Smith",
+        "identifiers": [identifier.to_json_serialisable()]
+    }
+
+    person = InvenioPersonInfo.from_json(json)
+
+    assert person.given_name == json["given_name"]
+    assert person.family_name == json["family_name"]
+    assert len(person.identifiers) == 1
+    assert person.identifiers[0].id == identifier.get_id()
+    assert person.identifiers[0].id_type == identifier.get_id_type()
