@@ -7,3 +7,4 @@
 nekupload add-author-person "John" "Doe" --orcid "0000-0002-1825-0097"
 nekupload add-info "TEST SHELL SUBCOMMANDS"
 nekupload upload --host $INVENIO_RDM_DEMO_URL --api-key $INVENIO_RDM_DEMO_TOKEN --community-slug $INVENIO_RDM_TEST_COMMUNITY_SLUG -f valid_invenio_upload.py
+rm config.json #clean up after test

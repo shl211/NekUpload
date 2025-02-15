@@ -15,8 +15,12 @@ class Config:
     authors: List[InvenioOrgInfo | InvenioPersonInfo] = field(default_factory=list)
     metadata: InvenioMetadata = None
 
+    CONTEXT_FILE: pathlib.Path = "config.json"
+
     def to_json(self):
-        data = {}
+        data = {
+            "CONTEXT_FILE": str(self.CONTEXT_FILE)
+        }
         
         #only jsonify non empty data
         if self.metadata:
@@ -31,6 +35,8 @@ class Config:
     def from_json(cls,data: Dict[str,Any]) -> 'Config':
         config = Config()
         
+        config.CONTEXT_FILE = pathlib.Path(data["CONTEXT_FILE"])
+
         if metadata := data.get("metadata",None):
             config.metadata = InvenioMetadata.from_json(metadata)
 
@@ -41,36 +47,25 @@ class Config:
 
 @click.group()
 @click.option("--config","-c",type=click.Path(dir_okay=False, path_type=pathlib.Path),default="config.json",help="Use specified config file, defaults to config.json")
-@click.option("--clear",is_flag=True,help="Clear the specified configuration")
 @click.pass_context
-def cli(ctx: click.Context, config, clear):
-    
-    CONTEXT_FILE = config
-        
-    if clear:
-        ctx.obj = Config()
-        click.echo("Configuration cleared")
-        ctx.call_on_close(lambda: save_config(ctx,CONTEXT_FILE))
-        
-        if os.path.exists(CONTEXT_FILE):
-            os.remove(CONTEXT_FILE)
-            click.echo(f"Deleted {CONTEXT_FILE}")
-
+def cli(ctx: click.Context, config: pathlib.Path):
+    ctx.ensure_object(Config)
     try:
-        with open(CONTEXT_FILE,"r") as f:
+        with open(config,"r") as f:
             ctx.obj = Config.from_json(json.load(f))
     except FileNotFoundError:
         ctx.obj = Config()
     except json.JSONDecodeError:
-        click.echo(f"Warning: Could not parse {CONTEXT_FILE}. Starting with a fresh config.")
+        click.echo(f"Warning: Could not parse {config}. Starting with a fresh config.")
         ctx.obj = Config()
 
-    ctx.call_on_close(lambda: save_config(ctx,CONTEXT_FILE))
+    ctx.obj.CONTEXT_FILE = config
+    ctx.call_on_close(lambda: save_config(ctx,config))
 
-def save_config(ctx: click.Context,file: str):
-    with open(file, "w") as f:
+def save_config(ctx: click.Context,config_file: pathlib.Path):
+    with open(config_file, "w") as f:
         json.dump(ctx.obj.to_json(), f, indent=4)
-    click.echo(f"Config saved to {file}")
+    click.echo(f"Config saved to {config_file}")
 
 @cli.command()
 @click.argument('given_name')
