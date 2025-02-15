@@ -9,6 +9,8 @@ import json
 import os
 import pathlib
 import yaml
+from ruamel.yaml import YAML
+from io import StringIO
 
 @dataclass
 class Config:
@@ -45,13 +47,6 @@ class Config:
             config.authors = [UserInfo.from_json(author) for author in authors]
 
         return config
-
-    @staticmethod
-    def yaml_quickstart():
-        
-        
-        
-        pass
 
     @classmethod
     def from_yaml(cls,data: Dict[str,Any]) -> 'Config':
@@ -289,6 +284,81 @@ def read_yaml_file(filepath):
         print(f"Error parsing YAML: {e}")
         return None
 
+@cli.command()
+@click.option("--name", "-n", help="Create a yaml configuration template for user with specified name", default="config.yaml")
+def quickstart(name: str):
+    """Creates a template configuration file for nekupload"""
+
+    today = date.today().isoformat()
+
+    yaml_data = {
+        'metadata': {
+            'title': '<TITLE HERE>',
+            'publication_date': f'{today}',
+            'authors': [
+                {
+                    'type': 'personal',
+                    'given_name': '<NAME>',
+                    'family_name': '<SURNAME>',
+                    'identifiers': {
+                        'orcid': 'xxxx-xxxx-xxxx-xxxx'
+                    }
+                },
+                {
+                    'type': 'organizational',
+                    'name': 'Imperial College London'
+                }
+            ],
+            'description': 'This is the description'
+        },
+        'upload': {
+            'files': [
+                'YOUR FILES HERE',
+                'YOUR FILES HERE'
+            ],
+            'directories': [
+                'DIRECTORY CONTAINING FILES'
+            ]
+        },
+        'database': {
+            'host_name': '<YOUR_HOST_NAME_HERE>',
+            'api_key': '<YOUR_API_KEY_HERE>',
+            'community_slug': '<YOUR_COMMUNITY_SLUG>'
+        }
+    }
+
+    yaml_obj = YAML()
+    yaml_obj.preserve_quotes = True
+
+    # Ensure proper indentation
+
+    # God (GPT) knows what happens after this point for commenting 
+    # Convert to CommentedMap using StringIO
+    stream = StringIO()
+    yaml_obj.dump(yaml_data, stream)
+    yaml_data = yaml_obj.load(stream.getvalue())
+
+    # Add comments
+    yaml_data.yaml_set_comment_before_after_key('metadata', before='This is a template with minimum required descriptors and some key optionals')
+    yaml_data.yaml_set_comment_before_after_key('metadata', before='Mandatory fields are denoted with <>')
+    yaml_data.yaml_set_comment_before_after_key('metadata', before='Refer to documentation for more detail')
+
+    metadata = yaml_data['metadata']
+    metadata.yaml_set_comment_before_after_key('publication_date', before='Defaults to today, of form "YYYY-MM-DD" in string format')
+    metadata.yaml_set_comment_before_after_key('authors', before='Can have multiple person or oraganisation as authors, edit/delete as neccesary')
+
+    metadata["authors"][0].yaml_set_comment_before_after_key("identifiers",before="Identifiers are optional, only orcid is supported")
+    metadata["authors"][0].yaml_set_comment_before_after_key("identifiers",before="Delete identifiers if not needed")
+
+    yaml_data.yaml_set_comment_before_after_key('upload', before='Specify files and directories containing files to upload here')
+    yaml_data.yaml_set_comment_before_after_key('upload', before='Edit/delete as necessary')
+
+    yaml_data.yaml_set_comment_before_after_key('database', before='Information for InvenioRDM database connection')
+
+    
+
+    with open(name, "w") as f:
+        yaml_obj.dump(yaml_data, f)
 
 def main():#Entry point
     cli()
