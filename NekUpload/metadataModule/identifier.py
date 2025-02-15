@@ -123,3 +123,12 @@ class Identifier:
         check_digit = 11 - remainder
 
         return "X" if check_digit == 10 else str(check_digit)
+
+    def __eq__(self, other: 'Identifier') -> bool:
+        if not isinstance(other,Identifier):
+            return False
+        
+        return (
+            self.id_type == other.id_type and
+            self.id == other.id
+        )

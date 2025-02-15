@@ -97,3 +97,46 @@ def test_deserialisation():
     assert len(person.identifiers) == 1
     assert person.identifiers[0].id == identifier.get_id()
     assert person.identifiers[0].id_type == identifier.get_id_type()
+
+def test_same():
+    given_name = "Winston"
+    last_name = "Churchill"
+
+    person1 = InvenioPersonInfo(given_name,last_name)
+    person2 = InvenioPersonInfo(given_name,last_name)
+
+    assert person1 == person2
+
+    orcid = "0000-0002-1694-233X"
+    identifier = Identifier(orcid,IdentifierType.ORCID)
+
+    person1.add_identifier(identifier)
+    person2.add_identifier(identifier)
+
+    assert person1 == person2
+
+def test_diff_case1():
+    given_name1 = "Josef"
+    last_name1 = "Stalin"
+    given_name2 = "Adolf"
+    last_name2 = "Hitler"
+
+    person1 = InvenioPersonInfo(given_name1,last_name1)
+    person2 = InvenioPersonInfo(given_name2,last_name2)
+
+    assert person1 != person2
+
+def test_diff_case2():
+    given_name = "Josef"
+    last_name = "Stalin"
+
+    person1 = InvenioPersonInfo(given_name,last_name)
+    person2 = InvenioPersonInfo(given_name,last_name)
+
+    id1 = "0000-0001-5109-3700"
+    id2 = "0000-0002-1825-0097"
+
+    person1.add_identifier(Identifier(id1,IdentifierType.ORCID))
+    person2.add_identifier(Identifier(id2,IdentifierType.ORCID))
+
+    assert person1 != person2

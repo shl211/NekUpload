@@ -86,3 +86,42 @@ def test_deserialisation():
     assert len(org.identifiers) == 1
     assert org.identifiers[0].id == identifier.get_id()
     assert org.identifiers[0].id_type == identifier.get_id_type()
+
+def test_same():
+    name = "UCL"
+
+    org1 = InvenioOrgInfo(name)
+    org2 = InvenioOrgInfo(name)
+
+    assert org1 == org2
+
+    orcid = "0000-0002-1694-233X"
+    identifier = Identifier(orcid,IdentifierType.ORCID)
+
+    org1.add_identifier(identifier)
+    org2.add_identifier(identifier)
+
+    assert org1 == org2
+
+def test_diff_case1():
+    name1 = "UCL"
+    name2 = "KCL"
+
+    org1 = InvenioOrgInfo(name1)
+    org2 = InvenioOrgInfo(name2)
+
+    assert org1 != org2
+
+def test_diff_case2():
+    name = "UCL"
+
+    org1 = InvenioOrgInfo(name)
+    org2 = InvenioOrgInfo(name)
+
+    id1 = "0000-0001-5109-3700"
+    id2 = "0000-0002-1825-0097"
+
+    org1.add_identifier(Identifier(id1,IdentifierType.ORCID))
+    org2.add_identifier(Identifier(id2,IdentifierType.ORCID))
+
+    assert org1 != org2

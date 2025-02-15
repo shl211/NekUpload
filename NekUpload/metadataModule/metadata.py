@@ -21,3 +21,12 @@ class Metadata:
     @abstractmethod
     def add_publisher(self, publisher: str) -> None:
         pass
+
+    @abstractmethod
+    def to_json_serialisable(self) -> Dict[str,Any]:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_json(cls,data: Dict[str,Any]) -> 'Metadata':
+        pass

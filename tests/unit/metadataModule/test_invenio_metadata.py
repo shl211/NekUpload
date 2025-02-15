@@ -105,3 +105,49 @@ def test_add_publisher(default_metadata):
     metadata_payload = metadata.get_metadata_payload()
 
     assert metadata_payload["publisher"] == publisher
+
+def test_serialisation():    
+    title = "TEST TITLE"
+    publication_date = "2020-11-10"
+    creator1 = InvenioPersonInfo("Boris","Johnson")
+    creators = [creator1]
+
+    metadata = InvenioMetadata(title,publication_date,creators)
+
+    #add one optional field
+    description = "This is a test description"
+    metadata.add_description(description)
+
+    #test
+    json = metadata.to_json_serialisable()
+
+    json_expected = {
+        "title": title,
+        "publication_date": publication_date,
+        "creators": [creator1.to_json_serialisable()],
+        "resource_type": "dataset",
+        "description": description
+    }
+
+    assert json == json_expected
+
+def test_deserialisation():
+    title = "TEST TITLE"
+    publication_date = "2020-11-10"
+    creator1 = InvenioPersonInfo("Boris","Johnson")
+    version = "v1.2.3"
+
+    json = {
+        "title": title,
+        "publication_date": publication_date,
+        "creators": [creator1.to_json_serialisable()],
+        "resource_type": "dataset",
+        "version": version
+    }
+
+    data = InvenioMetadata.from_json(json)
+
+    assert data.title == title
+    assert data.publication_date == publication_date
+    assert data.version == version
+    assert data.creators == [creator1]

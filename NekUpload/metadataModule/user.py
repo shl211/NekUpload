@@ -18,6 +18,10 @@ class UserInfo(ABC):
         """
         pass
 
+    @abstractmethod
+    def to_json_serialisable(self) -> Dict[str,Any]:
+        pass
+
     @classmethod
     @abstractmethod
     def from_json(cls,data: Dict[str,Any]) -> Union['InvenioOrgInfo','InvenioPersonInfo']:
@@ -33,6 +37,10 @@ class UserInfo(ABC):
             return  InvenioPersonInfo.from_json(data)
         elif data["type"] == "organizational":
             return InvenioOrgInfo.from_json(data)
+
+    @abstractmethod
+    def __eq__(self,other: 'UserInfo') -> bool:
+        pass
 
 class InvenioPersonInfo(UserInfo):
     """_summary_
@@ -138,6 +146,17 @@ class InvenioPersonInfo(UserInfo):
 
         return person
 
+    def __eq__(self,other: 'InvenioPersonInfo') -> bool:
+        if not isinstance(other, InvenioPersonInfo):
+            return False
+        
+        return (
+            self.type == other.type and
+            self.given_name == other.given_name and
+            self.family_name == other.family_name and
+            self.identifiers == other.identifiers
+        )
+
 class InvenioOrgInfo(UserInfo):
     """_summary_
 
@@ -226,3 +245,13 @@ class InvenioOrgInfo(UserInfo):
             org.add_identifier(identifier)
 
         return org
+    
+    def __eq__(self,other: 'InvenioOrgInfo') -> bool:
+        if not isinstance(other, InvenioOrgInfo):
+            return False
+        
+        return (
+            self.type == other.type and
+            self.name == other.name and
+            self.identifiers == other.identifiers
+        )

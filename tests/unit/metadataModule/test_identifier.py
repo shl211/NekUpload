@@ -75,3 +75,20 @@ def test_deserialisation():
 
     assert identifier.id == json["id"]
     assert identifier.id_type == IdentifierType.ORCID
+
+def test_same():
+    id = "0000-0001-5109-3700"
+
+    identifier1 = Identifier(id,IdentifierType.ORCID)
+    identifier2 = Identifier(id,IdentifierType.ORCID)
+
+    assert identifier1 == identifier2
+
+def test_diff():
+    id1 = "0000-0001-5109-3700"
+    id2 = "0000-0002-1825-0097"
+
+    identifier1 = Identifier(id1,IdentifierType.ORCID)
+    identifier2 = Identifier(id2,IdentifierType.ORCID)
+
+    assert identifier1 != identifier2
