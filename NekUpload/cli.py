@@ -8,6 +8,7 @@ from datetime import date
 import json
 import os
 import pathlib
+import yaml
 
 @dataclass
 class Config:
@@ -43,6 +44,60 @@ class Config:
         if authors := data.get("authors",[]):
             config.authors = [UserInfo.from_json(author) for author in authors]
 
+        return config
+
+    @staticmethod
+    def yaml_quickstart():
+        
+        
+        
+        pass
+
+    @classmethod
+    def from_yaml(cls,data: Dict[str,Any]) -> 'Config':
+        metadata: Dict[str,Any] = data["metadata"]
+        title = metadata["title"]
+        publication_date = metadata["publication_date"]
+        description = metadata.get("description",None)
+        publisher = metadata.get("publisher","NekUpload-CLI")
+        authors: List[Dict[str,Any]] = metadata["authors"] 
+
+        def get_authors(yaml_data: Dict[str,Any]) -> UserInfo:
+            """Turn yaml representation of authors into json"""
+            json = yaml_data
+
+            identifiers = json.get("identifiers",[])
+
+            identifier = None
+            if identifiers:
+                #if identifiers have been specified, remove it from json
+                #redefine it
+                json.pop("identifiers")
+                
+                #right now, only orcid is supported
+                orcid = identifiers.get("orcid")
+                if orcid:
+                    identifier = Identifier(orcid,IdentifierType.ORCID)
+
+            #define author
+            author = UserInfo.from_json(json)
+
+            if identifier:
+                author.add_identifier(identifier)
+            return author
+
+        author_list = [get_authors(author) for author in authors]
+
+        config = Config()
+        config.authors = author_list
+        metadata_obj = InvenioMetadata(title,publication_date,author_list)        
+        metadata_obj.add_publisher(publisher)
+
+        if description:
+            #currently no support for description, but will change in future
+            pass
+
+        config.metadata = metadata_obj
         return config
 
 @click.group()
@@ -128,15 +183,21 @@ def add_info(ctx: click.Context,title: str,pub_date: str=None):
     config.metadata = metadata
 
 @cli.command()
+@click.option('-u',"--user-config",help="user-defined yaml file containing upload settings")
 @click.option("--api-key", envvar="NEKTAR_DB_API_KEY", help="Your API key (or set environment variable NEKTAR_DB_API_KEY)")
 @click.option("--host", envvar="NEKTAR_DB_HOST", help="Host name of database (or set environment variable NEKTAR_DB_HOST)")
 @click.option("--community-slug", envvar="NEKTAR_DB_COMMUNITY", help="Community id to upload to (or set environment variable NEKTAR_DB_COMMUNITY)")
 @click.option("-dir","--directory",type=click.Path(exists=True), help="Directory containing files to be uploaded")
 @click.option('-f', '--file', multiple=True, type=click.Path(exists=True), help="Path to a file to be uploaded, can specify multiple e.g. -f file1 -f file2")
 @click.pass_context
-def upload(ctx: click.Context,api_key: str=None, host: str=None, community_slug: str=None,directory: str=None,file:Tuple[str]=None):
+def upload(ctx: click.Context,api_key: str=None, host: str=None, community_slug: str=None,directory: str=None,file:Tuple[str]=None,user_config:str=None):
     """Validate and upload the files to the specified database
     """
+
+    #for this, all data is assumed to be within the user config file
+    if user_config:
+        upload_user_config(user_config)
+        return
 
     if not api_key:
         click.echo("Error: API key is required. Set the NEKTAR_DB_API_KEY environment variable or use the --api-key option.")
@@ -173,6 +234,31 @@ def upload(ctx: click.Context,api_key: str=None, host: str=None, community_slug:
     metadata = {"metadata": config.metadata.get_metadata_payload()}
     db.upload_files(host,api_key,files,metadata,community_slug)
 
+def upload_user_config(user_config_file: str):
+    yaml: Dict[str,Any] = read_yaml_file(user_config_file)
+    config = Config.from_yaml(yaml)
+
+    db = yaml["database"]
+    host_name = db["host_name"]
+    #unsafe key storage atm
+    api_key = db["api_key"]
+    community_slug = db["community_slug"]
+
+    upload_data = yaml["upload"]
+    upload_files = upload_data.get("files",[])
+    upload_dirs = upload_data.get("directories",[])
+
+    #collect all files specified in directory
+    if upload_dirs:
+        for dir in upload_dirs:
+            files = [os.path.join(dir, f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
+            upload_files.append(files)
+
+    db = invenioRDM()
+    metadata = {"metadata": config.metadata.get_metadata_payload()}
+    
+    db.upload_files(host_name,api_key,upload_files,metadata,community_slug)
+
 
 @cli.command()
 @click.pass_context
@@ -181,6 +267,28 @@ def list_authors(ctx: click.Context):
     config: Config = ctx.obj
     for author in config.authors:
         click.echo(author)
+
+def read_yaml_file(filepath):
+    """Reads a YAML file and returns the parsed data.
+
+    Args:
+        filepath: The path to the YAML file.
+
+    Returns:
+        The parsed YAML data as a Python object (usually a dictionary or list),
+        or None if an error occurs (e.g., file not found, invalid YAML).
+    """
+    try:
+        with open(filepath, 'r') as file:
+            yaml_data = yaml.safe_load(file)  # Use safe_load to avoid potential security issues
+            return yaml_data
+    except FileNotFoundError:
+        print(f"Error: File not found at {filepath}")
+        return None
+    except yaml.YAMLError as e:
+        print(f"Error parsing YAML: {e}")
+        return None
+
 
 def main():#Entry point
     cli()
