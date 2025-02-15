@@ -1,10 +1,13 @@
 import click
 from NekUpload.uploadModule import invenioRDM
 from NekUpload.metadataModule import *
-from typing import Dict,List,Tuple
+from NekUpload.metadataModule.user import UserInfo
+from typing import Dict,List,Tuple,Any
 from dataclasses import dataclass,field
 from datetime import date
+import json
 import os
+import pathlib
 
 @dataclass
 class Config:
@@ -12,10 +15,62 @@ class Config:
     authors: List[InvenioOrgInfo | InvenioPersonInfo] = field(default_factory=list)
     metadata: InvenioMetadata = None
 
+    def to_json(self):
+        data = {}
+        
+        #only jsonify non empty data
+        if self.metadata:
+            data["metadata"] = self.metadata.to_json_serialisable()
+        
+        if self.authors:
+            data["authors"] = [author.to_json_serialisable() for author in self.authors]
+
+        return data
+    
+    @classmethod
+    def from_json(cls,data: Dict[str,Any]) -> 'Config':
+        config = Config()
+        
+        if metadata := data.get("metadata",None):
+            config.metadata = InvenioMetadata.from_json(metadata)
+
+        if authors := data.get("authors",[]):
+            config.authors = [UserInfo.from_json(author) for author in authors]
+
+        return config
+
 @click.group()
+@click.option("--config","-c",type=click.Path(dir_okay=False, path_type=pathlib.Path),default="config.json",help="Use specified config file, defaults to config.json")
+@click.option("--clear",is_flag=True,help="Clear the specified configuration")
 @click.pass_context
-def cli(ctx: click.Context):
-    ctx.ensure_object(Config)
+def cli(ctx: click.Context, config, clear):
+    
+    CONTEXT_FILE = config
+        
+    if clear:
+        ctx.obj = Config()
+        click.echo("Configuration cleared")
+        ctx.call_on_close(lambda: save_config(ctx,CONTEXT_FILE))
+        
+        if os.path.exists(CONTEXT_FILE):
+            os.remove(CONTEXT_FILE)
+            click.echo(f"Deleted {CONTEXT_FILE}")
+
+    try:
+        with open(CONTEXT_FILE,"r") as f:
+            ctx.obj = Config.from_json(json.load(f))
+    except FileNotFoundError:
+        ctx.obj = Config()
+    except json.JSONDecodeError:
+        click.echo(f"Warning: Could not parse {CONTEXT_FILE}. Starting with a fresh config.")
+        ctx.obj = Config()
+
+    ctx.call_on_close(lambda: save_config(ctx,CONTEXT_FILE))
+
+def save_config(ctx: click.Context,file: str):
+    with open(file, "w") as f:
+        json.dump(ctx.obj.to_json(), f, indent=4)
+    click.echo(f"Config saved to {file}")
 
 @cli.command()
 @click.argument('given_name')
