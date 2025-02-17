@@ -10,6 +10,8 @@ import os
 from dotenv import load_dotenv
 
 from NekUpload.frontend.terminal_widget import TerminalWidget,TerminalHandler
+from NekUpload.frontend.header_frame import HeaderFrame
+from NekUpload.frontend.static_fields_frame import StaticFieldsFrame
 import logging
 
 class NekUploadGUI:
@@ -17,15 +19,6 @@ class NekUploadGUI:
         self.root: Tk = root
         self.mainframe: ttk.Frame = self._create_mainframe()
         
-        #static fields
-        self.title: StringVar = StringVar()
-        self.publication_date: StringVar = StringVar()
-
-        self.is_read_user_guide: StringVar = StringVar()
-        self.api_key_env_var: StringVar = StringVar()
-        self.host_name: StringVar = StringVar()
-        self.community_slug: StringVar = StringVar()
-
         #dynamic fields
         self.dirname: StringVar = StringVar()
         self.filenames: Variable = Variable()
@@ -35,8 +28,11 @@ class NekUploadGUI:
         self.author_listbox: Listbox = None
         self.authors = []
 
-        self.create_header_frame()
-        self.create_static_fields_frame()
+        self.header_frame = HeaderFrame(self.mainframe)
+        self.header_frame.grid(column=0,row=0,columnspan=2,sticky=(N,W,E,S))
+        self.static_fields_frame = StaticFieldsFrame(self.mainframe)
+        self.static_fields_frame.grid(column=0,row=1,sticky=(N,E,W,S))
+
         self.create_dynamic_fields_frame()
         self.create_file_selector_frame()
 
@@ -62,69 +58,6 @@ class NekUploadGUI:
         mainframe.columnconfigure(0, weight=1)
         mainframe.rowconfigure(0, weight=1)
         return mainframe
-
-    def create_header_frame(self) -> None: 
-        header_frame: ttk.Frame = ttk.Frame(self.mainframe) 
-        header_frame.grid(column=0, row=0, columnspan=2,sticky=(N, W, E, S))
-        header_frame.columnconfigure(0, weight=1)
-        header_frame.columnconfigure(1, weight=1)
-
-        # add title and header
-        style: ttk.Style = ttk.Style()
-        style.configure("Header.TLabel", font=("Helvetica", 24, "bold"), underline=True)
-        header: ttk.Label = ttk.Label(header_frame, text="Welcome to NekUpload", style="Header.TLabel")
-        header.grid(column=0, row=0,columnspan=2,sticky=(N))
-
-        # add some description/info for user
-        description_text: str = "This is an interactive GUI upload and validation pipeline for Nektar++ datasets. " + \
-            "Please complete the setup instructions found in the User Guide before proceeding [link]."
-        description: ttk.Label = ttk.Label(header_frame, text=description_text,wraplength=600)
-        description.grid(column=0, row=1,columnspan=2,sticky=N)
-
-    def create_static_fields_frame(self) -> None:
-        static_fields_frame: ttk.Labelframe = ttk.Labelframe(self.mainframe,text="Basic Info")
-        static_fields_frame.grid(column=0, row=1, sticky=(N, W, E, S))
-
-        #tick box to serve as reminder for user to set host name environment variable
-        read_user_info_check: ttk.Checkbutton = ttk.Checkbutton(static_fields_frame,text="Have you read User Guide for setting up environment variables?",
-                                       command=None,variable=self.is_read_user_guide,
-                                       onvalue="True",offvalue="False")
-        read_user_info_check.grid(row=0,column=0,sticky=W,padx=5,pady=.5)
-
-        #ask user for what the environment variables are for the api key
-        api_key_env_label = ttk.Label(static_fields_frame,text="Environment Variable for API Key: ")
-        api_key_env_label.grid(row=1,column=0,sticky=W,padx=5,pady=.5)
-        api_key_entry = ttk.Entry(static_fields_frame,textvariable=self.api_key_env_var)
-        api_key_entry.grid(row=1,column=1,sticky=E,padx=5,pady=.5)
-
-        #ask user for host name
-        host_label = ttk.Label(static_fields_frame,text="Host Name URL: ")
-        host_label.grid(row=2,column=0,sticky=W,padx=5,pady=.5)
-        host_name_entry = ttk.Entry(static_fields_frame,textvariable=self.host_name)
-        host_name_entry.grid(row=2,column=1,sticky=E,padx=5,pady=.5)
-
-        #ask user for community url slug
-        community_label = ttk.Label(static_fields_frame,text="Community (URL slug or UUID): ")
-        community_label.grid(row=3,column=0,sticky=W,padx=5,pady=.5)
-        community_entry = ttk.Entry(static_fields_frame,textvariable=self.community_slug)
-        community_entry.grid(row=3,column=1,sticky=E,padx=5,pady=.5)
-
-        #ask for title of the dataset
-        title_label: ttk.Label = ttk.Label(static_fields_frame, text="Title: ")
-        title_label.grid(row=4, column=0, sticky=W, padx=5, pady=.5)
-        title_widget: ttk.Entry = ttk.Entry(static_fields_frame, textvariable=self.title) 
-        title_widget.grid(row=4, column=1, sticky=E, padx=5, pady=.5)
-
-        #ask for publication date, pre-populate with current date
-        publication_date_label: ttk.Label = ttk.Label(static_fields_frame, text="Publication Date: ") 
-        publication_date_label.grid(row=5, column=0, sticky=W, padx=5, pady=.5)
-        self.publication_date.set(self._get_current_iso8601_date())  
-        publication_date_widget: ttk.Entry = ttk.Entry(static_fields_frame, textvariable=self.publication_date) 
-        publication_date_widget.grid(row=5, column=1, sticky=E, padx=5, pady=.5)
-
-    def _get_current_iso8601_date(self) -> str:
-        today: date = date.today() 
-        return today.isoformat()
 
     def create_dynamic_fields_frame(self) -> None:
         dynamic_fields_frame: ttk.LabelFrame = ttk.LabelFrame(self.mainframe,text="Author(s)")  
@@ -429,14 +362,14 @@ class NekUploadGUI:
 
     def submit_form(self) -> None: 
         
-        is_read_user_guide = self.is_read_user_guide.get()
+        is_read_user_guide = self.static_fields_frame.is_read_user_guide
         if not is_read_user_guide or is_read_user_guide == "False":
-            print("ERROR")
+            logging.error("ERROR")
             return
         print(is_read_user_guide)
 
-        title: str = self.title.get()
-        publication_date: str = self.publication_date.get()
+        title: str = self.static_fields_frame.title
+        publication_date: str = self.static_fields_frame.publication_date
         
         #ASSIGN USERS
         author_list: List[InvenioOrgInfo | InvenioPersonInfo] = []
@@ -474,9 +407,9 @@ class NekUploadGUI:
         #first see if dirname is empty, if not, use directory to upload
         upload_manager = invenioRDM()
         
-        URL = self.host_name.get()
-        COMMUNITY_SLUG = self.community_slug.get()
-        API_KEY_ENV_VAR = self.api_key_env_var.get()
+        URL = self.static_fields_frame.host_name
+        COMMUNITY_SLUG = self.static_fields_frame.community_slug
+        API_KEY_ENV_VAR = self.static_fields_frame.api_key_env_var
 
         load_dotenv()
         if dirname:
