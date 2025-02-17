@@ -9,6 +9,9 @@ from NekUpload.uploadModule import invenioRDM
 import os
 from dotenv import load_dotenv
 
+from NekUpload.frontend.terminal_widget import TerminalWidget,TerminalHandler
+import logging
+
 class NekUploadGUI:
     def __init__(self,root: Tk) -> None:
         self.root: Tk = root
@@ -37,8 +40,19 @@ class NekUploadGUI:
         self.create_dynamic_fields_frame()
         self.create_file_selector_frame()
 
+        self.terminal = TerminalWidget(root)
+        self.terminal.grid(row=6,column=0,columnspan=5,sticky=(E,W))
+
+        #configure terminal for logging        
+        logger = logging.getLogger()  # Get the root logger
+        logger.setLevel(logging.INFO)
+        terminal_handler = TerminalHandler(self.terminal)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s') #format of message
+        terminal_handler.setFormatter(formatter)
+        logger.addHandler(terminal_handler)
+
         self.submit_button: ttk.Button = ttk.Button(self.mainframe, text="Submit", command=self.submit_form)
-        self.submit_button.grid(row=6, column=1, sticky=E)
+        self.submit_button.grid(row=7, column=1, sticky=E)
 
     def _create_mainframe(self) -> ttk.Frame:
         mainframe = ttk.Frame(self.root)
