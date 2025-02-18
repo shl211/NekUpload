@@ -1,5 +1,6 @@
 from tkinter import * 
 import tkinter.ttk as ttk
+from typing import Dict,Any
 
 class DynamicFieldsFrame(ttk.LabelFrame):
     def __init__(self,root: Tk, parent: ttk.Frame):
@@ -9,7 +10,7 @@ class DynamicFieldsFrame(ttk.LabelFrame):
         self.root = root
 
         #authors
-        self.authors = []
+        self.authors: Dict[str,Any] = []
 
         #allow addition of author as a person
         create_author_person_button: ttk.Button = ttk.Button(self,text="Add Person",command=self._create_author_person)
@@ -194,5 +195,5 @@ class DynamicFieldsFrame(ttk.LabelFrame):
         print(self.authors)
 
     @property
-    def author_list(self):
+    def author_list(self) -> Dict[str,Any]:
         return self.authors
