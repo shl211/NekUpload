@@ -1,7 +1,5 @@
 from tkinter import *
-from tkinter import filedialog
 from tkinter import ttk #holds the more modern widgets
-from datetime import date
 
 from typing import List
 from NekUpload.metadataModule import *
@@ -31,6 +29,8 @@ class NekUploadGUI:
         self.dynamic_fields_frame = DynamicFieldsFrame(self.root,self.mainframe)
         self.dynamic_fields_frame.grid(column=1, row=1, rowspan=2, sticky=(N,S))
 
+        #although only one frame in notebook, aesthetically works
+        #changing to frame also kind of screws the layout
         self.file_selector_notebook_frame = FileSelectorNotebookFrame(self.mainframe)
         self.file_selector_notebook_frame.grid(row=2,column=0,sticky=(E,W))
 
@@ -97,22 +97,15 @@ class NekUploadGUI:
         metadata_json = {"metadata": metadata_payload}
         print(metadata_json)
 
-        #only one of the following is not empty
-        dirname = self.file_selector_notebook_frame.dirname
-        file_list = self.file_selector_notebook_frame.file_list
-
-        #first see if dirname is empty, if not, use directory to upload
         upload_manager = invenioRDM()
         
         URL = self.static_fields_frame.host_name
         COMMUNITY_SLUG = self.static_fields_frame.community_slug
         API_KEY_ENV_VAR = self.static_fields_frame.api_key_env_var
-
+        file_list = self.file_selector_notebook_frame.file_list
         load_dotenv()
-        if dirname:
-            files_to_upload = [os.path.join(dirname, f) for f in os.listdir(dirname) if os.path.isfile(os.path.join(dirname, f))]
-            upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),files_to_upload,metadata_json,COMMUNITY_SLUG)
-        elif file_list:
+
+        if file_list:
             upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),file_list,metadata_json,COMMUNITY_SLUG)
         else:
             print("Failed to upload as no files detected")
