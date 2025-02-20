@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 from typing import List, Tuple
+import logging
 
 class FileSelectorNotebookFrame(ttk.Notebook):
     def __init__(self,parent: ttk.Frame):
@@ -74,9 +75,9 @@ class FileSelectorFrame(ttk.Frame):
 
         self.grid_rowconfigure(0, weight=1)  # Row with Listbox expands
         self.grid_columnconfigure(2, weight=1)  # Column with Listbox expands
-
-        find_files_button = ttk.Button(self,text="Select Files",command=self._select_files_listbox)
-        find_files_button.grid(column=0,row=0,sticky=W)
+        
+        buttons = self._create_buttons()
+        buttons.grid(column=0,row=0,sticky=(E,W))
 
         #set up list box with scroller for displaying files
         self.file_listbox: Listbox = Listbox(self,selectmode=EXTENDED)
@@ -89,29 +90,51 @@ class FileSelectorFrame(ttk.Frame):
         scrollbar.grid(row=0,column=3,sticky=(N,S))
         scrollbar_horizontal.grid(row=1,column=2,sticky=(W,E))
 
-    def _select_files_listbox(self) -> None:
-            filetype = self.file_type.get_filetype()
-            """
-            selected_files = filedialog.askopenfilenames(title="Select Files",
-                                                filetypes=(("Nektar Files",("*.xml","*.nekg","*.fld","*.fce","*.chk"),),
-                                                ("Supporting Files",("*.pdf","*.png","*.jpg",".jpegs")),
-                                                ("All Files","*.*"),),    
-                                         )
-            """
-            selected_files = filedialog.askopenfilenames(title="Select Files",
-                                                filetypes=(filetype,),    
-                                            )
+    def _create_buttons(self) -> ttk.Frame:
+        frame = ttk.Frame(self)
+        frame.grid_columnconfigure(0,uniform="group1")
 
-            #insert files in listbox
-            self.filenames = selected_files
-            if selected_files:
-                self.file_listbox.delete(0,END)
-                for file in selected_files:
-                    self.file_listbox.insert(END,file)
-                print(f"filenames.get(): {self.filenames}")
-            else:
-                self.filenames=()
-                print("No Files Selected")
+        # button to add files
+        find_files_button = ttk.Button(frame,text="Select Files",command=self._select_files_listbox)
+        find_files_button.grid(column=0,row=0,sticky=(E,W))
+
+        # button to remove files
+        delete_file_button = ttk.Button(frame,text="Delete Files",command=self._delete_files_listbox)
+        delete_file_button.grid(column=0,row=1,sticky=(E,W))
+
+        return frame
+
+
+    def _select_files_listbox(self) -> None:
+        filetype = self.file_type.get_filetype()
+        selected_files = filedialog.askopenfilenames(title="Add Files", filetypes=(filetype,))
+
+        if selected_files:
+            existing_files = set(self.file_list)  # Use a set for efficient lookup
+
+            for file in selected_files:
+                if file not in existing_files:  # Check for duplicates
+                    self.file_listbox.insert(END, file)
+                    existing_files.add(file)  # Keep the set updated
+                else:
+                    print(f"Duplicate file: {file} - not added.")
+
+            print(f"Files: {self.file_list}")  # Print updated file list
+        else:
+            print("No Files Selected")
+
+    def _delete_files_listbox(self) -> None:
+        selection_indices = self.file_listbox.curselection()
+
+        if selection_indices:
+            # 1. Get the items to delete *before* modifying the listbox
+            items_to_delete = [self.file_listbox.get(index) for index in selection_indices]
+
+            # 2. Delete from the listbox (reverse order to prevent issues with shifting indices)
+            for index,item in zip(sorted(selection_indices, reverse=True),sorted(items_to_delete,reverse=True)):
+                self.file_listbox.delete(index)
+
+            print(f"Deleted files. Remaining: {self.file_list}")
 
     @property
     def file_list(self) -> List[str]:
