@@ -1,40 +1,60 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
-from typing import List 
+from typing import List, Tuple
 
 class FileSelectorNotebookFrame(ttk.Notebook):
     def __init__(self,parent: ttk.Frame):
         super().__init__(parent)
 
-        #member variables
-        self._dirname: StringVar = StringVar()
-        self.filenames: Variable = Variable()
-        self.dir_label: ttk.Label = None #created in dynamic fields frame
-        self.file_listbox: Listbox = None
+        self.file_types = {
+            "Session": FileType("Session Files",["*.xml"]),
+            "Geometry": FileType("Geometry Files",["*.nekg"]),
+            "Output": FileType("Output Files",["*.fld"]),
+            "Checkpoint": FileType("Checkpoint Files",["*.chk"]),
+            "Filter": FileType("Filter Files", ["*.fce"]),
+            "Supporting": FileType("Supporting Files", ["*.pdf",".jpg","*.jpeg","*.png"])
+        }
 
-        f2 = self._create_files_upload_frame(self)
-        self.add(f2,text="Upload by Files")
+        self.session_frame = FileSelectorFrame(self,self.file_types["Session"])
+        self.add(self.session_frame,text="Upload Session")
 
-    def _create_files_upload_frame(self,parent:ttk.Frame) -> ttk.Frame:
-        file_selector_frame: ttk.Frame = ttk.Frame(parent) 
-        file_selector_frame.grid(column=0, row=2, columnspan=2, sticky=(N,E,S,W))
+        self.geometry_frame = FileSelectorFrame(self,self.file_types["Geometry"])
+        self.add(self.geometry_frame,text="Upload Geometry")
 
-        # Configure grid weights for the frame's columns and rows
-        file_selector_frame.grid_rowconfigure(0, weight=1)  # Row with Listbox expands
-        file_selector_frame.grid_columnconfigure(2, weight=1)  # Column with Listbox expands
+        self.output_frame = FileSelectorFrame(self,self.file_types["Output"])
+        self.add(self.output_frame,text="Upload Output")
 
-        find_files_button: ttk.Button = ttk.Button(
-            file_selector_frame,
-            text="Select Files",
-            command=self._select_files_listbox
-        )
-        find_files_button.grid(column=0, row=0, sticky=W)
+    @property
+    def session_file_list(self) -> List[str]:
+        return self.session_frame.file_list
+
+    @property
+    def geometry_file_list(self) -> List[str]:
+        return self.geometry_frame.file_list
+    
+    @property
+    def output_file_list(self) -> List[str]:
+        return self.output_frame.file_list
+
+    def get_file_list(self) -> List[str]:
+        return self.session_file_list + self.geometry_file_list + self.output_file_list
+
+class FileSelectorFrame(ttk.Frame):
+    def __init__(self,parent: ttk.Frame,file_type: 'FileType'):
+        super().__init__(parent)
+        self.file_type = file_type
+
+        self.grid_rowconfigure(0, weight=1)  # Row with Listbox expands
+        self.grid_columnconfigure(2, weight=1)  # Column with Listbox expands
+
+        find_files_button = ttk.Button(self,text="Select Files",command=self._select_files_listbox)
+        find_files_button.grid(column=0,row=0,sticky=W)
 
         #set up list box with scroller for displaying files
-        self.file_listbox: Listbox = Listbox(file_selector_frame,selectmode=EXTENDED)
-        scrollbar: Scrollbar = Scrollbar(file_selector_frame,command=self.file_listbox.yview)
-        scrollbar_horizontal: Scrollbar = Scrollbar(file_selector_frame,command=self.file_listbox.xview,orient=HORIZONTAL) #help view full path 
+        self.file_listbox: Listbox = Listbox(self,selectmode=EXTENDED)
+        scrollbar: Scrollbar = Scrollbar(self,command=self.file_listbox.yview)
+        scrollbar_horizontal: Scrollbar = Scrollbar(self,command=self.file_listbox.xview,orient=HORIZONTAL) #help view full path 
         self.file_listbox.config(yscrollcommand=scrollbar.set,xscrollcommand=scrollbar_horizontal.set)
         scrollbar.config(command=self.file_listbox.yview)
         scrollbar_horizontal.config(command=self.file_listbox.xview)
@@ -42,13 +62,17 @@ class FileSelectorNotebookFrame(ttk.Notebook):
         scrollbar.grid(row=0,column=3,sticky=(N,S))
         scrollbar_horizontal.grid(row=1,column=2,sticky=(W,E))
 
-        return file_selector_frame
-    
     def _select_files_listbox(self) -> None:
+            filetype = self.file_type.get_filetype()
+            """
             selected_files = filedialog.askopenfilenames(title="Select Files",
                                                 filetypes=(("Nektar Files",("*.xml","*.nekg","*.fld","*.fce","*.chk"),),
                                                 ("Supporting Files",("*.pdf","*.png","*.jpg",".jpegs")),
                                                 ("All Files","*.*"),),    
+                                         )
+            """
+            selected_files = filedialog.askopenfilenames(title="Select Files",
+                                                filetypes=(filetype,),    
                                             )
 
             #insert files in listbox
@@ -61,9 +85,15 @@ class FileSelectorNotebookFrame(ttk.Notebook):
             else:
                 self.filenames=()
                 print("No Files Selected")
-    
+
     @property
     def file_list(self) -> List[str]:
         return [self.file_listbox.get(i) for i in range(self.file_listbox.size())]
 
-    
+class FileType:
+    def __init__(self,name: str,extensions: List[str]):
+        self.name = name
+        self.extensions = extensions
+
+    def get_filetype(self) -> Tuple[str, Tuple[str, ...]]:
+        return (self.name,tuple(self.extensions))

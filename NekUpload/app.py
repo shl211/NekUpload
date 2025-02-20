@@ -102,7 +102,7 @@ class NekUploadGUI:
         URL = self.static_fields_frame.host_name
         COMMUNITY_SLUG = self.static_fields_frame.community_slug
         API_KEY_ENV_VAR = self.static_fields_frame.api_key_env_var
-        file_list = self.file_selector_notebook_frame.file_list
+        file_list = self.file_selector_notebook_frame.get_file_list()
         load_dotenv()
 
         if file_list:
