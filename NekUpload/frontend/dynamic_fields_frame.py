@@ -1,6 +1,7 @@
 from tkinter import * 
 import tkinter.ttk as ttk
 from typing import Dict,Any
+from .create_author_window import CreateAuthorPersonWindow,CreateAuthorOrgWindow
 
 class DynamicFieldsFrame(ttk.LabelFrame):
     def __init__(self,root: Tk, parent: ttk.Frame):
@@ -37,143 +38,48 @@ class DynamicFieldsFrame(ttk.LabelFrame):
         delete_button.grid(row=3,column=1)
 
     def _create_author_person(self) -> None:
-        new_window = Toplevel(self.root)
-        new_window.title("Specify Author Information") 
-        new_window.grid_rowconfigure(0,weight=1)
-        new_window.grid_columnconfigure(0,weight=1)
-
-        content_frame = ttk.Frame(new_window,padding=20)
-        content_frame.grid(column=0, row=0, sticky=(N, W, E, S))
-        content_frame.grid_rowconfigure(0,weight=1)
-        content_frame.grid_columnconfigure(0,weight=1)
-
-        title_label = ttk.Label(content_frame,text="Add Person Info")
-        title_label.grid(row=0,column=0)
-
-        ####### Mandatory Info
-        mandatory_frame = ttk.Labelframe(content_frame,text="Mandatory Info")
-        mandatory_frame.grid(column=0,row=1,sticky=(N,W,E,S))
-
-        #ask for given name
-        given_name_label = ttk.Label(mandatory_frame,text="Given Name: ")
-        given_name_label.grid(row=1,column=0)
-        given_name = StringVar()
-        given_name_entry = ttk.Entry(mandatory_frame,textvariable=given_name)
-        given_name_entry.grid(row=1,column=1)
-
-        #ask for last name
-        last_name_label = ttk.Label(mandatory_frame,text="Last Name: ")
-        last_name_label.grid(row=2,column=0)
-        last_name = StringVar()
-        last_name_entry = ttk.Entry(mandatory_frame,textvariable=last_name)
-        last_name_entry.grid(row=2,column=1)
-
-        #########Optional
-        #optional arguments: ORCID and affiliations
-        optional_frame = ttk.Labelframe(content_frame,text="Optional")
-        optional_frame.grid(column=0,row=2,sticky=(N,W,E,S))
-        
-        affiliation_label = ttk.Label(optional_frame,text="Affiliation(s): ")
-        affiliation_label.grid(row=3,column=0)
-        affiliation = StringVar()
-        affiliation_entry = ttk.Entry(optional_frame,textvariable=affiliation)
-        affiliation_entry.grid(row=3,column=1)
-
-        id_type = StringVar()
-        id_type_combobox = ttk.Combobox(optional_frame,
-                                        textvariable=id_type,
-                                        values=('ORCID',),
-                                        state="readonly")
-        id_type_combobox.grid(row=4,column=0)
-        new_window.after(1, lambda: id_type_combobox.current(0))
-        id = StringVar()
-        id_entry = ttk.Entry(optional_frame,textvariable=id)
-        id_entry.grid(row=4,column=1)
-
-        author_data = {}
-        def submit_author_info():
-            author_data['type'] = 'personal'
-            author_data['given_name'] = given_name_entry.get()
-            author_data['last_name'] = last_name.get()
-            author_data['name'] = f"{author_data['given_name']} {author_data['last_name']}"
-            author_data['affiliation'] = affiliation_entry.get()
-            author_data['id_type'] = id_type.get()
-            author_data['id'] = id_entry.get()
-
-            print("Author Data: ", author_data)
-
-            self.authors.append(author_data)
-            self.author_listbox.insert(END,f"{author_data['name']}")
-            
-            new_window.destroy()
-
-        submit_button = ttk.Button(content_frame,text="Submit",command=submit_author_info)
-        submit_button.grid(row=10,column=0,pady=10)
+        # The lambda function will be executed later when triggered by an event.
+        # By that time, new_window will have already been created by __init__.
+        # This works because lambdas capture variables by reference, not by value.
+        new_window = CreateAuthorPersonWindow(self.root,lambda: self.submit_author_person_info(new_window))
 
     def _create_author_org(self) -> None:
-        new_window = Toplevel(self.root)
-        new_window.title("Specify Author Information") 
-        new_window.grid_rowconfigure(0,weight=1)
-        new_window.grid_columnconfigure(0,weight=1)
+        # The lambda function will be executed later when triggered by an event.
+        # By that time, new_window will have already been created by __init__.
+        # This works because lambdas capture variables by reference, not by value.
+        new_window = CreateAuthorOrgWindow(self.root,lambda: self.submit_author_org_info(new_window))
 
-        content_frame = ttk.Frame(new_window,padding=20)
-        content_frame.grid(column=0, row=0, sticky=(N, W, E, S))
-        content_frame.grid_rowconfigure(0,weight=1)
-        content_frame.grid_columnconfigure(0,weight=1)
-
-        title_label = ttk.Label(content_frame,text="Add Organisation Info")
-        title_label.grid(row=0,column=0)
-
-        ####### Mandatory Info
-        mandatory_frame = ttk.Labelframe(content_frame,text="Mandatory Info")
-        mandatory_frame.grid(column=0,row=1,sticky=(N,W,E,S))
-
-        #ask for org name
-        name_label = ttk.Label(mandatory_frame,text="Name: ")
-        name_label.grid(row=1,column=0)
-        name = StringVar()
-        name_entry = ttk.Entry(mandatory_frame,textvariable=name)
-        name_entry.grid(row=1,column=1)
-
-        #########Optional
-        #optional arguments: ORCID and affiliations
-        optional_frame = ttk.Labelframe(content_frame,text="Optional")
-        optional_frame.grid(column=0,row=2,sticky=(N,W,E,S))
-        
-        affiliation_label = ttk.Label(optional_frame,text="Affiliation(s): ")
-        affiliation_label.grid(row=3,column=0)
-        affiliation = StringVar()
-        affiliation_entry = ttk.Entry(optional_frame,textvariable=affiliation)
-        affiliation_entry.grid(row=3,column=1)
-
-        id_type = StringVar()
-        id_type_combobox = ttk.Combobox(optional_frame,
-                                        textvariable=id_type,
-                                        values=('ORCID',),
-                                        state="readonly")
-        id_type_combobox.grid(row=4,column=0)
-        new_window.after(1, lambda: id_type_combobox.current(0))
-        id = StringVar()
-        id_entry = ttk.Entry(optional_frame,textvariable=id)
-        id_entry.grid(row=4,column=1)
-
+    def submit_author_person_info(self,window: CreateAuthorPersonWindow):
         author_data = {}
-        def submit_author_info():
-            author_data['type'] = 'organizational'
-            author_data['name'] = name.get()
-            author_data['affiliation'] = affiliation_entry.get()
-            author_data['id_type'] = id_type.get()
-            author_data['id'] = id_entry.get()
+        author_data['type'] = 'personal'
+        author_data['given_name'] = window.given_name
+        author_data['last_name'] = window.last_name
+        author_data['name'] = f"{author_data['given_name']} {author_data['last_name']}"
+        author_data['affiliation'] = window.affiliation
+        author_data['id_type'] = window.id_type
+        author_data['id'] = window.id
 
-            print("Author Data: ", author_data)
+        print("Author Data: ", author_data)
 
-            self.authors.append(author_data)
-            self.author_listbox.insert(END,f"{author_data['name']}")
-            
-            new_window.destroy()
+        self.authors.append(author_data)
+        self.author_listbox.insert(END,f"{author_data['name']}")
+        
+        window.destroy()
 
-        submit_button = ttk.Button(content_frame,text="Submit",command=submit_author_info)
-        submit_button.grid(row=10,column=0,pady=10)
+    def submit_author_org_info(self,window: CreateAuthorOrgWindow):
+        author_data = {}
+        author_data['type'] = 'organizational'
+        author_data['name'] = window.name
+        author_data['affiliation'] = window.affiliation
+        author_data['id_type'] = window.id_type
+        author_data['id'] = window.id
+
+        print("Author Data: ", author_data)
+
+        self.authors.append(author_data)
+        self.author_listbox.insert(END,f"{author_data['name']}")
+        
+        window.destroy()
 
     def _delete_selected_author(self) -> None:
         selection_indices = self.author_listbox.curselection()
