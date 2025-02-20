@@ -21,20 +21,20 @@ class NekUploadGUI:
         
         self.header_frame = HeaderFrame(self.mainframe)
         self.header_frame.grid(column=0,row=0,columnspan=2,sticky=(N,W,E,S))
+
         self.static_fields_frame = StaticFieldsFrame(self.mainframe)
-        self.static_fields_frame.grid(column=0,row=1,sticky=(N,E,W,S))
+        self.static_fields_frame.grid(column=0,row=2,sticky=(N,E,W,S))
 
         self.dynamic_fields_frame = DynamicFieldsFrame(self.root,self.mainframe)
-        self.dynamic_fields_frame.grid(column=1, row=1, rowspan=3, sticky=(N,S))
+        self.dynamic_fields_frame.grid(column=1, row=2, rowspan=3, sticky=(N,S))
 
         style = ttk.Style()
         style.configure("Subheader.TLabel", font=("TkDefaultFont", 14, "bold"))
         self.upload_descriptor_label = ttk.Label(self.mainframe,text="Upload Files Here",style="Subheader.TLabel")
-        self.upload_descriptor_label.grid(row=2,column=0,sticky=(E,W))
-
+        self.upload_descriptor_label.grid(row=3,column=0,sticky=(E,W))
 
         self.file_selector_notebook_frame = FileSelectorNotebookFrame(self.mainframe)
-        self.file_selector_notebook_frame.grid(row=3,column=0,sticky=(E,W))
+        self.file_selector_notebook_frame.grid(row=4,column=0,sticky=(E,W))
 
         self.terminal = TerminalWidget(root)
         self.terminal.grid(row=6,column=0,columnspan=5,sticky=(E,W))

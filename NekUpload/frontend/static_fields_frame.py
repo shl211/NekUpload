@@ -17,38 +17,75 @@ class StaticFieldsFrame(ttk.LabelFrame):
         read_user_info_check: ttk.Checkbutton = ttk.Checkbutton(self,text="Have you read User Guide for setting up environment variables?",
                                        command=None,variable=self._is_read_user_guide,
                                        onvalue="True",offvalue="False")
-        read_user_info_check.grid(row=0,column=0,sticky=W,padx=5,pady=.5)
+        read_user_info_check.grid(row=2,column=0,sticky=W,padx=5,pady=.5)
 
         #ask user for what the environment variables are for the api key
         api_key_env_label = ttk.Label(self,text="Environment Variable for API Key: ")
-        api_key_env_label.grid(row=1,column=0,sticky=W,padx=5,pady=.5)
+        api_key_env_label.grid(row=3,column=0,sticky=W,padx=5,pady=.5)
         api_key_entry = ttk.Entry(self,textvariable=self._api_key_env_var)
-        api_key_entry.grid(row=1,column=1,sticky=E,padx=5,pady=.5)
+        api_key_entry.grid(row=3,column=1,sticky=E,padx=5,pady=.5)
 
         #ask user for host name
         host_label = ttk.Label(self,text="Host Name URL: ")
-        host_label.grid(row=2,column=0,sticky=W,padx=5,pady=.5)
-        host_name_entry = ttk.Entry(self,textvariable=self._host_name)
-        host_name_entry.grid(row=2,column=1,sticky=E,padx=5,pady=.5)
+        host_label.grid(row=4,column=0,sticky=W,padx=5,pady=.5)
+        self.host_name_entry = ttk.Entry(self,textvariable=self._host_name)
+        self.host_name_entry.grid(row=4,column=1,sticky=E,padx=5,pady=.5)
 
         #ask user for community url slug
         community_label = ttk.Label(self,text="Community (URL slug or UUID): ")
-        community_label.grid(row=3,column=0,sticky=W,padx=5,pady=.5)
+        community_label.grid(row=5,column=0,sticky=W,padx=5,pady=.5)
         community_entry = ttk.Entry(self,textvariable=self._community_slug)
-        community_entry.grid(row=3,column=1,sticky=E,padx=5,pady=.5)
+        community_entry.grid(row=5,column=1,sticky=E,padx=5,pady=.5)
 
         #ask for title of the dataset
         title_label: ttk.Label = ttk.Label(self, text="Title: ")
-        title_label.grid(row=4, column=0, sticky=W, padx=5, pady=.5)
+        title_label.grid(row=6, column=0, sticky=W, padx=5, pady=.5)
         title_widget: ttk.Entry = ttk.Entry(self, textvariable=self._title) 
-        title_widget.grid(row=4, column=1, sticky=E, padx=5, pady=.5)
+        title_widget.grid(row=6, column=1, sticky=E, padx=5, pady=.5)
 
         #ask for publication date, pre-populate with current date
         publication_date_label: ttk.Label = ttk.Label(self, text="Publication Date: ") 
-        publication_date_label.grid(row=5, column=0, sticky=W, padx=5, pady=.5)
+        publication_date_label.grid(row=7, column=0, sticky=W, padx=5, pady=.5)
         self._publication_date.set(self._get_current_iso8601_date())  
         publication_date_widget: ttk.Entry = ttk.Entry(self, textvariable=self._publication_date) 
-        publication_date_widget.grid(row=5, column=1, sticky=E, padx=5, pady=.5)
+        publication_date_widget.grid(row=7, column=1, sticky=E, padx=5, pady=.5)
+    
+        #presets
+        preset_label = ttk.Label(self,text="Setting: ")
+        preset_label.grid(row=0, column=0, sticky=W, padx=5, pady=.5)
+
+        self.setting = StringVar()
+        options = ["AE Database","InvenioRDM Demo","Custom"]
+        setting_combobox = ttk.Combobox(self,textvariable=self.setting,values=options,state="readonly")
+        setting_combobox.current(0)
+        self.set_AE_db_default() #ensure correct starting state
+        setting_combobox.grid(row=0,column=1)
+        
+        setting_combobox.bind("<<ComboboxSelected>>",self.on_combobox_select)
+
+    def on_combobox_select(self,event: Event):
+        selected_value = event.widget.get()
+
+        if selected_value == "AE Database":
+            self.set_AE_db_default()
+        elif selected_value == "InvenioRDM Demo":
+            self.set_demo_default()
+        else:
+            self.set_default()
+
+    #Sets settings for default config
+    def set_AE_db_default(self):
+       self._host_name.set("https://data.ae.ic.ac.uk")
+       self._community_slug.set("nektar") #don't actually know yet
+
+    def set_default(self):
+        self._host_name.set("")
+        self._community_slug.set("")
+
+    def set_demo_default(self):
+        self._host_name.set("https://inveniordm.web.cern.ch")
+        self._community_slug.set("test_nekupload")
+
     @property
     def is_read_user_guide(self):
         return self._is_read_user_guide.get()
