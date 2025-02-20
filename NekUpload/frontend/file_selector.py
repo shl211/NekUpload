@@ -35,7 +35,6 @@ class FileSelectorNotebookFrame(ttk.Notebook):
         self.supporting_frame = FileSelectorFrame(self,self.file_types["Supporting"])
         self.add(self.supporting_frame, text="Supporting")
         
-
     @property
     def session_file_list(self) -> List[str]:
         return self.session_frame.file_list
@@ -95,7 +94,7 @@ class FileSelectorFrame(ttk.Frame):
         frame.grid_columnconfigure(0,uniform="group1")
 
         # button to add files
-        find_files_button = ttk.Button(frame,text="Select Files",command=self._select_files_listbox)
+        find_files_button = ttk.Button(frame,text="Add Files",command=self._select_files_listbox)
         find_files_button.grid(column=0,row=0,sticky=(E,W))
 
         # button to remove files
@@ -104,10 +103,9 @@ class FileSelectorFrame(ttk.Frame):
 
         return frame
 
-
     def _select_files_listbox(self) -> None:
         filetype = self.file_type.get_filetype()
-        selected_files = filedialog.askopenfilenames(title="Add Files", filetypes=(filetype,))
+        selected_files = filedialog.askopenfilenames(title="Select Files", filetypes=(filetype,))
 
         if selected_files:
             existing_files = set(self.file_list)  # Use a set for efficient lookup
