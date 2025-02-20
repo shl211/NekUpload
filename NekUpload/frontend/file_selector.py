@@ -17,13 +17,23 @@ class FileSelectorNotebookFrame(ttk.Notebook):
         }
 
         self.session_frame = FileSelectorFrame(self,self.file_types["Session"])
-        self.add(self.session_frame,text="Upload Session")
+        self.add(self.session_frame,text="Session")
 
         self.geometry_frame = FileSelectorFrame(self,self.file_types["Geometry"])
-        self.add(self.geometry_frame,text="Upload Geometry")
+        self.add(self.geometry_frame,text="Geometry")
 
         self.output_frame = FileSelectorFrame(self,self.file_types["Output"])
-        self.add(self.output_frame,text="Upload Output")
+        self.add(self.output_frame,text="Output")
+
+        self.checkpoint_frame = FileSelectorFrame(self,self.file_types["Checkpoint"])
+        self.add(self.checkpoint_frame,text="Checkpoint")
+        
+        self.filter_frame = FileSelectorFrame(self,self.file_types["Filter"])
+        self.add(self.filter_frame,text="Filter")
+
+        self.supporting_frame = FileSelectorFrame(self,self.file_types["Supporting"])
+        self.add(self.supporting_frame, text="Supporting")
+        
 
     @property
     def session_file_list(self) -> List[str]:
@@ -37,8 +47,25 @@ class FileSelectorNotebookFrame(ttk.Notebook):
     def output_file_list(self) -> List[str]:
         return self.output_frame.file_list
 
+    @property
+    def output_file_list(self) -> List[str]:
+        return self.output_frame.file_list
+
+    @property
+    def checkpoint_file_list(self) -> List[str]:
+        return self.checkpoint_frame.file_list
+
+    @property
+    def filter_file_list(self) -> List[str]:
+        return self.filter_frame.file_list
+    
+    @property
+    def supporting_file_list(self) -> List[str]:
+        return self.supporting_frame.file_list
+
     def get_file_list(self) -> List[str]:
-        return self.session_file_list + self.geometry_file_list + self.output_file_list
+        return self.session_file_list + self.geometry_file_list + self.output_file_list + \
+                self.checkpoint_file_list + self.filter_file_list + self.supporting_file_list
 
 class FileSelectorFrame(ttk.Frame):
     def __init__(self,parent: ttk.Frame,file_type: 'FileType'):
