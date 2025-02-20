@@ -61,9 +61,15 @@ class NekUploadGUI:
     
     def submit_form(self) -> None: 
         
+        #check all fields filled
         is_read_user_guide = self.static_fields_frame.is_read_user_guide
         if not is_read_user_guide or is_read_user_guide == "False":
-            logging.error("ERROR")
+            logging.error("User guide not read. Please read user guide and check box after.")
+            return
+        
+        authors_from_app: List[InvenioOrgInfo | InvenioPersonInfo] = self.dynamic_fields_frame.author_list
+        if not authors_from_app:
+            logging.error("No authors specified. At least one required")
             return
 
         title: str = self.static_fields_frame.title
@@ -71,7 +77,6 @@ class NekUploadGUI:
         
         #ASSIGN USERS
         author_list: List[InvenioOrgInfo | InvenioPersonInfo] = []
-        authors_from_app: List[InvenioOrgInfo | InvenioPersonInfo] = self.dynamic_fields_frame.author_list
         for author in authors_from_app:
             author_info: InvenioOrgInfo | InvenioPersonInfo = None
             
