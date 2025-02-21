@@ -33,6 +33,8 @@ For older simulation datasets that are follow the old Nektar++ best practices, w
 
 Nektar++ provides the **NekMesh** and **FieldConvert** commands that can be used to convert files from XML format to HDF5 format. **FieldConvert** is part of the `Nektar++ installation <https://www.nektar.info/getting-started/installation/>`_. HDF5 support and MPI support must be enabled if building Nektar++ from source.
 
+.. _converting-geometry-file:
+
 Obtaining geometry.nekg
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -53,6 +55,8 @@ This will generate two files: HDF5geometry.xml (the new session file) and HDF5ge
     1    <GEOMETRY DIM="3" SPACE="3" HDF5FILE="HDF5Mesh.nekg" />
 
 For more info, see `Section 4.5.2.1 of the Nektar User Guide <https://doc.nektar.info/userguide/latest/user-guidese19.html#x28-1230004.5>`_
+
+.. _converting-output-files:
 
 Obtaining HDF5 Filter, Checkpoint & Output files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
