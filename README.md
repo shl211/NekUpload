@@ -1,3 +1,3 @@
-# Nektar++ Upload Validation and Metadata Parsing
+# NekUpload
 
-Aim is to provide a upload module that will validate the incoming data. If valid, relevant metadata is parsed and datasets will be uploaded to an Invenio database.
+**NekUpload** is a Python package for uploading Nektar++ datasets to a database. Automated validation and metadata extraction will occur, and the datasets will be submitted to the database admin for review. 

@@ -6,15 +6,22 @@
 NekUpload Documentation
 =======================
 
-**NekUpload** is a Python package for uploading `Nektar++ <https://nektar.info>`_ datasets to a specified database. Automated validation and metadata extraction will occur, and the datasets will be submitted to the database admin for review. There are multiple ways to utilise the program. Users can utilise this with an interactive GUI for local file uploads. For larger file uploads, it is recommended that shell scripting be used for submission to HPC systems. Check out the :doc:`usage` section for more information to get started. 
+Managing and sharing `Nektar++ <https://nektar.info>`_ datasets can be complex. **NekUpload** simplifies this process by automating validation, upload, and metadata extraction, ensuring data integrity and promoting FAIR data principles. 
 
-Motivation
-----------
+**NekUpload** is a Python package that verifies and uploads Nektar++ datasets to a specified database or online repository.  It provides both a local application and a command-line interface.
 
-Why use this package when there are other ways to upload?
+Key Benefits:
 
-This package provides an extra layer of verification to make both Nektar++ users and database administrators life easier. It also extracts relevant information from the datasets to reduce the amount of metadata input the user must provide. This pipeline also ensures that Nektar++ users submit all the relevant files and do not accidentally miss out or include non-relevant files. This will also automate the upload process, allowing for large dataset uploads to be transferred more efficiently from a non-interactive environment (such as an HPC environment). The database admin, knowing that the datasets are self-consistent and verified, can speed up the verification process, allowing for datasets to be made publicly available faster. 
+*   **FAIR Data:** Ensures datasets are Findable, Accessible, Interoperable, and Reusable, promoting open research
+*   **Nektar++ Best Practices:** Enforces consistent data management workflows for Nektar++ datasets
+*   **Metadata Extraction:** Automatically extracts key geometric and aerodynamic features, enhancing dataset discoverability
+*   **Automated Upload and Submission:** Streamlines the verification and upload process, ideal for managing large backlogs of datasets
+*   **User Guidance:** Provides suggestions for completing and ensuring dataset consistency
+*   **User-Friendly Experience:**  Upload datasets effortlessly, with built-in guidance for completing and ensuring data consistency
+*   **Simplified Admin Approval:**  Facilitates database administrator review and approval of submitted datasets
 
+Get Started with NekUpload
+--------------------------
 .. note::
    This project is under active development.
 

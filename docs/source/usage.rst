@@ -1,6 +1,12 @@
 User Guide
 ==========
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   quickstart
+
 NekUpload by default will attempt to upload provided Nektar++ datasets to a database within the Department of Aeronautics, Imperial College London. This database is built upon `InvenioRDM <https://invenio-software.org/products/rdm/>`_ online repository. 
 
 .. note::
