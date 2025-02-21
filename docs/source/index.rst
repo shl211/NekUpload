@@ -29,7 +29,6 @@ Get Started with NekUpload
    :maxdepth: 2
    :caption: Contents:
 
-   installation
-   usage
+   user_guide/usage
    developer
    api

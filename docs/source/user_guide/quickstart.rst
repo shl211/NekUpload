@@ -17,7 +17,7 @@ Setup
 
 An API key is required to utilise this application. To access an API key, go to the online repository host (in this case https://data.ae.ic.ac.uk). Login to your account and select your profile. You will see an option: *Applications*, as shown in the following image:
 
-.. image:: _static/quickstart1.png
+.. image:: ../_static/quickstart1.png
     :alt: Image showing where to find *Applications*
     :align: center
 
@@ -90,7 +90,7 @@ To execute the local application, run:
 This should open up a tkinter application: 
 
 
-.. image:: _static/app.png
+.. image:: ../_static/app.png
     :alt: NekUpload app user interface
     :align: center
 
