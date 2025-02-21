@@ -1,7 +1,17 @@
 .. _developer_guide:
 
+NekUpload is currently designed to be compatible with any online repository built with InvenioRDM (Zenodo, AE Datastore etc.) NekUpload is built with the following design:
+
+
+
 Developer Guide
 ===============
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
+   installation
 
 Overview
 --------

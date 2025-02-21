@@ -106,3 +106,7 @@ For *setting*, select AE Database. This should be the default. This prepopulates
 At least one author is required, and can be added by selecting *Add Person* or *Add Org* (organisation). At minimum, one session file, one geometry file and one output file should be specified. This should follow Nektar++ best practices. 
 
 Once complete, hit submit. Watch the terminal messages to be notified of failure (and reason of failure) or successful upload. You can check the online portal hosted at https://data.ae.ic.ac.uk to check that data has indeed been uploaded for successful uploads.
+
+.. warning::
+
+    For security reasons, once you are done uploading, please delete your API key by logging back onto the online portal and deleting the key. You can always regenerate a new one at a future date.

@@ -30,5 +30,5 @@ Get Started with NekUpload
    :caption: Contents:
 
    user_guide/usage
-   developer
+   developer_guide/developer
    api
