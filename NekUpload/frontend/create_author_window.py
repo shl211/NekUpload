@@ -1,6 +1,7 @@
 from tkinter import * 
 import tkinter.ttk as ttk
 from typing import Callable
+from . import style_guide
 
 class CreateAuthorPersonWindow(Toplevel):
     def __init__(self,root: Tk, submit_function: Callable):
@@ -26,15 +27,23 @@ class CreateAuthorPersonWindow(Toplevel):
         given_name_label = ttk.Label(mandatory_frame,text="Given Name: ")
         given_name_label.grid(row=1,column=0)
         self._given_name = StringVar()
-        given_name_entry = ttk.Entry(mandatory_frame,textvariable=self._given_name)
-        given_name_entry.grid(row=1,column=1)
+        self.given_name_entry = ttk.Entry(mandatory_frame,textvariable=self._given_name)
+        self.given_name_entry.grid(row=1,column=1)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.given_name_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.given_name_entry))
+        self.given_name_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.given_name_entry))
 
         #ask for last name
         last_name_label = ttk.Label(mandatory_frame,text="Last Name: ")
         last_name_label.grid(row=2,column=0)
         self._last_name = StringVar()
-        last_name_entry = ttk.Entry(mandatory_frame,textvariable=self._last_name)
-        last_name_entry.grid(row=2,column=1)
+        self.last_name_entry = ttk.Entry(mandatory_frame,textvariable=self._last_name)
+        self.last_name_entry.grid(row=2,column=1)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.last_name_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.last_name_entry))
+        self.last_name_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.last_name_entry ))
 
         #########Optional
         #optional arguments: ORCID and affiliations
@@ -58,8 +67,27 @@ class CreateAuthorPersonWindow(Toplevel):
         id_entry = ttk.Entry(optional_frame,textvariable=self._id)
         id_entry.grid(row=4,column=1)
 
-        submit_button = ttk.Button(content_frame,text="Submit",command=submit_function)
+        submit_button = ttk.Button(content_frame,text="Submit",command=lambda: self._on_submit(submit_function))
         submit_button.grid(row=10,column=0,pady=10)
+
+    def _on_submit(self,submit_function: Callable):
+        #enforce mandatory fields
+        #don't return immediately so all incomplete fields highlighted together
+        is_exit = False
+        if not self._given_name.get():
+            style_guide.show_error_in_entry(self.given_name_entry)
+            is_exit = True
+        
+        if not self._last_name.get():
+            style_guide.show_error_in_entry(self.last_name_entry)
+            is_exit
+        
+        #exit now
+        if is_exit:
+            return
+        
+        submit_function()
+
 
     @property
     def given_name(self):
@@ -105,8 +133,12 @@ class CreateAuthorOrgWindow(Toplevel):
         name_label = ttk.Label(mandatory_frame,text="Name: ")
         name_label.grid(row=1,column=0)
         self._org_name = StringVar()
-        name_entry = ttk.Entry(mandatory_frame,textvariable=self._org_name)
-        name_entry.grid(row=1,column=1)
+        self.name_entry = ttk.Entry(mandatory_frame,textvariable=self._org_name)
+        self.name_entry.grid(row=1,column=1)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.name_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.name_entry))
+        self.name_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.name_entry))
 
         #########Optional
         #optional arguments: ORCID and affiliations
@@ -130,8 +162,16 @@ class CreateAuthorOrgWindow(Toplevel):
         id_entry = ttk.Entry(optional_frame,textvariable=id)
         id_entry.grid(row=4,column=1)
 
-        submit_button = ttk.Button(content_frame,text="Submit",command=submit_function)
+        submit_button = ttk.Button(content_frame,text="Submit",command=lambda: self._on_submit(submit_function))
         submit_button.grid(row=10,column=0,pady=10)
+
+    def _on_submit(self,submit_function: Callable):
+        #enforce mandatory fields, show missing field
+        if not self._org_name.get():
+            style_guide.show_error_in_entry(self.name_entry)
+            return
+        
+        submit_function()
 
     @property
     def name(self):
