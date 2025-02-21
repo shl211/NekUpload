@@ -78,7 +78,7 @@ A test community has been set up: TEST_NEKTAR_UPLOAD. Join this if possible, oth
 Environment variables
 ~~~~~~~~~~~~~~~~~~~~~
 
-Store the following in a .env file:
+Store the following in a *.env* file in the project root:
 
 .. code::
 

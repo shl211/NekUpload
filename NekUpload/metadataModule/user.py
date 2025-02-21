@@ -118,6 +118,11 @@ class InvenioPersonInfo(UserInfo):
         return f"Person: {self.given_name} {self.family_name}"
 
     def to_json_serialisable(self):
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
         data = {
             "type": self.type,
             "given_name": self.given_name,
@@ -133,6 +138,14 @@ class InvenioPersonInfo(UserInfo):
     
     @classmethod
     def from_json(cls,data: Dict[str,Any]) -> 'InvenioPersonInfo':
+        """_summary_
+
+        Args:
+            data (Dict[str,Any]): _description_
+
+        Returns:
+            InvenioPersonInfo: _description_
+        """
         given_name = data["given_name"]
         family_name = data["family_name"]
 
@@ -220,6 +233,11 @@ class InvenioOrgInfo(UserInfo):
         return f"Organisation: {self.name}"
     
     def to_json_serialisable(self):
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """
         data = {
             "type": self.type,
             "name": self.name,
@@ -234,6 +252,14 @@ class InvenioOrgInfo(UserInfo):
     
     @classmethod
     def from_json(cls,data: Dict[str,Any]) -> 'InvenioOrgInfo':
+        """_summary_
+
+        Args:
+            data (Dict[str,Any]): _description_
+
+        Returns:
+            InvenioOrgInfo: _description_
+        """
         name = data["name"]
 
         data_identifiers = data.get("identifiers",[])#in case not present in dict
