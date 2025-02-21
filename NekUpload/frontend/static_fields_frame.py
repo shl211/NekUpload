@@ -1,6 +1,7 @@
 from tkinter import * 
 import tkinter.ttk as ttk
 from datetime import date
+from . import style_guide
 
 class StaticFieldsFrame(ttk.LabelFrame):
     def __init__(self,parent: ttk.Frame):
@@ -22,8 +23,12 @@ class StaticFieldsFrame(ttk.LabelFrame):
         #ask user for what the environment variables are for the api key
         api_key_env_label = ttk.Label(self,text="Environment Variable for API Key: ")
         api_key_env_label.grid(row=3,column=0,sticky=W,padx=5,pady=.5)
-        api_key_entry = ttk.Entry(self,textvariable=self._api_key_env_var)
-        api_key_entry.grid(row=3,column=1,sticky=E,padx=5,pady=.5)
+        self.api_key_entry = ttk.Entry(self,textvariable=self._api_key_env_var)
+        self.api_key_entry.grid(row=3,column=1,sticky=E,padx=5,pady=.5)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.api_key_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.api_key_entry))
+        self.api_key_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.api_key_entry))
 
         #ask user for host name
         host_label = ttk.Label(self,text="Host Name URL: ")
@@ -31,25 +36,41 @@ class StaticFieldsFrame(ttk.LabelFrame):
         self.host_name_entry = ttk.Entry(self,textvariable=self._host_name)
         self.host_name_entry.grid(row=4,column=1,sticky=E,padx=5,pady=.5)
 
+        #for highlighting missing fields and turning off red when user is inputting
+        self.host_name_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.host_name_entry))
+        self.host_name_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.host_name_entry))
+
         #ask user for community url slug
         community_label = ttk.Label(self,text="Community (URL slug or UUID): ")
         community_label.grid(row=5,column=0,sticky=W,padx=5,pady=.5)
-        community_entry = ttk.Entry(self,textvariable=self._community_slug)
-        community_entry.grid(row=5,column=1,sticky=E,padx=5,pady=.5)
+        self.community_entry = ttk.Entry(self,textvariable=self._community_slug)
+        self.community_entry.grid(row=5,column=1,sticky=E,padx=5,pady=.5)
 
+        #for highlighting missing fields and turning off red when user is inputting
+        self.community_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.community_entry))
+        self.community_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.community_entry))
+   
         #ask for title of the dataset
         title_label: ttk.Label = ttk.Label(self, text="Title: ")
         title_label.grid(row=6, column=0, sticky=W, padx=5, pady=.5)
-        title_widget: ttk.Entry = ttk.Entry(self, textvariable=self._title) 
-        title_widget.grid(row=6, column=1, sticky=E, padx=5, pady=.5)
+        self.title_widget: ttk.Entry = ttk.Entry(self, textvariable=self._title) 
+        self.title_widget.grid(row=6, column=1, sticky=E, padx=5, pady=.5)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.title_widget.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.title_widget))
+        self.title_widget.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.title_widget))
 
         #ask for publication date, pre-populate with current date
         publication_date_label: ttk.Label = ttk.Label(self, text="Publication Date: ") 
         publication_date_label.grid(row=7, column=0, sticky=W, padx=5, pady=.5)
         self._publication_date.set(self._get_current_iso8601_date())  
-        publication_date_widget: ttk.Entry = ttk.Entry(self, textvariable=self._publication_date) 
-        publication_date_widget.grid(row=7, column=1, sticky=E, padx=5, pady=.5)
-    
+        self.publication_date_widget: ttk.Entry = ttk.Entry(self, textvariable=self._publication_date) 
+        self.publication_date_widget.grid(row=7, column=1, sticky=E, padx=5, pady=.5)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.publication_date_widget.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.publication_date_widget))
+        self.publication_date_widget.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.publication_date_widget))
+
         #presets
         preset_label = ttk.Label(self,text="Setting: ")
         preset_label.grid(row=0, column=0, sticky=W, padx=5, pady=.5)
@@ -137,3 +158,18 @@ class StaticFieldsFrame(ttk.LabelFrame):
     def _get_current_iso8601_date(self) -> str:
         today: date = date.today() 
         return today.isoformat()
+
+    def get_title_entry_widget(self) -> ttk.Entry:
+        return self.title_widget
+
+    def get_api_key_entry_widget(self) -> ttk.Entry:
+        return self.api_key_entry
+
+    def get_host_name_entry_widget(self) -> ttk.Entry:
+        return self.host_name_entry
+
+    def get_community_entry_widget(self) -> ttk.Entry:
+        return self.community_entry
+
+    def get_publication_date_entry_widget(self) -> ttk.Entry:
+        return self.publication_date_widget

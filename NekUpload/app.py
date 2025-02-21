@@ -12,6 +12,7 @@ from NekUpload.frontend.header_frame import HeaderFrame
 from NekUpload.frontend.static_fields_frame import StaticFieldsFrame
 from NekUpload.frontend.dynamic_fields_frame import DynamicFieldsFrame
 from NekUpload.frontend.file_selector import FileSelectorNotebookFrame
+from NekUpload.frontend import style_guide
 import logging
 
 class NekUploadGUI:
@@ -60,12 +61,39 @@ class NekUploadGUI:
         return mainframe
     
     def submit_form(self) -> None: 
-        
         #check all fields filled
+        is_mandatory_fields_missing = False
+
+        if not self.static_fields_frame.get_title_entry_widget().get():
+            style_guide.show_error_in_entry(self.static_fields_frame.get_title_entry_widget())
+            is_mandatory_fields_missing = True
+
+        if not self.static_fields_frame.get_api_key_entry_widget().get():
+            style_guide.show_error_in_entry(self.static_fields_frame.get_api_key_entry_widget())
+            is_mandatory_fields_missing = True
+
+        if not self.static_fields_frame.get_community_entry_widget().get():
+            style_guide.show_error_in_entry(self.static_fields_frame.get_community_entry_widget())
+            is_mandatory_fields_missing = True
+
+        if not self.static_fields_frame.get_host_name_entry_widget().get():
+            style_guide.show_error_in_entry(self.static_fields_frame.get_host_name_entry_widget())
+            is_mandatory_fields_missing = True
+
+        if not self.static_fields_frame.get_publication_date_entry_widget().get():
+            style_guide.show_error_in_entry(self.static_fields_frame.get_publication_date_entry_widget())
+            is_mandatory_fields_missing = True
+
+        if is_mandatory_fields_missing:
+            logging.error("Mandatory Fields Missing")
+            return
+        
         is_read_user_guide = self.static_fields_frame.is_read_user_guide
         if not is_read_user_guide or is_read_user_guide == "False":
             logging.error("User guide not read. Please read user guide and check box after.")
             return
+        
+            
         
         authors_from_app: List[InvenioOrgInfo | InvenioPersonInfo] = self.dynamic_fields_frame.author_list
         if not authors_from_app:
