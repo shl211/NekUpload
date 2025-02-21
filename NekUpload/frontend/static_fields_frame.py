@@ -6,6 +6,8 @@ from . import style_guide
 class StaticFieldsFrame(ttk.LabelFrame):
     def __init__(self,parent: ttk.Frame):
         super().__init__(parent, text="Basic Info")
+        """Create a frame with basic information to be filled out. Static as no funky things going on with the widget formatting.
+        """
         
         self._is_read_user_guide: StringVar = StringVar()
         self._api_key_env_var: StringVar = StringVar()
@@ -85,6 +87,11 @@ class StaticFieldsFrame(ttk.LabelFrame):
         setting_combobox.bind("<<ComboboxSelected>>",self.on_combobox_select)
 
     def on_combobox_select(self,event: Event):
+        """Callback for combobox selection, sets default values in some fields
+
+        Args:
+            event (Event): _description_
+        """
         selected_value = event.widget.get()
 
         if selected_value == "AE Database":
@@ -96,14 +103,20 @@ class StaticFieldsFrame(ttk.LabelFrame):
 
     #Sets settings for default config
     def set_AE_db_default(self):
-       self._host_name.set("https://data.ae.ic.ac.uk")
-       self._community_slug.set("nektar") #don't actually know yet
+        """Set default settings for sending to AE database
+        """
+        self._host_name.set("https://data.ae.ic.ac.uk")
+        self._community_slug.set("nektar") #don't actually know yet
 
     def set_default(self):
+        """No default settings
+        """
         self._host_name.set("")
         self._community_slug.set("")
 
     def set_demo_default(self):
+        """Set default settings for sending to a demo instance
+        """
         self._host_name.set("https://inveniordm.web.cern.ch")
         self._community_slug.set("test_nekupload")
 

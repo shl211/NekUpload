@@ -4,7 +4,18 @@ from typing import Callable
 from . import style_guide
 
 class CreateAuthorPersonWindow(Toplevel):
+    """Window containing form to create author (person)
+
+    Args:
+        Toplevel (_type_): tkinter Window object
+    """
     def __init__(self,root: Tk, submit_function: Callable):
+        """
+        Initializes the CreateAuthorWindow.
+        Args:
+            root (Tk): The root window of the Tkinter application.
+            submit_function (Callable): The function to be called when the submit button is pressed.
+        """
         super().__init__(root)
 
         self.title("Specify Author Information") 
@@ -71,6 +82,11 @@ class CreateAuthorPersonWindow(Toplevel):
         submit_button.grid(row=10,column=0,pady=10)
 
     def _on_submit(self,submit_function: Callable):
+        """Wrapper enforcing validation before submit callable is executed
+
+        Args:
+            submit_function (Callable): Callable to be executed upon hitting submit
+        """
         #enforce mandatory fields
         #don't return immediately so all incomplete fields highlighted together
         is_exit = False
@@ -87,7 +103,6 @@ class CreateAuthorPersonWindow(Toplevel):
             return
         
         submit_function()
-
 
     @property
     def given_name(self):
@@ -110,7 +125,18 @@ class CreateAuthorPersonWindow(Toplevel):
         return self._id.get()
 
 class CreateAuthorOrgWindow(Toplevel):
+    """Window containing form to create author (organisation)
+
+    Args:
+        Toplevel (_type_): tkinter Window object
+    """
     def __init__(self,root: Tk, submit_function: Callable):
+        """
+        Initializes the CreateAuthorWindow.
+        Args:
+            root (Tk): The root window of the Tkinter application.
+            submit_function (Callable): The function to be called when the submit button is pressed.
+        """
         super().__init__(root)
 
         self.title("Specify Author Information") 
@@ -166,6 +192,11 @@ class CreateAuthorOrgWindow(Toplevel):
         submit_button.grid(row=10,column=0,pady=10)
 
     def _on_submit(self,submit_function: Callable):
+        """Wrapper enforcing validation before submit callable is executed
+
+        Args:
+            submit_function (Callable): Callable to be executed upon hitting submit
+        """
         #enforce mandatory fields, show missing field
         if not self._org_name.get():
             style_guide.show_error_in_entry(self.name_entry)

@@ -60,8 +60,7 @@ class NekUploadGUI:
         mainframe.rowconfigure(0, weight=1)
         return mainframe
     
-    def submit_form(self) -> None: 
-        #check all fields filled
+    def _check_mandatory_static_fields(self) -> bool:
         is_mandatory_fields_missing = False
 
         if not self.static_fields_frame.get_title_entry_widget().get():
@@ -84,16 +83,18 @@ class NekUploadGUI:
             style_guide.show_error_in_entry(self.static_fields_frame.get_publication_date_entry_widget())
             is_mandatory_fields_missing = True
 
-        if is_mandatory_fields_missing:
+        return is_mandatory_fields_missing
+
+    def submit_form(self) -> None: 
+        #check all fields filled
+        if self._check_mandatory_static_fields():
             logging.error("Mandatory Fields Missing")
             return
         
         is_read_user_guide = self.static_fields_frame.is_read_user_guide
         if not is_read_user_guide or is_read_user_guide == "False":
             logging.error("User guide not read. Please read user guide and check box after.")
-            return
-        
-            
+            return    
         
         authors_from_app: List[InvenioOrgInfo | InvenioPersonInfo] = self.dynamic_fields_frame.author_list
         if not authors_from_app:

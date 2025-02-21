@@ -38,18 +38,28 @@ class DynamicFieldsFrame(ttk.LabelFrame):
         delete_button.grid(row=3,column=1)
 
     def _create_author_person(self) -> None:
+        """Opens a new window with a form to specify the author as a person
+        """
+        
         # The lambda function will be executed later when triggered by an event.
         # By that time, new_window will have already been created by __init__.
         # This works because lambdas capture variables by reference, not by value.
         new_window = CreateAuthorPersonWindow(self.root,lambda: self.submit_author_person_info(new_window))
 
     def _create_author_org(self) -> None:
+        """Opens a new window with a form to specify the author as an organisation
+        """
         # The lambda function will be executed later when triggered by an event.
         # By that time, new_window will have already been created by __init__.
         # This works because lambdas capture variables by reference, not by value.
         new_window = CreateAuthorOrgWindow(self.root,lambda: self.submit_author_org_info(new_window))
 
     def submit_author_person_info(self,window: CreateAuthorPersonWindow):
+        """Takes person data from CreateAuthorPersonWindow and stores it. Closes window on success.
+
+        Args:
+            window (CreateAuthorPersonWindow): Window containing form to specify user info
+        """
         author_data = {}
         author_data['type'] = 'personal'
         author_data['given_name'] = window.given_name
@@ -67,6 +77,11 @@ class DynamicFieldsFrame(ttk.LabelFrame):
         window.destroy()
 
     def submit_author_org_info(self,window: CreateAuthorOrgWindow):
+        """Takes person data from CreateAuthorOrgWindow and stores it. Closes window on success.
+
+        Args:
+            window (CreateAuthorOrgWindow): Window containing form to specify organisation info
+        """
         author_data = {}
         author_data['type'] = 'organizational'
         author_data['name'] = window.name
@@ -82,6 +97,8 @@ class DynamicFieldsFrame(ttk.LabelFrame):
         window.destroy()
 
     def _delete_selected_author(self) -> None:
+        """Delete the selected author from the list of authors. Deletion is accomplished via a Button connected to a Listbox.
+        """
         selection_indices = self.author_listbox.curselection()
         if selection_indices:
             # 1. Get the items to delete *before* modifying the listbox
@@ -102,4 +119,9 @@ class DynamicFieldsFrame(ttk.LabelFrame):
 
     @property
     def author_list(self) -> List[Dict[str,Any]]:
+        """Read only access to list of authors
+
+        Returns:
+            List[Dict[str,Any]]: Dictionary containing information on authors
+        """
         return self.authors

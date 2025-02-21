@@ -4,12 +4,22 @@ from tkinter import scrolledtext
 
 import logging
 
-class TerminalHandler(logging.Handler):  # Custom logging handler
+class TerminalHandler(logging.Handler):
+    """Custom logging handler
+
+    Args:
+        logging (_type_): _description_
+    """
     def __init__(self, terminal: 'TerminalWidget'):
         super().__init__()
         self.terminal = terminal
 
     def emit(self, record):
+        """Writes a log to the terminal
+
+        Args:
+            record (_type_): _description_
+        """
         msg = self.format(record)
         level = record.levelname  # Get the log level
 
@@ -21,7 +31,18 @@ class TerminalHandler(logging.Handler):  # Custom logging handler
         self.terminal.terminal.update_idletasks()
 
 class TerminalWidget(ttk.Frame):
+    """Terminal widget to emulate a terminal
+
+    Args:
+        ttk (_type_): _description_
+    """
     def __init__(self, parent: ttk.Frame, height=10, **kwargs):
+        """Creates a widget containing a text terminal
+
+        Args:
+            parent (ttk.Frame): Parent frame
+            height (int, optional): Height of terminal. Defaults to 10.
+        """
         super().__init__(parent, **kwargs)
 
         self.terminal = scrolledtext.ScrolledText(
