@@ -1,0 +1,141 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "CFD Metadata (InvenioRDM Supplement)",
+    "description": "CFD-specific metadata to supplement InvenioRDM's metadata",
+    "type": "object",
+    "properties": {
+        "solver-info" : {
+            "description": "Information on the computational solver",
+            "type": "object",
+            "properties": {
+                "equation-type": {
+                    "description": "Fundamental equation being solved",
+                    "type": "string"
+                },
+                "turbulence-model": {
+                    "description": "Turbulence model used",
+                    "type": "string"
+                },
+                "integration-scheme": {
+                    "description": "Integration scheme used to solve equation",
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "scheme-family": {"type": "string"},
+                        "implicit": {"type": "boolean"},
+                        "explicit": {"type": "boolean"},
+                        "order": {"type": "integer"}
+                    },
+                    "required": ["name"]
+                },
+                "timestep": {
+                    "description": "Simulation timestep if fixed. Ignore if adaptive",
+                    "type": "number"
+                },
+                "fixed-timstep": {"type": "boolean"},
+                "adaptive-timestep": {"type": "boolean"},
+                "simulation-time": {
+                    "description": "Total time for simulation to run",
+                    "type": "number"
+                }
+            }
+        },
+
+        "geometry": {
+            "description": "Information on the geometry",
+            "type": "object",
+            "properties": {
+                "min_domain": {
+                    "description": "Minimum coordinates describing domain",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "max_domain": {
+                    "description": "Minimum coordinates describing domain",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "dimension": {
+                    "description": "Dimensionality of the geometry",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3
+                }
+            }
+        },
+
+        "reference-values": {
+            "description": "Add any simulation reference values here",
+            "type": "object",
+            "properties": {
+                "reynolds": {"type": "number","exclusiveMinimum": 0},
+                "lift-coefficient": {"type": "number"},
+                "drag-coefficient": {"type": "number", "minimum": 0},
+                "moment-coefficient": {"type": "number"},
+                "mach": {"type": "number", "exclusiveMinimum": 0},
+                "strouhal": {"type": "number","exclusiveMinimum": 0},
+                "altitude": {
+                    "description": "Reference altitude in m",
+                    "type": "number"
+                },
+                "density": {
+                    "description": "Reference density in kg/m^3",
+                    "type": "number"
+                },
+                "pressure-coefficient": {
+                    "description": "Reference pressue coefficient",
+                    "type": "number"
+                },
+                "angle-of-attack": {
+                    "description": "Angle of attack (degrees)",
+                    "type": "number"
+                },
+                "velocity": {
+                    "description": "Reference velocity in m/s",
+                    "type": "number"
+                },
+                "temperature": {
+                    "description": "Reference temperature in Kelvin",
+                    "type": "number"
+                },
+                "skin-friction-coefficient": {
+                    "description": "Reference skin friction coefficient",
+                    "type": "number"
+                }
+            }
+        },
+
+        "mesh-quality": {
+            "description": "Description of mesh quality",
+            "type": "object",
+            "properties": {
+                "aspect-ratio": {
+                    "description": "Aspect ratio of mesh elements",
+                    "type": "number"
+                },
+                "number-of-elements": {
+                    "description": "Number of elements in the mesh",
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                },
+                "Yplus": {
+                    "description": "Y+ value for turbulence simulations",
+                    "type": "number"
+                },
+                "skewness": {
+                    "description": "?",
+                    "type": "number"
+                }
+            }
+        }
+
+    }
+}

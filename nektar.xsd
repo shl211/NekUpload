@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<!-- Standard defined expansion-->
+<xs:complexType name="StandardEType">
+    <xs:attribute name="COMPOSITE" type="xs:string" use="required"/>
+    <xs:attribute name="NUMMODES" type="xs:int" use="required"/>
+    <xs:attribute name="FIELD" type="xs:string"/>
+    <xs:attribute name="TYPE" type="xs:string"/>
+</xs:complexType>
+
+<!-- User defined expansion-->
+<xs:complexType name="UserDefinedEType">
+    <xs:attribute name="COMPOSITE" type="xs:string" use="required"/>
+    <xs:attribute name="NUMMODES" type="xs:string" use="required"/>
+    <xs:attribute name="FIELD" type="xs:string"/>
+    <xs:attribute name="BASISTYPE" type="xs:string"/>
+    <xs:attribute name="NUMPOINTS" type="xs:string"/>
+    <xs:attribute name="POINTSTYPE" type="xs:string"/>
+</xs:complexType>
+
+<!-- PARAMETERS -->
+<xs:complexType name="ParameterType" minOccurs="0">
+    <xs:sequence>
+        <xs:element name="P" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- SOLVER INFO-->
+<xs:complexType name="SolverInfoType">
+    <xs:sequence>
+        <xs:element name="I" maxOccurs="unbounded" minOccurs="1">
+            <xs:complexType>
+                <xs:attribute name="PROPERTY" type="xs:string" use="required"/>
+                <xs:attribute name="VALUE" type="xs:string" use="required"/>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- VARIABLES -->
+<xs:complexType name="VariableType">
+    <xs:sequence>
+        <xs:element name="V" minOccurs="1" maxOccurs="unbounded">
+            <xs:complexType>
+                <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                        <xs:attribute name="ID" type="xs:int" use="required"/>
+                    </xs:extension>
+                </xs:simpleContent>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- BOUNDARYREGIONS -->
+<xs:complexType name="BoundaryRegionType">
+    <xs:sequence>
+        <xs:element name="B" minOccurs="1" maxOccurs="unbounded">
+            <xs:complexType>
+                <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                        <xs:attribute name="ID" type="xs:int" use="required"/>
+                    </xs:extension>
+                </xs:simpleContent>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- Global System Solution Algorithm-->
+<xs:complexType name="GlobalSysSolInfoType">
+    <xs:sequence>
+        <xs:element name="V" minOccurs="1" maxOccurs="unbounded">
+            <xs:complexType>
+                <xs:attribute name="VAR" type="xs:string" use="required"/>
+                <xs:sequence>
+                    <xs:element name="I" maxOccurs="unbounded">
+                        <xs:complexType>
+                            <xs:attribute name="PROPERTY" type="xs:string" use="required"/>
+                            <xs:attribute name="VALUE" type="xs:string" use="required"/>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- BOUNDARYCONDITIONS-->
+<xs:complexType name="BoundaryRegionType">
+    <xs:attribute name="VAR" type="xs:string" use="required"/>
+    <xs:attribute name="VALUE" type="xs:string" use="required"/>
+    <xs:attribute name="USERDEFINEDTYPE" type="xs:string"/>
+</xs:complexType>
+
+<xs:complexType name="BoundaryConditionsType">
+    <xs:sequence>
+        <xs:element name="REGION" maxOccurs="unbounded">
+            <xs:complexType>
+                <xs:attribute name="REF" type="xs:int" use="required"/>
+                <xs:choice maxOccurs="unbounded">
+                    <xs:element name="D" type="BoundaryRegionType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="N" type="BoundaryRegionType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="P" type="BoundaryRegionType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="R" minOccurs="0" maxOccurs="unbounded">
+                        <xs:complexType>
+                            <xs:attribute name="PRIMCOEFF" type="xs:string" use="required"/>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:choice>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- Functions -->
+<xs:complexType name="FunctionType">
+    <xs:sequence>
+        <xs:element name="E" maxOccurs="unbounded">
+            <xs:complexType>
+                <xs:attribute name="VAR" type="xs:string" use="required"/>
+                <xs:attribute name="VALUE" type="xs:string" use="required"/>
+                <xs:attribute name="EVARS" type="xs:string"/>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- Time Integration Scheme -->
+<xs:complexType name="TimeIntegrationSchemeType">
+    <xs:sequence>
+        <xs:element name="METHOD" type="xs:string"/>
+        <xs:element name="VARIANT" type="xs:string"/>
+        <xs:element name="ORDER" type="xs:int"/>
+        <xs:element name="FREEPARAMETERS" type="xs:string"/>
+    </xs:sequence>
+</xs:complexType>
+
+<!-- This is the root element -->
+<xs:element name="NEKTAR">
+    <xs:complexType>
+        <xs:all>
+
+            <!-- Metadata could appear if NekMesh used -->
+            <xs:element name="Metadata" minOccurs="0">
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="Provenance">
+                            <xs:complexType>
+                                <xs:all>
+                                    <xs:element name="GitBranch" type="xs:string"/>
+                                    <xs:element name="GitSHA1" type="xs:string"/>
+                                    <xs:element name="Hostname" type="xs:string"/>
+                                    <xs:element name="NektarVersion" type="xs:string"/>
+                                    <xs:element name="Timestamp" type="xs:string"/>
+                                </xs:all>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="NekMeshCommandLine" type="xs:string"/>
+                    </xs:all>
+                </xs:complexType>
+            </xs:element>
+
+            <!-- Only allow geometry as HDF5 File. Note that this is for enforcement of Nektar++ best practices -->
+            <xs:element name="GEOMETRY" minOccurs="1">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation>Define where the HDF5 geometry file is located</xs:documentation>
+                    </xs:annotation>
+                    <xs:attribute name="DIM" type="xs:string" use="required"/>
+                    <xs:attribute name="SPACE" type="xs:string" use="required"/>
+                    <xs:attribute name="HDF5FILE" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+        
+            <!-- Expansions can be defined here -->
+            <xs:element name="EXPANSIONS" minOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <!--Allow both user and standard type expansions to be specified-->
+                        <xs:choice maxOccurs="unbounded">
+                            <xs:element name="E" type="StandardEType"/>
+                            <xs:element name="E" type="UserDefinedEType"/>
+                            <!-- There are also ELEMENT and F and H??? -->
+                        </xs:choice>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        
+            <!-- Conditions can be defined here-->
+            <xs:element name="CONDITIONS" minOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:choice maxOccurs="unbounded">
+                            <xs:element name="PARAMETERS" type="ParameterType"/>
+                            <xs:element name="SOLVERINFO" type="SolverInfoType"/>
+                            <xs:element name="VARIABLES" type="VariableType"/>
+                            <xs:element name="BOUNDARYREGIONS" type="BoundaryRegionsType"/>
+                            <xs:element name="FUNCTION" type="FunctionType"/>
+                            <xs:element name="TIMEINTEGRATIONSCHEME" type="TimeIntegrationSchemeType"/>
+                            <xs:element name="GLOBALSYSSOLNINFO" type="GlobalSysSolInfoType"/>
+                        </xs:choice>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
+    </xs:complexType>
+</xs:element>
