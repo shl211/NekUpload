@@ -87,7 +87,11 @@
                     <xs:element name="P" type="BoundaryConditionsRegionType" minOccurs="0" maxOccurs="unbounded"/>
                     <xs:element name="R" minOccurs="0" maxOccurs="unbounded">
                         <xs:complexType>
-                            <xs:attribute name="PRIMCOEFF" type="xs:string" use="required"/>
+                            <xs:attribute name="PRIMCOEFF" type="xs:string"/>
+                            <xs:attribute name="VAR" type="xs:string"/>
+                            <xs:attribute name="VALUE" type="xs:string"/>
+                            <xs:attribute name="FILE" type="xs:string"/>
+                            <xs:attribute name="USERDEFINEDTYPE" type="xs:string"/>
                         </xs:complexType>
                     </xs:element>
                 </xs:choice>
@@ -188,108 +192,74 @@
     </xs:sequence>
 </xs:complexType>
 
-<!-- Base type for all forcing types -->
-<xs:complexType name="ForcingBase" abstract="true">
-    <xs:attribute name="TYPE" type="xs:string" use="required"/>
-</xs:complexType>
+<!-- Absorption Force Definition -->
+<xs:group name="AbsorptionForceGroup">
+    <xs:sequence>
+        <xs:choice maxOccurs="4">
+            <xs:element name="COEFF" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFFLOW" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFFLOWTIME" type="xs:string" minOccurs="0"/>
+            <xs:element name="BOUNDARYREGIONS" type="xs:string" minOccurs="0"/>
+        </xs:choice>
+    </xs:sequence>
+</xs:group>
 
-<!-- Absorption -->
-<xs:complexType name="ForcingAbsorption">
-    <xs:complexContent>
-        <xs:extension base="ForcingBase">
-            <xs:sequence>
-                <xs:choice maxOccurs="unbounded">
-                    <xs:element name="COEFF" type="xs:string"/>
-                    <xs:element name="REFFLOW" type="xs:string"/>
-                    <xs:element name="REFFLOWTIME" type="xs:string"/>
-                    <xs:element name="BOUNDARYREGIONS" type="xs:string"/>
-                </xs:choice>
-            </xs:sequence>
-        </xs:extension>
-    </xs:complexContent>
-</xs:complexType>
+<!-- Body Force Definition -->
+<xs:group name="BodyForceGroup">
+    <xs:sequence>
+        <xs:element name="BODYFORCE" type="xs:string"/>
+    </xs:sequence>
+</xs:group>
 
-<!-- Body -->
-<xs:complexType name="ForcingBody">
-    <xs:complexContent>
-        <xs:extension base="ForcingBase">
-            <xs:sequence>
-                <xs:element name="BODYFORCE" type="xs:string"/>
-            </xs:sequence>
-        </xs:extension>
-    </xs:complexContent>
-</xs:complexType>
+<!-- Synthetic Turbulence Definition -->
+<xs:group name="SyntheticTurbulenceGroup">
+    <xs:sequence>
+        <xs:choice maxOccurs="5">
+            <xs:element name="BoxOfEddies" type="xs:string"/>
+            <xs:element name="Sigma" type="xs:string"/>
+            <xs:element name="BulkVelocity" type="xs:string"/>
+            <xs:element name="ReynoldsStresses" type="xs:string"/>
+            <xs:element name="CharLengthScales" type="xs:string"/>
+        </xs:choice>
+    </xs:sequence>
+</xs:group>
 
-<!-- Synthetic Turbulence Generator -->
-<xs:complexType name="ForcingSyntheticTurbulence">
-    <xs:complexContent>
-        <xs:extension base="ForcingBase">
-            <xs:sequence>
-                <xs:choice maxOccurs="unbounded">
-                    <xs:element name="BoxOfEddies" type="xs:string"/>
-                    <xs:element name="Sigma" type="xs:string"/>
-                    <xs:element name="BulkVelocity" type="xs:string"/>
-                    <xs:element name="ReynoldsStresses" type="xs:string"/>
-                    <xs:element name="CharLengthScales" type="xs:string"/>
-                </xs:choice>
-            </xs:sequence>
-        </xs:extension>
-    </xs:complexContent>
-</xs:complexType>
+<!-- Moving Reference Frame Definition -->
+<xs:group name="MovingReferenceFrameGroup">
+    <xs:sequence>
+        <xs:choice maxOccurs="11">
+            <xs:element name="FRAMEVELOCITY" type="xs:string"/>
+            <xs:element name="PIVOTPOINT" type="xs:string"/>
+            <xs:element name="EXTERNALFORCE" type="xs:string"/>
+            <xs:element name="MOTIONPRESCRIBED" type="xs:string"/>
+            <xs:element name="MASS" type="xs:string"/>
+            <xs:element name="DAMPING" type="xs:string"/>
+            <xs:element name="RIGIDITY" type="xs:string"/>
+            <xs:element name="INITIALDISPLACEMENT" type="xs:string"/>
+            <xs:element name="TRAVELINGWAVESPEED" type="xs:string"/>
+            <xs:element name="OutputFile" type="xs:string"/>
+            <xs:element name="OutputFrequency" type="xs:string"/>
+        </xs:choice>
+    </xs:sequence>
+</xs:group>
 
-<!-- Moving Reference Frame -->
-<xs:complexType name="ForcingMovingReference">
-    <xs:complexContent>
-        <xs:extension base="ForcingBase">
-            <xs:sequence>
-                <xs:choice maxOccurs="unbounded">
-                    <xs:element name="FRAMEVELOCITY" type="xs:string" minOccurs="1"/>
-                    <xs:element name="PIVOTPOINT" type="xs:string" minOccurs="1"/>
-                    <xs:element name="EXTERNALFORCE" type="xs:string"/>
-                    <xs:element name="MOTIONPRESCRIBED" type="xs:string"/>
-                    <xs:element name="MASS" type="xs:string"/>
-                    <xs:element name="DAMPING" type="xs:string"/>
-                    <xs:element name="RIGIDITY" type="xs:string"/>
-                    <xs:element name="INITIALDISPLACEMENT" type="xs:string"/>
-                    <xs:element name="TRAVELINGWAVESPEED" type="xs:string"/>
-                    <xs:element name="OutputFile" type="xs:string"/>
-                    <xs:element name="OutputFrequency" type="xs:string"/>
-                </xs:choice>
-            </xs:sequence>
-        </xs:extension>
-    </xs:complexContent>
-</xs:complexType>
+<!-- Programmatic Force Definition -->
+<xs:group name="ProgrammaticGroup">
+    <xs:sequence>
+        <xs:element name="PROGRAMMATIC" type="xs:string"/>
+    </xs:sequence>
+</xs:group>
 
-<!-- Programmatic -->
-<xs:complexType name="ForcingProgrammatic">
-    <xs:complexContent>
-        <xs:extension base="ForcingBase"/>
-    </xs:complexContent>
-</xs:complexType>
-
-<!-- Noise -->
-<xs:complexType name="ForcingNoise">
-    <xs:complexContent>
-        <xs:extension base="ForcingBase">
-            <xs:sequence>
-                <xs:choice maxOccurs="unbounded">
-                    <xs:element name="WHITENOISE" type="xs:string" minOccurs="1"/>
-                    <xs:element name="UPDATEFREQ" type="xs:string"/>
-                    <xs:element name="NSTEPS" type="xs:string"/>
-                </xs:choice>
-            </xs:sequence>
-        </xs:extension>
-    </xs:complexContent>
-</xs:complexType>
-
-<!-- Define FORCE as a substitution group -->
-<xs:element name="FORCE" type="ForcingBase" abstract="true"/>
-<xs:element name="FORCE_ABS" substitutionGroup="FORCE" type="ForcingAbsorption"/>
-<xs:element name="FORCE_BODY" substitutionGroup="FORCE" type="ForcingBody"/>
-<xs:element name="FORCE_SYNTHETIC" substitutionGroup="FORCE" type="ForcingSyntheticTurbulence"/>
-<xs:element name="FORCE_MRF" substitutionGroup="FORCE" type="ForcingMovingReference"/>
-<xs:element name="FORCE_PROG" substitutionGroup="FORCE" type="ForcingProgrammatic"/>
-<xs:element name="FORCE_NOISE" substitutionGroup="FORCE" type="ForcingNoise"/>
+<!-- Noise Force Definition -->
+<xs:group name="NoiseGroup">
+    <xs:sequence>
+        <xs:choice maxOccurs="3">
+            <xs:element name="WHITENOISE" type="xs:string" minOccurs="1"/>
+            <xs:element name="UPDATEFREQ" type="xs:string" minOccurs="1"/>
+            <xs:element name="NSTEPS" type="xs:string" minOccurs="1"/>
+        </xs:choice>
+    </xs:sequence>
+</xs:group>
 
 <!-- This is the root element -->
 <xs:element name="NEKTAR">
@@ -440,8 +410,20 @@
             <!-- Forcing -->
             <xs:element name="FORCING" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence maxOccurs="unbounded">
-                        <xs:element ref="FORCE"/>
+                    <xs:sequence>
+                        <xs:element name="FORCE" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:choice>
+                                    <xs:group ref="AbsorptionForceGroup"/>
+                                    <xs:group ref="BodyForceGroup"/>
+                                    <xs:group ref="SyntheticTurbulenceGroup"/>
+                                    <xs:group ref="MovingReferenceFrameGroup"/>
+                                    <xs:group ref="ProgrammaticGroup"/>
+                                    <xs:group ref="NoiseGroup"/>
+                                </xs:choice>
+                                <xs:attribute name="TYPE" type="xs:string" use="required"/>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
