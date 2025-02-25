@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<NEKTAR>
+    <GEOMETRY DIM="2" SPACE="2" HDF5FILE="Nozzle_AxiSym_NoSwirl.nekg" />
+    <EXPANSIONS>
+        <E COMPOSITE="C[1]" BASISTYPE="Modified_A,Modified_A" NUMMODES="2,2" POINTSTYPE="GaussLobattoLegendre,GaussLobattoLegendre" NUMPOINTS="3,3" FIELDS="rho,rhou,rhov,E" />
+    </EXPANSIONS>
+    <!-- <COLLECTIONS DEFAULT="Auto" /> -->
+    <CONDITIONS>
+        <PARAMETERS>
+            <!-- Simulation parameters -->
+            <P>CFL = 0.2</P>
+            <P>TimeStep = 0.0</P>
+            <P>NumSteps = 100</P>
+            <P>IO_InfoSteps = 100</P>
+            <P>IO_CheckSteps = 0</P>
+            <P>SteadyStateTol = 1e-7</P>
+            <!-- Fluid Properties -->
+            <P>Gamma = 1.4</P>
+            <P>GasConstant = 287.058</P>
+            <!-- Parameters for boundary conditions -->
+            <P>pIn = 1e5</P>
+            <P>pOut = 0.83049*pIn</P>
+            <P>TIn = 288</P>
+            <P>MachIn = 0.239543</P>
+            <P>rhoIn = pIn/(GasConstant*TIn)</P>
+            <P>cIn = sqrt(Gamma*pIn/rhoIn)</P>
+            <P>vIn = MachIn*cIn</P>
+            <P>pStagIn = pIn * (1 + (Gamma-1)/2 * MachIn^2)^(Gamma/(Gamma-1))</P>
+            <P>rhoStagIn = rhoIn * (pStagIn/pIn)^(1/Gamma)</P>
+            <!-- Reference state -->
+            <P>rhoInf = 1.225</P>
+            <P>pInf = pIn</P>
+            <P>vInf = 1</P>
+            <P>uInf = 0</P>
+            <!-- Parameters for artificial diffusion -->
+            <P>Skappa = -4.5</P>
+            <P>Kappa = 1.5</P>
+            <P>mu0 = 2</P>
+            <P>SensorOffset = 2</P>
+            <!-- Parameters for explicit filter -->
+            <P>FilterAlpha = 36</P>
+            <P>FilterCutoff = 0.0</P>
+            <P>FilterExponent = 16</P>
+        </PARAMETERS>
+        <SOLVERINFO>
+            <I PROPERTY="EQTYPE" VALUE="EulerCFE" />
+            <I PROPERTY="Projection" VALUE="DisContinuous" />
+            <I PROPERTY="AdvectionType" VALUE="WeakDG" />
+            <I PROPERTY="TimeIntegrationMethod" VALUE="RungeKutta3_SSP" />
+            <I PROPERTY="UpwindType" VALUE="HLLC" />
+            <I PROPERTY="ShockCaptureType" VALUE="Off" />
+            <I PROPERTY="ExponentialFiltering" VALUE="True" />
+        </SOLVERINFO>
+        <VARIABLES>
+            <V ID="0">rho</V>
+            <V ID="1">rhou</V>
+            <V ID="2">rhov</V>
+            <V ID="3">E</V>
+        </VARIABLES>
+        <BOUNDARYREGIONS>
+            <B ID="0">C[2]</B>
+            <B ID="1">C[3]</B>
+            <B ID="2">C[4]</B>
+            <B ID="3">C[5]</B>
+        </BOUNDARYREGIONS>
+        <BOUNDARYCONDITIONS>
+            <REGION REF="0">
+                <D VAR="rho" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="rhou" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="rhov" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="E" USERDEFINEDTYPE="Wall" VALUE="0" />
+            </REGION>
+            <REGION REF="1">
+                <D VAR="rho" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="rhou" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="rhov" USERDEFINEDTYPE="Wall" VALUE="0" />
+                <D VAR="E" USERDEFINEDTYPE="Wall" VALUE="0" />
+            </REGION>
+            <REGION REF="2">
+                <D VAR="rho" USERDEFINEDTYPE="StagnationInflow" VALUE="rhoStagIn" />
+                <D VAR="rhou" USERDEFINEDTYPE="StagnationInflow" VALUE="0" />
+                <D VAR="rhov" USERDEFINEDTYPE="StagnationInflow" VALUE="0" />
+                <D VAR="E" USERDEFINEDTYPE="StagnationInflow" VALUE="pStagIn/(Gamma-1)" />
+            </REGION>
+            <REGION REF="3">
+                <D VAR="rho" USERDEFINEDTYPE="PressureOutflow" VALUE="0" />
+                <D VAR="rhou" USERDEFINEDTYPE="PressureOutflow" VALUE="0" />
+                <D VAR="rhov" USERDEFINEDTYPE="PressureOutflow" VALUE="0" />
+                <D VAR="E" USERDEFINEDTYPE="PressureOutflow" VALUE="pOut" />
+            </REGION>
+        </BOUNDARYCONDITIONS>
+        <FUNCTION NAME="InitialConditions">
+            <E VAR="rho" VALUE="rhoInf" />
+            <E VAR="rhou" VALUE="rhoInf*uInf" />
+            <E VAR="rhov" VALUE="rhoInf*vInf" />
+            <E VAR="E" VALUE="pIn/(Gamma-1) + 0.5*rhoInf*uInf*uInf" />
+        </FUNCTION>
+    </CONDITIONS>
+    <FORCING>
+        <FORCE TYPE="AxiSymmetric" />
+    </FORCING>
+</NEKTAR>

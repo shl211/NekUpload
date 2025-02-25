@@ -391,6 +391,7 @@
                                 <xs:attribute name="COORDINATE1" type="xs:string" use="required"/>
                                 <xs:attribute name="COORDINATE2" type="xs:string" use="required"/>
                                 <xs:attribute name="NUMMODES" type="xs:string" use="required"/>
+                                <xs:attribute name="NUMPOINTS" type="xs:string" use="required"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
