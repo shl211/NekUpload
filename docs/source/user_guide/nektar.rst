@@ -46,7 +46,8 @@ In XML format, the geometry is sometimes nested inside session.xml, or can be in
     NekMesh session.xml HDF5geometry.nekg
 
     #if geometry is separate to session file
-    NekMesh session.xml XMLgeometry.xml HDF5geometry.nekg
+    nekupload mergexml session.xml geometry.xml merged_session.xml
+    NekMesh merged_session.xml HDF5geometry.nekg
 
 This will generate two files: HDF5geometry.xml (the new session file) and HDF5geometry.nekg (the new geometry file). An additional flag in the session file is required, ensuring it is placed before the expansion list being: 
 
@@ -55,6 +56,14 @@ This will generate two files: HDF5geometry.xml (the new session file) and HDF5ge
     1    <GEOMETRY DIM="3" SPACE="3" HDF5FILE="HDF5Mesh.nekg" />
 
 For more info, see `Section 4.5.2.1 of the Nektar User Guide <https://doc.nektar.info/userguide/latest/user-guidese19.html#x28-1230004.5>`_
+
+.. note::
+
+    **NekMesh** only accepts one input file for converting xml to nekg. To workaround this, this package provides a CLI **nekupload**. *nekupload mergexml file1 file2 output* will merge the two stated files, and any repeated first level elements are replaced with the one specified in file2. This is the standard Nektar++ behaviour when multiple input files are detected for a solver e.g. *ADRSolver file1.xml file2.xml* file1 and file2 are merged as per the previously stated rule. The new merged XML file can then be used with **NekMesh** as usual.
+
+.. warning::
+
+    Order of files specified is important in **nekupload**. First-level elements, such as <EXPANSIONS>, in first file will be replaced by the one defined in second file if present. Otherwise, appended. Formatting may be screwed up a little, so always double check files afterwards. 
 
 .. _converting-output-files:
 
