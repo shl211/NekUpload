@@ -1,26 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-<!-- Standard defined expansion-->
-<xs:complexType name="StandardEType">
-    <xs:attribute name="COMPOSITE" type="xs:string" use="required"/>
-    <xs:attribute name="NUMMODES" type="xs:int" use="required"/>
-    <xs:attribute name="FIELD" type="xs:string"/>
-    <xs:attribute name="TYPE" type="xs:string"/>
-    <xs:attribute name="REFIDS" type="xs:string"/>
-</xs:complexType>
-
-<!-- User defined expansion-->
-<xs:complexType name="UserDefinedEType">
-    <xs:attribute name="COMPOSITE" type="xs:string" use="required"/>
-    <xs:attribute name="NUMMODES" type="xs:string" use="required"/>
-    <xs:attribute name="FIELD" type="xs:string"/>
-    <xs:attribute name="BASISTYPE" type="xs:string"/>
-    <xs:attribute name="NUMPOINTS" type="xs:string"/>
-    <xs:attribute name="POINTSTYPE" type="xs:string"/>
-    <xs:attribute name="REFIDS" type="xs:string"/>
-</xs:complexType>
-
 <!-- PARAMETERS -->
 <xs:complexType name="ParameterType">
     <xs:sequence>
@@ -75,7 +55,6 @@
     <xs:sequence>
         <xs:element name="V" minOccurs="1" maxOccurs="unbounded">
             <xs:complexType>
-                <xs:attribute name="VAR" type="xs:string" use="required"/>
                 <xs:sequence>
                     <xs:element name="I" maxOccurs="unbounded">
                         <xs:complexType>
@@ -84,6 +63,7 @@
                         </xs:complexType>
                     </xs:element>
                 </xs:sequence>
+                <xs:attribute name="VAR" type="xs:string" use="required"/>
             </xs:complexType>
         </xs:element>
     </xs:sequence>
@@ -101,7 +81,6 @@
     <xs:sequence>
         <xs:element name="REGION" maxOccurs="unbounded">
             <xs:complexType>
-                <xs:attribute name="REF" type="xs:int" use="required"/>
                 <xs:choice maxOccurs="unbounded">
                     <xs:element name="D" type="BoundaryConditionsRegionType" minOccurs="0" maxOccurs="unbounded"/>
                     <xs:element name="N" type="BoundaryConditionsRegionType" minOccurs="0" maxOccurs="unbounded"/>
@@ -112,6 +91,7 @@
                         </xs:complexType>
                     </xs:element>
                 </xs:choice>
+                <xs:attribute name="REF" type="xs:int" use="required"/>
             </xs:complexType>
         </xs:element>
     </xs:sequence>
@@ -121,16 +101,25 @@
 <!-- Should separate out into different choices, like with expansions E-->
 <xs:complexType name="FunctionType">
     <xs:sequence>
-        <xs:element name="E" maxOccurs="unbounded">
-            <xs:complexType>
-                <xs:attribute name="VAR" type="xs:string" use="required"/>
-                <xs:attribute name="VALUE" type="xs:string" use="required"/>
-                <xs:attribute name="EVARS" type="xs:string"/>
-                <xs:attribute name="FILE" type="xs:string"/>
-                <xs:attribute name="TIMEDEPENDENT" type="xs:int"/>
-            </xs:complexType>
-        </xs:element>
+        <xs:choice maxOccurs="unbounded">
+            <xs:element name="E">
+                <xs:complexType>
+                    <xs:attribute name="VAR" type="xs:string" use="required"/>
+                    <xs:attribute name="VALUE" type="xs:string" use="required"/>
+                    <xs:attribute name="EVARS" type="xs:string"/>
+                    <xs:attribute name="TIMEDEPENDENT" type="xs:int"/>
+                </xs:complexType>                
+            </xs:element>
+            <xs:element name="F">
+                <xs:complexType>
+                    <xs:attribute name="VAR" type="xs:string" use="required"/>
+                    <xs:attribute name="TIMEDEPENDENT" type="xs:int"/>
+                    <xs:attribute name="FILE" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
     </xs:sequence>
+    <xs:attribute name="NAME" type="xs:string"/>
 </xs:complexType>
 
 <!-- Zones for Movements -->
@@ -343,11 +332,20 @@
                 <xs:complexType>
                     <xs:sequence>
                         <!--Allow both user and standard type expansions to be specified-->
-                        <xs:choice maxOccurs="unbounded">
-                            <xs:element name="E" type="StandardEType"/>
-                            <xs:element name="E" type="UserDefinedEType"/>
-                            <!-- There are also ELEMENT and F and H??? -->
-                        </xs:choice>
+                        <xs:element name="E" maxOccurs="unbounded">
+                            <xs:complexType>
+                                    <xs:attribute name="COMPOSITE" type="xs:string" use="required"/>
+                                    <xs:attribute name="NUMMODES" type="xs:string" use="required"/>
+                                    <xs:attribute name="TYPE" type="xs:string"/>
+                                    <xs:attribute name="FIELDS" type="xs:string"/>
+
+                                    <!-- For more complex user-defined definitions -->
+                                    <xs:attribute name="BASISTYPE" type="xs:string"/>
+                                    <xs:attribute name="NUMPOINTS" type="xs:string"/>
+                                    <xs:attribute name="POINTSTYPE" type="xs:string"/>
+                                    <xs:attribute name="REFIDS" type="xs:string"/>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -361,6 +359,7 @@
                             <xs:element name="SOLVERINFO" type="SolverInfoType"/>
                             <xs:element name="VARIABLES" type="VariableType"/>
                             <xs:element name="BOUNDARYREGIONS" type="BoundaryRegionType"/>
+                            <xs:element name="BOUNDARYCONDITIONS" type="BoundaryConditionsType"/>
                             <xs:element name="FUNCTION" type="FunctionType"/>
                             <xs:element name="TIMEINTEGRATIONSCHEME" type="TimeIntegrationSchemeType"/>
                             <xs:element name="GLOBALSYSSOLNINFO" type="GlobalSysSolInfoType"/>
@@ -370,7 +369,7 @@
             </xs:element>
 
             <!-- Filters here -->
-            <xs:element name="FILTERS" minOccurs="0" maxOccurs="1">
+            <xs:element name="FILTERS" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="FILTER" minOccurs="1" maxOccurs="unbounded">
@@ -410,7 +409,7 @@
             </xs:element>
 
             <!-- REFINEMENTS here -->
-            <xs:element name="REFINEMENTS">
+            <xs:element name="REFINEMENTS" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="R" maxOccurs="unbounded">
@@ -428,7 +427,7 @@
             </xs:element>
 
             <!-- MOVEMENTS here -->
-            <xs:element name="MOVEMENT">
+            <xs:element name="MOVEMENT" minOccurs="0">
                 <xs:complexType>
                     <xs:all>
                         <xs:element name="ZONES" type="ZonesType"/>
@@ -438,7 +437,7 @@
             </xs:element>
 
             <!-- Forcing -->
-            <xs:element name="FORCING">
+            <xs:element name="FORCING" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence maxOccurs="unbounded">
                         <xs:element ref="FORCE"/>
@@ -449,3 +448,5 @@
         </xs:all>
     </xs:complexType>
 </xs:element>
+
+</xs:schema>
