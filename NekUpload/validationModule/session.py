@@ -1,5 +1,6 @@
 from lxml import etree
 from .custom_exceptions import XMLSchemaException
+import os
 
 class ValidateSession:
     def __init__(self,file_path: str):
@@ -19,3 +20,7 @@ class ValidateSession:
             return True
         else:
             raise XMLSchemaException(self.file_path,schema.error_log)
+        
+    def validate(self) -> bool:
+        xsd_schema = os.path.join(os.path.dirname(__file__), 'nektar.xsd') #ensure path always correct
+        return self.is_valid_xml(self.file_path, xsd_schema)
