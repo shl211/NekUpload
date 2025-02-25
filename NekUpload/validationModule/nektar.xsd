@@ -172,6 +172,7 @@
                         </xs:complexType>
                     </xs:element>
                 </xs:all>
+                <xs:attribute name="NAME" type="xs:string"/>
             </xs:complexType>
         </xs:element>
     </xs:sequence>

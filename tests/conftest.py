@@ -67,3 +67,19 @@ def ADR_dataset_abs_paths(ADR_dataset_rel_paths) -> List[Dict[str, str | List[st
         })
 
     return dataset_abs
+
+@pytest.fixture()
+def valid_session_XML_files() -> List[str]:
+    dir = "datasets" #relative to root
+
+    #find all files recursively
+    xml_files = []
+    for root, _, files in os.walk(dir):
+        for file in files:
+            if file.endswith(".xml"):
+                xml_files.append(os.path.abspath(os.path.join(root, file)))
+    return xml_files
+
+@pytest.fixture()
+def nektar_session_schema() -> str:
+    return os.path.join("../NekUpload/validationModule/nektar.xsd") #path from test root to validation    
