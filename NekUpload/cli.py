@@ -11,6 +11,7 @@ import pathlib
 import yaml
 from ruamel.yaml import YAML
 from io import StringIO
+from NekUpload.utils.xml_reader import XMLReader
 
 @dataclass
 class Config:
@@ -359,6 +360,22 @@ def quickstart(name: str):
 
     with open(name, "w") as f:
         yaml_obj.dump(yaml_data, f)
+
+@cli.command()
+@click.argument("file1")
+@click.argument("file2")
+@click.argument("merge_file")
+def mergeXML(file1: str,file2: str, merge_file: str):
+    """Merges two XML files. If repeated first-level elements are detected,
+    elements from file2 will replace those in file1. Otherwise, will be appended.
+
+    \b
+    file1 (str): Path to XML file
+    file2 (str): Path to XML file
+    merge_file (str): Name of file where merged XML file is written to
+    """
+    with XMLReader(file1) as f:
+        f.merge_first_level_elements_with(file2,merge_file)
 
 def main():#Entry point
     cli()

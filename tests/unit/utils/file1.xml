@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<NEKTAR>
+    <REPLACE>
+        <NESTED>REPLACED</NESTED>
+    </REPLACE>
+
+    <NOREPLACE>
+        <TAG1 VALUE="1"/>
+    </NOREPLACE>
+</NEKTAR>
