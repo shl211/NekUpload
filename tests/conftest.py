@@ -82,4 +82,4 @@ def valid_session_XML_files() -> List[str]:
 
 @pytest.fixture()
 def nektar_session_schema() -> str:
-    return os.path.join("../NekUpload/validationModule/nektar.xsd") #path from test root to validation    
+    return os.path.join("../NekUpload/validationModule/schemas/nektar.xsd") #path from test root to validation    

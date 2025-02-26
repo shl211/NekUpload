@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Upload and validation pipeline for Nektar++ datasets to an online repository"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 dependencies = [
     "numpy",
     "h5py",
@@ -31,6 +31,12 @@ dependencies = [
 classifiers = [
     "Development Status :: 3 - Alpha",
 ]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"NekUpload" = ["validationModule/schemas/*"]
 
 [project.urls]
 nektar = "https://nektar.info"

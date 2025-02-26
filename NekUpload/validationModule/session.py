@@ -22,5 +22,5 @@ class ValidateSession:
             raise XMLSchemaException(self.file_path,schema.error_log)
         
     def validate(self) -> bool:
-        xsd_schema = os.path.join(os.path.dirname(__file__), 'nektar.xsd') #ensure path always correct
+        xsd_schema = os.path.join(os.path.dirname(__file__), 'schemas/nektar.xsd') #ensure path always correct
         return self.is_valid_xml(self.file_path, xsd_schema)
