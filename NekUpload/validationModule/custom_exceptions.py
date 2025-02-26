@@ -9,3 +9,17 @@ class XMLSchemaException(Exception):
         full_message = f"{message} for file {file}\n{errors}" if errors else f"{message} for file {file}\n(No detailed errors found)"
         
         super().__init__(full_message)
+
+class MissingInputFileException(Exception):
+    """Exception raised when the input file is missing."""
+    
+    def __init__(self, file: str, message="Input file is missing"):
+        full_message = f"{message}: {file}"
+        super().__init__(full_message)
+
+class MissingOutputFileException(Exception):
+    """Exception raised when the output file is missing."""
+    
+    def __init__(self, file: str, message="Output file is missing"):
+        full_message = f"{message}: {file}"
+        super().__init__(full_message)
