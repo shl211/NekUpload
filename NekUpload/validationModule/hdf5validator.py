@@ -32,7 +32,8 @@ class HDF5GroupDefinition(HDF5Definition):
 class HDF5DatasetDefinition(HDF5GroupDefinition):
     def __init__(self,path: str, dataset_shape: Tuple[int,...]=None):
         self.path = path
-        self.dataset_shape = dataset_shape
+        self.dataset_shape: Tuple[int,...] = dataset_shape
+        self.actual_shape: Tuple[int,...] = None
 
     def validate(self, f: h5py.File) -> bool:
         if self.path not in f:
@@ -44,19 +45,22 @@ class HDF5DatasetDefinition(HDF5GroupDefinition):
         
         #check dataset shape if it exists
         if self.dataset_shape:
-            shape: Tuple[int,...] = dataset.shape
+            self.shape: Tuple[int,...] = dataset.shape
             
             #check expected dimension
-            if len(shape) != len(self.dataset_shape):
-                raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {shape}, but expecting {self.dataset_shape}")
+            if len(self.shape) != len(self.dataset_shape):
+                raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.shape}, but expecting {self.dataset_shape}")
             
-            for size,constrained_size in zip(shape,self.dataset_shape):
+            for size,constrained_size in zip(self.shape,self.dataset_shape):
                 # negatives denotes no size restriction on dataset shape
                 #so only positive ones are constraints
                 if constrained_size >= 0 and constrained_size != size:
-                    raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {shape}, but expecting {self.dataset_shape}")
+                    raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.shape}, but expecting {self.dataset_shape}")
                 
         return True
+
+    def get_shape(self) -> Tuple[int,...]:
+        return self.actual_shape
 
 class GeometryHDF5Validator:
     NO_DIM_CONSTRAINTS = -1 #helper
@@ -144,3 +148,6 @@ class GeometryHDF5Validator:
                 pass
             except Exception:
                 raise
+
+        ##
+        # Check that all groups and datasets in the file are valid  
