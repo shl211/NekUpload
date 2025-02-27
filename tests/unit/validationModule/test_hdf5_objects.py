@@ -1,5 +1,4 @@
 from NekUpload.validationModule.hdf5validator import *
-import pytest
 
 def test_hdf5_group_no_attribute(valid_geometry_HDF5_files):
     
@@ -51,4 +50,32 @@ def test_hdf5_group_too_many_attribute(valid_geometry_HDF5_files):
         with h5py.File(geometry_file,"r") as f:
             assert not group_def.validate(f)
 
-    
+def test_hdf5_dataset_no_constraints(valid_geometry_HDF5_files):
+    nekg_files: List[str] = valid_geometry_HDF5_files
+
+    for geometry_file in nekg_files:
+        dataset_def = HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/COMPOSITE")
+        
+        with h5py.File(geometry_file,"r") as f:
+            assert dataset_def.validate(f)
+
+def test_hdf5_dataset_1d_dataset_constraints(valid_geometry_HDF5_files):    
+    nekg_files: List[str] = valid_geometry_HDF5_files
+
+    for geometry_file in nekg_files:
+        #-1 denotes no constraint in that dimension
+        dataset_def = HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/COMPOSITE",(-1,))
+        
+        with h5py.File(geometry_file,"r") as f:
+            assert dataset_def.validate(f)
+
+def test_hdf5_dataset_2d_dataset_constraints(valid_geometry_HDF5_files):    
+    nekg_files: List[str] = valid_geometry_HDF5_files
+
+    for geometry_file in nekg_files:
+        #-1 denotes no constraint in that dimension
+        # SEG is always defined
+        dataset_def = HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/SEG",(-1,2))
+        
+        with h5py.File(geometry_file,"r") as f:
+            assert dataset_def.validate(f)
