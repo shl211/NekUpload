@@ -81,5 +81,17 @@ def valid_session_XML_files() -> List[str]:
     return xml_files
 
 @pytest.fixture()
+def valid_geometry_HDF5_files() -> List[str]:
+    dir = "datasets" #relative to root
+
+    #find all files recursively
+    nekg_files = []
+    for root, _, files in os.walk(dir):
+        for file in files:
+            if file.endswith(".nekg"):
+                nekg_files.append(os.path.abspath(os.path.join(root, file)))
+    return nekg_files
+
+@pytest.fixture()
 def nektar_session_schema() -> str:
     return os.path.join("../NekUpload/validationModule/schemas/nektar.xsd") #path from test root to validation    
