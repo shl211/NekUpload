@@ -23,3 +23,10 @@ class MissingOutputFileException(Exception):
     def __init__(self, file: str, message="Output file is missing"):
         full_message = f"{message}: {file}"
         super().__init__(full_message)
+
+class HDF5SchemaException(Exception):
+    """Exception raised for errors in the HDF5 schema."""
+    
+    def __init__(self, file: str, message="HDF5 schema error"):
+        full_message = f"{message}: {file}"
+        super().__init__(full_message)

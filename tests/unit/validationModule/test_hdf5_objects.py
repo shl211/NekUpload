@@ -1,4 +1,9 @@
 from NekUpload.validationModule.hdf5validator import *
+from NekUpload.validationModule.custom_exceptions import HDF5SchemaException
+import pytest
+"""
+    TEST GROUP VALIDATOR
+"""
 
 def test_hdf5_group_no_attribute(valid_geometry_HDF5_files):
     
@@ -28,7 +33,14 @@ def test_hdf5_group_wrong(valid_geometry_HDF5_files):
         group_def = HDF5GroupDefinition("NEKTAR/INVALID")
         
         with h5py.File(geometry_file,"r") as f:
-            assert not group_def.validate(f)
+            try:
+                group_def.validate(f) #should fail
+                assert False, f"{geometry_file} should fail, but didn't"
+            except HDF5SchemaException:
+                #this is what should happen
+                pass
+            except Exception as e:
+                assert False, f"{geometry_file} failed in unpredictable way: {e}"
 
 def test_hdf5_group_missing_attribute(valid_geometry_HDF5_files):
     
@@ -38,7 +50,14 @@ def test_hdf5_group_missing_attribute(valid_geometry_HDF5_files):
         group_def = HDF5GroupDefinition("NEKTAR",["NO_ATTRIBUTE"])
         
         with h5py.File(geometry_file,"r") as f:
-            assert not group_def.validate(f)
+            try:
+                group_def.validate(f) #should fail
+                assert False, f"{geometry_file} should fail, but didn't"
+            except HDF5SchemaException:
+                #this is what should happen
+                pass
+            except Exception as e:
+                assert False, f"{geometry_file} failed in unpredictable way: {e}"
 
 def test_hdf5_group_too_many_attribute(valid_geometry_HDF5_files):
     
@@ -48,7 +67,18 @@ def test_hdf5_group_too_many_attribute(valid_geometry_HDF5_files):
         group_def = HDF5GroupDefinition("NEKTAR/GEOMETRY",["FORMAT_VERSION","NO_ATTRIBUTE"])
         
         with h5py.File(geometry_file,"r") as f:
-            assert not group_def.validate(f)
+            try:
+                group_def.validate(f) #should fail
+                assert False, f"{geometry_file} should fail, but didn't"
+            except HDF5SchemaException:
+                #this is what should happen
+                pass
+            except Exception as e:
+                assert False, f"{geometry_file} failed in unpredictable way: {e}"
+
+"""
+    TEST DATASET VALIDATOR
+"""
 
 def test_hdf5_dataset_no_constraints(valid_geometry_HDF5_files):
     nekg_files: List[str] = valid_geometry_HDF5_files
@@ -79,3 +109,50 @@ def test_hdf5_dataset_2d_dataset_constraints(valid_geometry_HDF5_files):
         
         with h5py.File(geometry_file,"r") as f:
             assert dataset_def.validate(f)
+
+def test_hdf5_dataset_nonexistent_dataset(valid_geometry_HDF5_files):
+    nekg_files: List[str] = valid_geometry_HDF5_files
+    
+    for geometry_file in nekg_files:
+        dataset_def = HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/NOTEXIST")
+        
+        with h5py.File(geometry_file,"r") as f:
+            try:
+                dataset_def.validate(f) #should fail
+                assert False, f"{geometry_file} should fail, but didn't"
+            except HDF5SchemaException:
+                #this is what should happen
+                pass
+            except Exception as e:
+                assert False, f"{geometry_file} failed in unpredictable way: {e}"
+
+def test_hdf5_dataset_invalid_dataset_constraints(valid_geometry_HDF5_files):
+    nekg_files: List[str] = valid_geometry_HDF5_files
+    
+    for geometry_file in nekg_files:
+        # SEG is always defined, should be X by 2, but we'll define it incorrectly
+        dataset_def = HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/SEG",(-1,5))
+        
+        with h5py.File(geometry_file,"r") as f:
+            try:
+                dataset_def.validate(f) #should fail
+                assert False, f"{geometry_file} should fail, but didn't"
+            except HDF5SchemaException:
+                #this is what should happen
+                pass
+            except Exception as e:
+                assert False, f"{geometry_file} failed in unpredictable way: {e}"
+
+"""
+    TEST COMBINED
+"""
+def test_hdf5_validator_accept(valid_geometry_HDF5_files):
+    nekg_files: List[str] = valid_geometry_HDF5_files
+
+    for geometry_file in nekg_files:
+        with h5py.File(geometry_file) as f:
+            validator = GeometryHDF5Validator(f)
+            try:
+                validator.validate()        
+            except Exception as e:
+                assert False,f"{geometry_file} failed geometry hdf5 validation. Should succeed. Error: {e}"
