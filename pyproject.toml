@@ -40,7 +40,7 @@ include-package-data = true
 "NekUpload" = ["validationModule/schemas/*"]
 
 [project.urls]
-nektar = "https://nektar.info"
+nektar = "https://www.nektar.info"
 
 [project.scripts]
 nekupload-app = "NekUpload.app:main"
