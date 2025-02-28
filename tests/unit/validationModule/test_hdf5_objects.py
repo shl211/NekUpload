@@ -58,9 +58,11 @@ def test_hdf5_group_missing_attribute(valid_geometry_HDF5_files):
             try:
                 group_def.validate(f) #should fail
                 assert False, f"{geometry_file} should fail, but didn't"
-            except HDF5SchemaException:
+            except HDF5SchemaInconsistentException:
                 #this is what should happen
                 pass
+            except HDF5SchemaException as e:
+                assert False, f"{geometry_file} did not fail in defined manner: {e}"
             except Exception as e:
                 assert False, f"{geometry_file} failed in unpredictable way: {e}"
 
@@ -75,9 +77,11 @@ def test_hdf5_group_too_many_attribute(valid_geometry_HDF5_files):
             try:
                 group_def.validate(f) #should fail
                 assert False, f"{geometry_file} should fail, but didn't"
-            except HDF5SchemaException:
+            except HDF5SchemaInconsistentException:
                 #this is what should happen
                 pass
+            except HDF5SchemaException as e:
+                assert False, f"{geometry_file} did not fail in defined manner: {e}"
             except Exception as e:
                 assert False, f"{geometry_file} failed in unpredictable way: {e}"
 
@@ -125,9 +129,11 @@ def test_hdf5_dataset_nonexistent_dataset(valid_geometry_HDF5_files):
             try:
                 dataset_def.validate(f) #should fail
                 assert False, f"{geometry_file} should fail, but didn't"
-            except HDF5SchemaException:
+            except HDF5SchemaExistenceException:
                 #this is what should happen
                 pass
+            except HDF5SchemaException as e:
+                assert False, f"{geometry_file} did not fail in defined manner: {e}"
             except Exception as e:
                 assert False, f"{geometry_file} failed in unpredictable way: {e}"
 
@@ -142,9 +148,11 @@ def test_hdf5_dataset_invalid_dataset_constraints(valid_geometry_HDF5_files):
             try:
                 dataset_def.validate(f) #should fail
                 assert False, f"{geometry_file} should fail, but didn't"
-            except HDF5SchemaException:
+            except HDF5SchemaInconsistentException:
                 #this is what should happen
                 pass
+            except HDF5SchemaException as e:
+                assert False, f"{geometry_file} did not fail in defined manner: {e}"
             except Exception as e:
                 assert False, f"{geometry_file} failed in unpredictable way: {e}"
 
@@ -213,7 +221,7 @@ def test_hdf5_geometry_validator_inconsistent_definitions(create_missing_inconsi
         try:
             validator.validate()  
             assert False,f"{file} succeeded geometry hdf5 validation. Should fail as MESH/HEX and MAPS/HEX have inconsistent definitions."
-        except HDF5SchemaMissingDatasetException:
+        except HDF5SchemaInconsistentException:
             pass
         except Exception as e:
             assert False,e

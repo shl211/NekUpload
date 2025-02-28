@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 import h5py
-from typing import List,Tuple,Dict,Set
+from typing import List,Tuple,Set
 from types import MappingProxyType
-from .custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException
+from .custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException,HDF5SchemaInconsistentException
+from dataclasses import dataclass
 
 class HDF5Definition(ABC):
     @abstractmethod
@@ -17,6 +18,9 @@ class HDF5GroupDefinition(HDF5Definition):
     Args:
         HDF5Definition (_type_): _description_
     """
+    path: str
+    attributes: List[str] = None
+
     def __init__(self,path: str, attributes: List[str]=None):
         """_summary_
 
@@ -46,17 +50,17 @@ class HDF5GroupDefinition(HDF5Definition):
         
         group: h5py.Group = f[self.path]
         if not isinstance(group, h5py.Group): 
-            raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} is a {type(group)},not a group")
+            raise HDF5SchemaInconsistentException(f,f"HDF5 schema error, {self.path} is a {type(group)},not a group")
 
         #check attributes exist
         if not set(self.attributes).issubset(group.attrs.keys()):
             missing_attributes = set(self.attributes) - set(group.attrs.keys())
             if missing_attributes:
-                raise HDF5SchemaException(f, f"HDF5 schema error, missing attributes in {self.path}: {missing_attributes}")
+                raise HDF5SchemaInconsistentException(f, f"HDF5 schema error, missing attributes in {self.path}: {missing_attributes}")
     
         return True
 
-class HDF5DatasetDefinition(HDF5GroupDefinition):
+class HDF5DatasetDefinition(HDF5Definition):
     """Given an HDF5 file, responsible for checking if dataset conforms to schema expectations, such as shape constraints.
         All exceptions raised from this class are of type HDF5SchemaException or its children.
 
@@ -72,7 +76,6 @@ class HDF5DatasetDefinition(HDF5GroupDefinition):
         """
         self.path = path
         self.dataset_shape: Tuple[int,...] = dataset_shape
-        self.actual_shape: Tuple[int,...] = None
 
     def validate(self, f: h5py.File) -> bool:
         """_summary_
@@ -94,34 +97,29 @@ class HDF5DatasetDefinition(HDF5GroupDefinition):
         
         dataset: h5py.Dataset = f[self.path]
         if not isinstance(dataset,h5py.Dataset):
-            raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} is a {type(dataset)}, not a dataset")
+            raise HDF5SchemaInconsistentException(f,f"HDF5 schema error, {self.path} is a {type(dataset)}, not a dataset")
         
         #check dataset shape if it exists
         if self.dataset_shape:
-            self.actual_shape: Tuple[int,...] = dataset.shape
+            actual_shape: Tuple[int,...] = dataset.shape
             
             #check expected dimension
-            if len(self.actual_shape) != len(self.dataset_shape):
-                raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.actual_shape}, but expecting {self.dataset_shape}")
+            if len(actual_shape) != len(self.dataset_shape):
+                raise HDF5SchemaInconsistentException(f,f"HDF5 schema error, {self.path} has dataset shape {actual_shape}, but expecting {self.dataset_shape}")
             
-            for size,constrained_size in zip(self.actual_shape,self.dataset_shape):
+            for size,constrained_size in zip(actual_shape,self.dataset_shape):
                 # negatives denotes no size restriction on dataset shape
                 #so only positive ones are constraints
                 if constrained_size >= 0 and constrained_size != size:
-                    raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.actual_shape}, but expecting {self.dataset_shape}")
+                    raise HDF5SchemaInconsistentException(f,f"HDF5 schema error, {self.path} has dataset shape {actual_shape}, but expecting {self.dataset_shape}")
                 
         return True
     
     def __str__(self):
         return self.path
 
-    def get_shape(self) -> Tuple[int,...]:
-        """_summary_
-
-        Returns:
-            Tuple[int,...]: _description_
-        """
-        return self.actual_shape
+    def get_path(self):
+        return self.path
 
 class GeometrySchemaHDF5Validator:
     NO_DIM_CONSTRAINTS = -1 #helper
@@ -247,7 +245,7 @@ class GeometrySchemaHDF5Validator:
             except Exception:
                 raise
 
-    def _check_pair_of_validated_datasets(self,dataset_1: HDF5DatasetDefinition, dataset_2: HDF5DatasetDefinition):
+    def _check_pair_of_validated_datasets(self, dataset_1: HDF5DatasetDefinition, dataset_2: HDF5DatasetDefinition):
         """_summary_
 
         Args:
@@ -257,14 +255,20 @@ class GeometrySchemaHDF5Validator:
         Raises:
             HDF5SchemaException: _description_
         """
-        shape1 = dataset_1.get_shape()
-        shape2 = dataset_2.get_shape()
+        data1 = self.file.get(dataset_1.get_path())
+        data2 = self.file.get(dataset_2.get_path())
 
-        if (shape1 and not shape2) or (shape2 and not shape1) :
-            raise HDF5SchemaMissingDatasetException(self.file,f"HDF5 Schema Error: {dataset_1} and {dataset_2} should be defined together, but one exists and other doesn't")
+        print(dataset_1, dataset_2, data1, data2)
 
-        if shape1 and shape2 and (shape1[0] != shape2[0]):
-            raise HDF5SchemaMissingDatasetException(self.file,f"HDF5 Schema Error: {dataset_1} has shape {shape1} and {dataset_2} has shape {shape2}. Inconsistent lengths {shape1[0]} != {shape2[0]}")
+        if (data1 is not None and data2 is None) or (data2 is not None and data1 is None):
+            raise HDF5SchemaMissingDatasetException(self.file, f"HDF5 Schema Error: {dataset_1} and {dataset_2} should be defined together, but one exists and other doesn't")
+
+        if data1 is not None and data2 is not None:
+            if isinstance(data1, h5py.Dataset) and isinstance(data2, h5py.Dataset):
+                shape1 = data1.shape
+                shape2 = data2.shape
+                if shape1[0] != shape2[0]:
+                    raise HDF5SchemaInconsistentException(self.file, f"HDF5 Schema Error: {dataset_1} has shape {shape1} and {dataset_2} has shape {shape2}. Inconsistent lengths {shape1[0]} != {shape2[0]}")
 
 class OutputSchemaHDF5Validator:
 
@@ -296,7 +300,7 @@ class OutputSchemaHDF5Validator:
 
     def _check_decomposition(self, decomposition_dataset: h5py.Dataset):
         if decomposition_dataset.shape[0] % 7 != 0:
-            raise HDF5SchemaException(self.file,"HDF5 Schema Error: Decomposition shape should be multiple of 7")
+            raise HDF5SchemaInconsistentException(self.file,"HDF5 Schema Error: Decomposition shape should be multiple of 7")
 
         expected_groups: List[HDF5GroupDefinition] = []
         for i in range(6,decomposition_dataset.shape[0],7):
