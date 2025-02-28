@@ -1,4 +1,4 @@
-from NekUpload.validationModule.hdf5validator import *
+from NekUpload.validationModule.hdf5schema_validator import *
 from NekUpload.validationModule.custom_exceptions import HDF5SchemaException
 import pytest
 """
@@ -151,7 +151,7 @@ def test_hdf5_geometry_validator_accept(valid_geometry_HDF5_files):
 
     for geometry_file in nekg_files:
         with h5py.File(geometry_file) as f:
-            validator = GeometryHDF5Validator(f)
+            validator = GeometrySchemaHDF5Validator(f)
             try:
                 validator.validate()        
             except Exception as e:
@@ -162,7 +162,7 @@ def test_hdf5_geometry_validator_reject_wrong_files(valid_output_fld_HDF5_files)
 
     for geometry_file in nekg_files:
         with h5py.File(geometry_file) as f:
-            validator = GeometryHDF5Validator(f)
+            validator = GeometrySchemaHDF5Validator(f)
             try:
                 validator.validate()  
                 assert False,f"{geometry_file} succeeded geometry hdf5 validation. Should fail. Error: {e}"
@@ -176,7 +176,7 @@ def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
 
     for output_file in fld_files:
         with h5py.File(output_file) as f:
-            validator = OutputHDF5Validator(f)
+            validator = OutputSchemaHDF5Validator(f)
             try:
                 validator.validate()        
             except Exception as e:
@@ -187,7 +187,7 @@ def test_hdf5_output_validator_reject_wrong_files(valid_geometry_HDF5_files):
 
     for output_file in fld_files:
         with h5py.File(output_file) as f:
-            validator = OutputHDF5Validator(f)
+            validator = OutputSchemaHDF5Validator(f)
             try:
                 validator.validate()        
                 assert False,f"{output_file} succeeded output hdf5 validation. Should fail. Error: {e}"

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import h5py
-from typing import List,Tuple
+from typing import List,Tuple,Dict
 from .custom_exceptions import HDF5SchemaException
 
 class HDF5Definition(ABC):
@@ -9,11 +9,36 @@ class HDF5Definition(ABC):
         pass
 
 class HDF5GroupDefinition(HDF5Definition):
+    """Given an HDF5 file, responsible for checking group conforms to correct structure and contains
+    the specified attributes. This is not an exclusive check, other non-specified attributes can also be present.
+
+    Args:
+        HDF5Definition (_type_): _description_
+    """
     def __init__(self,path: str, attributes: List[str]=None):
+        """_summary_
+
+        Args:
+            path (str): _description_
+            attributes (List[str], optional): _description_. Defaults to None.
+        """
         self.path = path
         self.attributes: List[str] = attributes if attributes is not None else []
 
     def validate(self,f: h5py.File) -> bool:
+        """_summary_
+
+        Args:
+            f (h5py.File): _description_
+
+        Raises:
+            HDF5SchemaException: _description_
+            HDF5SchemaException: _description_
+            HDF5SchemaException: _description_
+
+        Returns:
+            bool: _description_
+        """
         if self.path not in f:
             raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} is not in file")
         
@@ -30,12 +55,37 @@ class HDF5GroupDefinition(HDF5Definition):
         return True
 
 class HDF5DatasetDefinition(HDF5GroupDefinition):
+    """Given an HDF5 file, responsible for checking if dataset conforms to schema expectations, such as shape constraints.
+
+    Args:
+        HDF5GroupDefinition (_type_): _description_
+    """
     def __init__(self,path: str, dataset_shape: Tuple[int,...]=None):
+        """_summary_
+
+        Args:
+            path (str): Dataset path within the HDF5 file
+            dataset_shape (Tuple[int,...], optional): Describe the expected shape. If no constraints in a particular dimension, use -1. Defaults to None.
+        """
         self.path = path
         self.dataset_shape: Tuple[int,...] = dataset_shape
         self.actual_shape: Tuple[int,...] = None
 
     def validate(self, f: h5py.File) -> bool:
+        """_summary_
+
+        Args:
+            f (h5py.File): _description_
+
+        Raises:
+            HDF5SchemaException: _description_
+            HDF5SchemaException: _description_
+            HDF5SchemaException: _description_
+            HDF5SchemaException: _description_
+
+        Returns:
+            bool: _description_
+        """
         if self.path not in f:
             raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} is not in file")
         
@@ -60,9 +110,14 @@ class HDF5DatasetDefinition(HDF5GroupDefinition):
         return True
 
     def get_shape(self) -> Tuple[int,...]:
+        """_summary_
+
+        Returns:
+            Tuple[int,...]: _description_
+        """
         return self.actual_shape
 
-class GeometryHDF5Validator:
+class GeometrySchemaHDF5Validator:
     NO_DIM_CONSTRAINTS = -1 #helper
 
     BASE_GROUPS: Tuple[HDF5GroupDefinition] = (HDF5GroupDefinition("NEKTAR"),
@@ -108,24 +163,24 @@ class GeometryHDF5Validator:
 
     def validate(self):
         #check mandatory groups and datasets first
-        for group in GeometryHDF5Validator.BASE_GROUPS:
+        for group in GeometrySchemaHDF5Validator.BASE_GROUPS:
             group.validate(self.file)
                 
-        for group in GeometryHDF5Validator.DATASETS_MANDATORY_MAPS:
+        for group in GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MAPS:
             group.validate(self.file)
 
-        for group in GeometryHDF5Validator.DATASETS_MANDATORY_MESH:
+        for group in GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MESH:
             group.validate(self.file)
         
         #1d datasets should all be present too
-        for group in GeometryHDF5Validator.DATASETS_1D_MAPS:
+        for group in GeometrySchemaHDF5Validator.DATASETS_1D_MAPS:
             group.validate(self.file)
 
-        for group in GeometryHDF5Validator.DATASETS_1D_MESH:
+        for group in GeometrySchemaHDF5Validator.DATASETS_1D_MESH:
             group.validate(self.file)
 
         #not all 2d datasets are present
-        for group in GeometryHDF5Validator.DATASETS_2D_MAPS:
+        for group in GeometrySchemaHDF5Validator.DATASETS_2D_MAPS:
             try:
                 group.validate(self.file)
             except HDF5SchemaException:
@@ -133,7 +188,7 @@ class GeometryHDF5Validator:
             except Exception:
                 raise
 
-        for group in GeometryHDF5Validator.DATASETS_2D_MESH:
+        for group in GeometrySchemaHDF5Validator.DATASETS_2D_MESH:
             try:
                 group.validate(self.file)
             except HDF5SchemaException:
@@ -141,7 +196,7 @@ class GeometryHDF5Validator:
             except Exception:
                 raise
 
-        for group in GeometryHDF5Validator.DATASETS_2D_MAPS:
+        for group in GeometrySchemaHDF5Validator.DATASETS_2D_MAPS:
             try:
                 group.validate(self.file)
             except HDF5SchemaException:
@@ -153,7 +208,7 @@ class GeometryHDF5Validator:
         # Check that all groups and datasets in the file are valid  
 
 
-class OutputHDF5Validator:
+class OutputSchemaHDF5Validator:
 
     NO_DIM_CONSTRAINTS = -1 #helper
 
@@ -169,10 +224,10 @@ class OutputHDF5Validator:
         self.file: h5py.File = f
 
     def validate(self):
-        for group in OutputHDF5Validator.BASE_GROUPS:
+        for group in OutputSchemaHDF5Validator.BASE_GROUPS:
             group.validate(self.file)
 
-        for dataset in OutputHDF5Validator.EXPECTED_DATASETS:
+        for dataset in OutputSchemaHDF5Validator.EXPECTED_DATASETS:
             dataset.validate(self.file)
 
         #there should be other groups defined based on decomposition

@@ -1,5 +1,5 @@
 import os
-from  .hdf5validator import *
+from  .hdf5schema_validator import *
 from typing import Tuple
 
 class ValidateGeometry:
