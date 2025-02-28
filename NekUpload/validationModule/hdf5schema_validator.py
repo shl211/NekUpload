@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import h5py
-from typing import List,Tuple,Set
+from typing import List,Tuple,Set,Dict
 from types import MappingProxyType
 from .custom_exceptions import HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException,HDF5SchemaInconsistentException
 from dataclasses import dataclass,field
@@ -50,6 +50,12 @@ class HDF5GroupDefinition(HDF5Definition):
                 raise HDF5SchemaInconsistentException(f, f"HDF5 schema error, missing attributes in {self.path}: {missing_attributes}")
     
         return True
+
+    def __str__(self):
+        return self.path
+
+    def get_path(self):
+        return self.path
 
 @dataclass(frozen=True)
 class HDF5DatasetDefinition(HDF5Definition):
@@ -176,6 +182,7 @@ class GeometrySchemaHDF5Validator:
         self.file: h5py.File = f
 
         self.datasets_present: Set[str] = set()
+        self.element_number: Dict[str] = {}
         
     def validate(self):
         #check mandatory groups and datasets first
@@ -198,6 +205,8 @@ class GeometrySchemaHDF5Validator:
             #curve nodes only exception to above rule
             if key != "CURVE_NODES":
                 self._check_pair_of_validated_datasets(GeometrySchemaHDF5Validator.DATASETS_MAPS.get(key),GeometrySchemaHDF5Validator.DATASETS_MESH.get(key))
+
+
 
     def _check_mandatory_dataset(self,mandatory_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> None:
         """Helper function. Checks mandatiory datasets and if valid, adds to self.datasets_present the key
@@ -243,8 +252,6 @@ class GeometrySchemaHDF5Validator:
         data1 = self.file.get(dataset_1.get_path())
         data2 = self.file.get(dataset_2.get_path())
 
-        print(dataset_1, dataset_2, data1, data2)
-
         if (data1 is not None and data2 is None) or (data2 is not None and data1 is None):
             raise HDF5SchemaMissingDatasetException(self.file, f"HDF5 Schema Error: {dataset_1} and {dataset_2} should be defined together, but one exists and other doesn't")
 
@@ -254,6 +261,11 @@ class GeometrySchemaHDF5Validator:
                 shape2 = data2.shape
                 if shape1[0] != shape2[0]:
                     raise HDF5SchemaInconsistentException(self.file, f"HDF5 Schema Error: {dataset_1} has shape {shape1} and {dataset_2} has shape {shape2}. Inconsistent lengths {shape1[0]} != {shape2[0]}")
+
+    #TODO
+    def _check_element_construction(self,datasets_present: Set[str]):
+        #3D elements can only be defined if corresponding 2D elements are present
+        pass
 
 class OutputSchemaHDF5Validator:
 
