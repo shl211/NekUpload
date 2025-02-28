@@ -2,14 +2,15 @@ from abc import ABC, abstractmethod
 import h5py
 from typing import List,Tuple,Set
 from types import MappingProxyType
-from .custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException,HDF5SchemaInconsistentException
-from dataclasses import dataclass
+from .custom_exceptions import HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException,HDF5SchemaInconsistentException
+from dataclasses import dataclass,field
 
 class HDF5Definition(ABC):
     @abstractmethod
     def validate(self,h5py_file: h5py.File):
         pass
 
+@dataclass(frozen=True)
 class HDF5GroupDefinition(HDF5Definition):
     """Given an HDF5 file, responsible for checking group conforms to correct structure and contains
     the specified attributes. This is not an exclusive check, other non-specified attributes can also be present.
@@ -19,17 +20,7 @@ class HDF5GroupDefinition(HDF5Definition):
         HDF5Definition (_type_): _description_
     """
     path: str
-    attributes: List[str] = None
-
-    def __init__(self,path: str, attributes: List[str]=None):
-        """_summary_
-
-        Args:
-            path (str): _description_
-            attributes (List[str], optional): _description_. Defaults to None.
-        """
-        self.path = path
-        self.attributes: List[str] = attributes if attributes is not None else []
+    attributes: List[str] = field(default_factory=list)
 
     def validate(self,f: h5py.File) -> bool:
         """_summary_
@@ -60,6 +51,7 @@ class HDF5GroupDefinition(HDF5Definition):
     
         return True
 
+@dataclass(frozen=True)
 class HDF5DatasetDefinition(HDF5Definition):
     """Given an HDF5 file, responsible for checking if dataset conforms to schema expectations, such as shape constraints.
         All exceptions raised from this class are of type HDF5SchemaException or its children.
@@ -67,15 +59,8 @@ class HDF5DatasetDefinition(HDF5Definition):
     Args:
         HDF5GroupDefinition (_type_): _description_
     """
-    def __init__(self,path: str, dataset_shape: Tuple[int,...]=None):
-        """_summary_
-
-        Args:
-            path (str): Dataset path within the HDF5 file
-            dataset_shape (Tuple[int,...], optional): Describe the expected shape. If no constraints in a particular dimension, use -1. Defaults to None.
-        """
-        self.path = path
-        self.dataset_shape: Tuple[int,...] = dataset_shape
+    path: str
+    dataset_shape: Tuple[int,...] = ()
 
     def validate(self, f: h5py.File) -> bool:
         """_summary_
