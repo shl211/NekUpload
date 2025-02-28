@@ -1,5 +1,5 @@
 from NekUpload.validationModule.hdf5schema_validator import *
-from NekUpload.validationModule.custom_exceptions import HDF5SchemaException
+from NekUpload.validationModule.custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException
 import pytest
 """
     TEST GROUP VALIDATOR
@@ -36,9 +36,11 @@ def test_hdf5_group_wrong(valid_geometry_HDF5_files):
             try:
                 group_def.validate(f) #should fail
                 assert False, f"{geometry_file} should fail, but didn't"
-            except HDF5SchemaException:
+            except HDF5SchemaExistenceException:
                 #this is what should happen
                 pass
+            except HDF5SchemaException as e:
+                assert False, f"{geometry_file} did not fail in defined manner: {e}"
             except Exception as e:
                 assert False, f"{geometry_file} failed in unpredictable way: {e}"
 

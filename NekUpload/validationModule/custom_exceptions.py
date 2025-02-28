@@ -30,3 +30,7 @@ class HDF5SchemaException(Exception):
     def __init__(self, file: str, message="HDF5 schema error"):
         full_message = f"{message}: {file}"
         super().__init__(full_message)
+
+class HDF5SchemaExistenceException(HDF5SchemaException):
+    """Exception raised for errors in the HDF5 schema."""
+    pass

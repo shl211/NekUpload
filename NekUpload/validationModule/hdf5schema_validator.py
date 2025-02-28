@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 import h5py
-from typing import List,Tuple,Dict
-from .custom_exceptions import HDF5SchemaException
+from typing import List,Tuple,Dict,Set
+from types import MappingProxyType
+from .custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException
 
 class HDF5Definition(ABC):
     @abstractmethod
@@ -11,6 +12,7 @@ class HDF5Definition(ABC):
 class HDF5GroupDefinition(HDF5Definition):
     """Given an HDF5 file, responsible for checking group conforms to correct structure and contains
     the specified attributes. This is not an exclusive check, other non-specified attributes can also be present.
+    All exceptions raised from this class are of type HDF5SchemaException or its children.
 
     Args:
         HDF5Definition (_type_): _description_
@@ -40,7 +42,7 @@ class HDF5GroupDefinition(HDF5Definition):
             bool: _description_
         """
         if self.path not in f:
-            raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} is not in file")
+            raise HDF5SchemaExistenceException(f,f"HDF5 schema error, {self.path} is not in file")
         
         group: h5py.Group = f[self.path]
         if not isinstance(group, h5py.Group): 
@@ -56,6 +58,7 @@ class HDF5GroupDefinition(HDF5Definition):
 
 class HDF5DatasetDefinition(HDF5GroupDefinition):
     """Given an HDF5 file, responsible for checking if dataset conforms to schema expectations, such as shape constraints.
+        All exceptions raised from this class are of type HDF5SchemaException or its children.
 
     Args:
         HDF5GroupDefinition (_type_): _description_
@@ -87,7 +90,7 @@ class HDF5DatasetDefinition(HDF5GroupDefinition):
             bool: _description_
         """
         if self.path not in f:
-            raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} is not in file")
+            raise HDF5SchemaExistenceException(f,f"HDF5 schema error, {self.path} is not in file")
         
         dataset: h5py.Dataset = f[self.path]
         if not isinstance(dataset,h5py.Dataset):
@@ -120,93 +123,116 @@ class HDF5DatasetDefinition(HDF5GroupDefinition):
 class GeometrySchemaHDF5Validator:
     NO_DIM_CONSTRAINTS = -1 #helper
 
-    BASE_GROUPS: Tuple[HDF5GroupDefinition] = (HDF5GroupDefinition("NEKTAR"),
-                                         HDF5GroupDefinition("NEKTAR/GEOMETRY",attributes=["FORMAT_VERSION"]),
-                                         HDF5GroupDefinition("NEKTAR/GEOMETRY/MAPS"),
-                                         HDF5GroupDefinition("NEKTAR/GEOMETRY/MESH"))
+    #TODO make these dict immutable
+    #using immutable dictionary to define what structure of each group and dataset should look like regardless of geometry file
+    #dict to help associate each set with a useful descriptor, which will be beneficial later on
+    BASE_GROUPS: MappingProxyType[str,HDF5GroupDefinition] = MappingProxyType({"NEKTAR": HDF5GroupDefinition("NEKTAR"),
+                                            "GEOMETRY": HDF5GroupDefinition("NEKTAR/GEOMETRY",attributes=["FORMAT_VERSION"]),
+                                            "MAPS": HDF5GroupDefinition("NEKTAR/GEOMETRY/MAPS"),
+                                            "MESH": HDF5GroupDefinition("NEKTAR/GEOMETRY/MESH")})
 
-    DATASETS_MANDATORY_MAPS: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/VERT",(NO_DIM_CONSTRAINTS,)),
-                                                             HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/DOMAIN",(NO_DIM_CONSTRAINTS,)),
-                                                             HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/COMPOSITE",(NO_DIM_CONSTRAINTS,)))
+    DATASETS_MANDATORY_MAPS: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                            {"VERT": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/VERT",(NO_DIM_CONSTRAINTS,)),
+                                                            "DOMAIN": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/DOMAIN",(NO_DIM_CONSTRAINTS,)),
+                                                            "COMPOSITE": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/COMPOSITE",(NO_DIM_CONSTRAINTS,))
+                                                            })
 
-    DATASETS_MANDATORY_MESH: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/CURVE_NODES",(NO_DIM_CONSTRAINTS,3)),
-                                                             HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/VERT",(NO_DIM_CONSTRAINTS,3)),
-                                                             HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/DOMAIN",(NO_DIM_CONSTRAINTS,)),
-                                                             HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/COMPOSITE",(NO_DIM_CONSTRAINTS,)))
+    DATASETS_MANDATORY_MESH: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                                {"CURVE_NODES": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/CURVE_NODES",(NO_DIM_CONSTRAINTS,3)),
+                                                                "VERT": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/VERT",(NO_DIM_CONSTRAINTS,3)),
+                                                                "DOMAIN": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/DOMAIN",(NO_DIM_CONSTRAINTS,)),
+                                                                "COMPOSITE": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/COMPOSITE",(NO_DIM_CONSTRAINTS,))
+                                                                })
     
-    DATASETS_1D_MAPS: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/SEG",(NO_DIM_CONSTRAINTS,)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/CURVE_EDGE",(NO_DIM_CONSTRAINTS,)))
+    DATASETS_1D_MAPS: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                        {"SEG": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/SEG",(NO_DIM_CONSTRAINTS,)),
+                                                        "CURVE_EDGE": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/CURVE_EDGE",(NO_DIM_CONSTRAINTS,))
+                                                        })
     
-    DATASETS_1D_MESH: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/SEG",(NO_DIM_CONSTRAINTS,2)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/CURVE_EDGE",(NO_DIM_CONSTRAINTS,3)))
-    
-    DATASETS_2D_MAPS: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/TRI",(NO_DIM_CONSTRAINTS,)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/QUAD",(NO_DIM_CONSTRAINTS,)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/CURVE_FACE",(NO_DIM_CONSTRAINTS,)))
-    
-    DATASETS_2D_MESH: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/TRI",(NO_DIM_CONSTRAINTS,3)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/QUAD",(NO_DIM_CONSTRAINTS,4)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/CURVE_FACE",(NO_DIM_CONSTRAINTS,3)))
+    DATASETS_1D_MESH: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                        {"SEG": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/SEG",(NO_DIM_CONSTRAINTS,2)),
+                                                        "CURVE_EDGE": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/CURVE_EDGE",(NO_DIM_CONSTRAINTS,3))
+                                                        })
 
-    DATASETS_2D_MAPS: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/HEX",(NO_DIM_CONSTRAINTS,)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/TET",(NO_DIM_CONSTRAINTS,)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/PYR",(NO_DIM_CONSTRAINTS,)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/PRISM",(NO_DIM_CONSTRAINTS,)))
+    DATASETS_2D_MAPS: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                        {"TRI": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/TRI",(NO_DIM_CONSTRAINTS,)),
+                                                        "QUAD": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/QUAD",(NO_DIM_CONSTRAINTS,)),
+                                                        "CURVE_FACE": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/CURVE_FACE",(NO_DIM_CONSTRAINTS,))
+                                                        })
+    
+    DATASETS_2D_MESH: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                        {"TRI": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/TRI",(NO_DIM_CONSTRAINTS,3)),
+                                                        "QUAD": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/QUAD",(NO_DIM_CONSTRAINTS,4)),
+                                                        "CURVE_FACE": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/CURVE_FACE",(NO_DIM_CONSTRAINTS,3))
+                                                        })
 
-    DATASETS_2D_MESH: Tuple[HDF5DatasetDefinition] = (HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/HEX",(NO_DIM_CONSTRAINTS,6)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/TET",(NO_DIM_CONSTRAINTS,4)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/PYR",(NO_DIM_CONSTRAINTS,5)),
-                                                      HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/PRISM",(NO_DIM_CONSTRAINTS,5)))
+    DATASETS_3D_MAPS: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                        {"HEX": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/HEX",(NO_DIM_CONSTRAINTS,)),
+                                                        "TET": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/TET",(NO_DIM_CONSTRAINTS,)),
+                                                        "PYR": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/PYR",(NO_DIM_CONSTRAINTS,)),
+                                                        "PRISM": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MAPS/PRISM",(NO_DIM_CONSTRAINTS,))
+                                                        })
+
+    DATASETS_3D_MESH: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType(
+                                                        {"HEX": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/HEX",(NO_DIM_CONSTRAINTS,6)),
+                                                        "TET": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/TET",(NO_DIM_CONSTRAINTS,4)),
+                                                        "PYR": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/PYR",(NO_DIM_CONSTRAINTS,5)),
+                                                        "PRISM": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/PRISM",(NO_DIM_CONSTRAINTS,5))
+                                                        })
     
     def __init__(self,f: h5py.File):        
         self.file: h5py.File = f
 
+        self.datasets_present: Set[str] = set()
+        
     def validate(self):
         #check mandatory groups and datasets first
-        for group in GeometrySchemaHDF5Validator.BASE_GROUPS:
-            group.validate(self.file)
-                
-        for group in GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MAPS:
-            group.validate(self.file)
-
-        for group in GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MESH:
+        for group in GeometrySchemaHDF5Validator.BASE_GROUPS.values():
             group.validate(self.file)
         
-        #1d datasets should all be present too
-        for group in GeometrySchemaHDF5Validator.DATASETS_1D_MAPS:
-            group.validate(self.file)
+        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MAPS)
+        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MESH)
+        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_1D_MAPS)
+        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_1D_MESH)
 
-        for group in GeometrySchemaHDF5Validator.DATASETS_1D_MESH:
-            group.validate(self.file)
-
-        #not all 2d datasets are present
-        for group in GeometrySchemaHDF5Validator.DATASETS_2D_MAPS:
-            try:
-                group.validate(self.file)
-            except HDF5SchemaException:
-                pass
-            except Exception:
-                raise
-
-        for group in GeometrySchemaHDF5Validator.DATASETS_2D_MESH:
-            try:
-                group.validate(self.file)
-            except HDF5SchemaException:
-                pass
-            except Exception:
-                raise
-
-        for group in GeometrySchemaHDF5Validator.DATASETS_2D_MAPS:
-            try:
-                group.validate(self.file)
-            except HDF5SchemaException:
-                pass
-            except Exception:
-                raise
+        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_2D_MAPS)
+        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_2D_MESH)
+        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MAPS)
+        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MESH)
 
         ##
-        # Check that all groups and datasets in the file are valid  
+        # A corresponding map should have same dataset length as corresponding mesh  
 
+    def _check_mandatory_dataset(self,mandatory_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> None:
+        """Helper function. Checks mandatiory datasets and if valid, adds to self.datasets_present the key
+
+        Args:
+            mandatory_dataset (MappingProxyType[str,HDF5DatasetDefinition]): _description_
+        
+        Raises:
+            HDF5SchemaException: _description_
+        """
+        for key,dataset in mandatory_dataset.items():
+            if dataset.validate(self.file):
+                self.datasets_present.add(key)
+
+    def _check_optional_dataset(self,optional_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> None:
+        """Helper function. Checks mandatiory datasets and if valid, adds to self.datasets_present the key
+
+        Args:
+            optional_dataset (MappingProxyType[str,HDF5DatasetDefinition]): _description_
+
+        Raises:
+            HDF5SchemaException: _description_
+        """
+        for key,dataset in optional_dataset.items():
+            try:
+                dataset.validate(self.file)
+                self.datasets_present.add(key)
+            except HDF5SchemaExistenceException:
+                pass #optional, so allow if doesn't exist, but any other definition error should be re-raised
+            except Exception:
+                raise
 
 class OutputSchemaHDF5Validator:
 
