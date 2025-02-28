@@ -151,3 +151,45 @@ class GeometryHDF5Validator:
 
         ##
         # Check that all groups and datasets in the file are valid  
+
+
+class OutputHDF5Validator:
+
+    NO_DIM_CONSTRAINTS = -1 #helper
+
+    BASE_GROUPS = (HDF5GroupDefinition("NEKTAR",["FORMAT_VERSION"]),
+                   HDF5GroupDefinition("NEKTAR/Metadata",attributes=["ChkFileNum","Time"]), #TODO
+                   HDF5GroupDefinition("NEKTAR/Metadata/Provenance",attributes=["GitBranch","GitSHA1","Hostname","NektarVersion","Timestamp"]))
+
+    EXPECTED_DATASETS = (HDF5DatasetDefinition("NEKTAR/DATA",(NO_DIM_CONSTRAINTS,)),
+                         HDF5DatasetDefinition("NEKTAR/DECOMPOSITION",(NO_DIM_CONSTRAINTS,)),
+                         HDF5DatasetDefinition("NEKTAR/ELEMENTIDS",(NO_DIM_CONSTRAINTS,)))
+
+    def __init__(self,f: h5py.File):        
+        self.file: h5py.File = f
+
+    def validate(self):
+        for group in OutputHDF5Validator.BASE_GROUPS:
+            group.validate(self.file)
+
+        for dataset in OutputHDF5Validator.EXPECTED_DATASETS:
+            dataset.validate(self.file)
+
+        #there should be other groups defined based on decomposition
+        #DECOMPOSITION contains sequence of seven numbres, seventh number
+        #is a hash denoting a group containing expansion information
+        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
+        self._check_decomposition(decomposition_dataset)
+
+    def _check_decomposition(self, decomposition_dataset: h5py.Dataset):
+        if decomposition_dataset.shape[0] % 7 != 0:
+            raise HDF5SchemaException(self.file,"HDF5 Schema Error: Decomposition shape should be multiple of 7")
+
+        expected_groups: List[HDF5GroupDefinition] = []
+        for i in range(6,decomposition_dataset.shape[0],7):
+
+            hash = decomposition_dataset[i]
+            expected_groups.append(HDF5GroupDefinition(f"NEKTAR/{hash}",attributes=["BASIS","FIELDS","NUMMODESPERDIR","SHAPE"]))
+
+        for group in expected_groups:
+            group.validate(self.file)

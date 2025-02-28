@@ -1,6 +1,7 @@
 import os
 import pytest
 from typing import List, Dict
+import re
 
 @pytest.fixture(autouse=True)
 def set_test_directory():
@@ -91,6 +92,22 @@ def valid_geometry_HDF5_files() -> List[str]:
             if file.endswith(".nekg"):
                 nekg_files.append(os.path.abspath(os.path.join(root, file)))
     return nekg_files
+
+@pytest.fixture()
+def valid_output_fld_HDF5_files() -> List[str]:
+    dir = "datasets" #relative to root
+
+    def exclude(f: str) -> bool:
+        patterns_to_exclude = [r"_max\.fld"]
+        return any(re.search(pattern,f) for pattern in patterns_to_exclude)
+
+    #find all files recursively
+    fld_files = []
+    for root, _, files in os.walk(dir):
+        for file in files:
+            if file.endswith(".fld") and not exclude(file):
+                fld_files.append(os.path.abspath(os.path.join(root, file)))
+    return fld_files
 
 @pytest.fixture()
 def nektar_session_schema() -> str:

@@ -146,7 +146,7 @@ def test_hdf5_dataset_invalid_dataset_constraints(valid_geometry_HDF5_files):
 """
     TEST COMBINED
 """
-def test_hdf5_validator_accept(valid_geometry_HDF5_files):
+def test_hdf5_geometry_validator_accept(valid_geometry_HDF5_files):
     nekg_files: List[str] = valid_geometry_HDF5_files
 
     for geometry_file in nekg_files:
@@ -156,3 +156,42 @@ def test_hdf5_validator_accept(valid_geometry_HDF5_files):
                 validator.validate()        
             except Exception as e:
                 assert False,f"{geometry_file} failed geometry hdf5 validation. Should succeed. Error: {e}"
+
+def test_hdf5_geometry_validator_reject_wrong_files(valid_output_fld_HDF5_files):
+    nekg_files: List[str] = valid_output_fld_HDF5_files
+
+    for geometry_file in nekg_files:
+        with h5py.File(geometry_file) as f:
+            validator = GeometryHDF5Validator(f)
+            try:
+                validator.validate()  
+                assert False,f"{geometry_file} succeeded geometry hdf5 validation. Should fail. Error: {e}"
+            except HDF5SchemaException:
+                pass
+            except Exception as e:
+                assert False,e
+
+def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
+    fld_files: List[str] = valid_output_fld_HDF5_files
+
+    for output_file in fld_files:
+        with h5py.File(output_file) as f:
+            validator = OutputHDF5Validator(f)
+            try:
+                validator.validate()        
+            except Exception as e:
+                assert False,f"{output_file} failed output hdf5 validation. Should succeed. Error: {e}"
+
+def test_hdf5_output_validator_reject_wrong_files(valid_geometry_HDF5_files):
+    fld_files: List[str] = valid_geometry_HDF5_files
+
+    for output_file in fld_files:
+        with h5py.File(output_file) as f:
+            validator = OutputHDF5Validator(f)
+            try:
+                validator.validate()        
+                assert False,f"{output_file} succeeded output hdf5 validation. Should fail. Error: {e}"
+            except HDF5SchemaException:
+                pass
+            except Exception as e:
+                assert False,e
