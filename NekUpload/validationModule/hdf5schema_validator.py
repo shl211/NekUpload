@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import h5py
 from typing import List,Tuple,Dict,Set
 from types import MappingProxyType
-from .custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException
+from .custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException
 
 class HDF5Definition(ABC):
     @abstractmethod
@@ -98,19 +98,22 @@ class HDF5DatasetDefinition(HDF5GroupDefinition):
         
         #check dataset shape if it exists
         if self.dataset_shape:
-            self.shape: Tuple[int,...] = dataset.shape
+            self.actual_shape: Tuple[int,...] = dataset.shape
             
             #check expected dimension
-            if len(self.shape) != len(self.dataset_shape):
-                raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.shape}, but expecting {self.dataset_shape}")
+            if len(self.actual_shape) != len(self.dataset_shape):
+                raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.actual_shape}, but expecting {self.dataset_shape}")
             
-            for size,constrained_size in zip(self.shape,self.dataset_shape):
+            for size,constrained_size in zip(self.actual_shape,self.dataset_shape):
                 # negatives denotes no size restriction on dataset shape
                 #so only positive ones are constraints
                 if constrained_size >= 0 and constrained_size != size:
-                    raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.shape}, but expecting {self.dataset_shape}")
+                    raise HDF5SchemaException(f,f"HDF5 schema error, {self.path} has dataset shape {self.actual_shape}, but expecting {self.dataset_shape}")
                 
         return True
+    
+    def __str__(self):
+        return self.path
 
     def get_shape(self) -> Tuple[int,...]:
         """_summary_
@@ -180,6 +183,12 @@ class GeometrySchemaHDF5Validator:
                                                         "PRISM": HDF5DatasetDefinition("NEKTAR/GEOMETRY/MESH/PRISM",(NO_DIM_CONSTRAINTS,5))
                                                         })
     
+    DATASETS_MAPS: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType({**DATASETS_MANDATORY_MAPS,**DATASETS_1D_MAPS,
+                                                                                   **DATASETS_2D_MAPS,**DATASETS_3D_MAPS})
+
+    DATASETS_MESH: MappingProxyType[str,HDF5DatasetDefinition] = MappingProxyType({**DATASETS_MANDATORY_MESH,**DATASETS_1D_MESH,
+                                                                                   **DATASETS_2D_MESH,**DATASETS_3D_MESH})
+
     def __init__(self,f: h5py.File):        
         self.file: h5py.File = f
 
@@ -200,8 +209,12 @@ class GeometrySchemaHDF5Validator:
         self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MAPS)
         self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MESH)
 
-        ##
-        # A corresponding map should have same dataset length as corresponding mesh  
+        #now check that each pair exists and have consistent shapes
+        #maps can't be defined without corresponding mesh and vice versa
+        for key in self.datasets_present:
+            #curve nodes only exception to above rule
+            if key != "CURVE_NODES":
+                self._check_pair_of_validated_datasets(GeometrySchemaHDF5Validator.DATASETS_MAPS.get(key),GeometrySchemaHDF5Validator.DATASETS_MESH.get(key))
 
     def _check_mandatory_dataset(self,mandatory_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> None:
         """Helper function. Checks mandatiory datasets and if valid, adds to self.datasets_present the key
@@ -233,6 +246,25 @@ class GeometrySchemaHDF5Validator:
                 pass #optional, so allow if doesn't exist, but any other definition error should be re-raised
             except Exception:
                 raise
+
+    def _check_pair_of_validated_datasets(self,dataset_1: HDF5DatasetDefinition, dataset_2: HDF5DatasetDefinition):
+        """_summary_
+
+        Args:
+            dataset_1 (HDF5DatasetDefinition): _description_
+            dataset_2 (HDF5DatasetDefinition): _description_
+
+        Raises:
+            HDF5SchemaException: _description_
+        """
+        shape1 = dataset_1.get_shape()
+        shape2 = dataset_2.get_shape()
+
+        if (shape1 and not shape2) or (shape2 and not shape1) :
+            raise HDF5SchemaMissingDatasetException(self.file,f"HDF5 Schema Error: {dataset_1} and {dataset_2} should be defined together, but one exists and other doesn't")
+
+        if shape1 and shape2 and (shape1[0] != shape2[0]):
+            raise HDF5SchemaMissingDatasetException(self.file,f"HDF5 Schema Error: {dataset_1} has shape {shape1} and {dataset_2} has shape {shape2}. Inconsistent lengths {shape1[0]} != {shape2[0]}")
 
 class OutputSchemaHDF5Validator:
 

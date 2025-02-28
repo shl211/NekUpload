@@ -1,6 +1,9 @@
 from NekUpload.validationModule.hdf5schema_validator import *
 from NekUpload.validationModule.custom_exceptions import HDF5SchemaException,HDF5SchemaExistenceException
 import pytest
+import h5py
+import numpy as np
+
 """
     TEST GROUP VALIDATOR
 """
@@ -167,11 +170,53 @@ def test_hdf5_geometry_validator_reject_wrong_files(valid_output_fld_HDF5_files)
             validator = GeometrySchemaHDF5Validator(f)
             try:
                 validator.validate()  
-                assert False,f"{geometry_file} succeeded geometry hdf5 validation. Should fail. Error: {e}"
+                assert False,f"{geometry_file} succeeded geometry hdf5 validation. Should fail."
             except HDF5SchemaException:
                 pass
             except Exception as e:
                 assert False,e
+
+def test_hdf5_geometry_validator_missing_mesh_pair(create_missing_mesh_pair):
+    file = create_missing_mesh_pair
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as MAPS/HEX exists but MESH/HEX doesn't."
+        except HDF5SchemaMissingDatasetException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_missing_maps_pair(create_missing_maps_pair):
+    file = create_missing_maps_pair
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as MESH/HEX exists but MAPS/HEX doesn't."
+        except HDF5SchemaMissingDatasetException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_inconsistent_definitions(create_missing_inconsistent_pair):
+    file = create_missing_inconsistent_pair
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as MESH/HEX and MAPS/HEX have inconsistent definitions."
+        except HDF5SchemaMissingDatasetException:
+            pass
+        except Exception as e:
+            assert False,e
 
 def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
     fld_files: List[str] = valid_output_fld_HDF5_files
@@ -192,8 +237,9 @@ def test_hdf5_output_validator_reject_wrong_files(valid_geometry_HDF5_files):
             validator = OutputSchemaHDF5Validator(f)
             try:
                 validator.validate()        
-                assert False,f"{output_file} succeeded output hdf5 validation. Should fail. Error: {e}"
+                assert False,f"{output_file} succeeded output hdf5 validation. Should fail."
             except HDF5SchemaException:
                 pass
             except Exception as e:
                 assert False,e
+

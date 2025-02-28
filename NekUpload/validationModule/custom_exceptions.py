@@ -34,3 +34,7 @@ class HDF5SchemaException(Exception):
 class HDF5SchemaExistenceException(HDF5SchemaException):
     """Exception raised for errors in the HDF5 schema."""
     pass
+
+class HDF5SchemaMissingDatasetException(HDF5SchemaException):
+    """Exception raised for errors in the HDF5 schema."""
+    pass
