@@ -62,6 +62,242 @@ def create_missing_inconsistent_pair():
     yield filename
     os.remove(filename)
 
+@pytest.fixture
+def create_hex_with_missing_2d():
+    """This has a HEX but no quads
+    """
+    filename = create_geometry_template("missing_quads_for_hexes.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "QUAD" in mesh_group:
+            del mesh_group["QUAD"]
+        if "HEX" in mesh_group:
+            del mesh_group["HEX"]
+
+        if "QUAD" in maps_group:
+            del maps_group["QUAD"]
+        if "HEX" in maps_group:
+            del maps_group["HEX"]
+        
+        mesh_group.create_dataset("HEX", data=np.arange(180, dtype=np.int32).reshape(30, 6))
+        maps_group.create_dataset("HEX", data=np.arange(30, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_hex_with_insufficient_quads():
+    """This has a HEX but only 5 defined quads
+    """
+    filename = create_geometry_template("insufficient_quads_for_hexes.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "QUAD" in mesh_group:
+            del mesh_group["QUAD"]
+        if "HEX" in mesh_group:
+            del mesh_group["HEX"]
+
+        if "QUAD" in maps_group:
+            del maps_group["QUAD"]
+        if "HEX" in maps_group:
+            del maps_group["HEX"]
+        
+        mesh_group.create_dataset("HEX", data=np.arange(180, dtype=np.int32).reshape(30, 6))
+        maps_group.create_dataset("HEX", data=np.arange(30, dtype=np.int32))
+        mesh_group.create_dataset("QUAD", data=np.arange(20, dtype=np.int32).reshape(5, 4))
+        maps_group.create_dataset("QUAD", data=np.arange(5, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_tet_with_missing_2d():
+    """This has a TET but no tris
+    """
+    filename = create_geometry_template("missing_tris_for_tets.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "TRI" in mesh_group:
+            del mesh_group["TRI"]
+        if "TET" in mesh_group:
+            del mesh_group["TET"]
+
+        if "TRI" in maps_group:
+            del maps_group["TRI"]
+        if "TET" in maps_group:
+            del maps_group["TET"]
+        
+        mesh_group.create_dataset("TET", data=np.arange(120, dtype=np.int32).reshape(30, 4))
+        maps_group.create_dataset("TET", data=np.arange(30, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_pyr_with_missing_2d_quad():
+    """This has a PYR but no quads
+    """
+    filename = create_geometry_template("missing_quads_for_pyr.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "QUAD" in mesh_group:
+            del mesh_group["QUAD"]
+        if "PYR" in mesh_group:
+            del mesh_group["PYR"]
+
+        if "QUAD" in maps_group:
+            del maps_group["QUAD"]
+        if "PYR" in maps_group:
+            del maps_group["PYR"]
+        
+        mesh_group.create_dataset("PYR", data=np.arange(150, dtype=np.int32).reshape(30, 5))
+        maps_group.create_dataset("PYR", data=np.arange(30, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_pyr_with_missing_2d_tri():
+    """This has a PYR but no tris
+    """
+    filename = create_geometry_template("missing_tris_for_pyr.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "TRI" in mesh_group:
+            del mesh_group["TRI"]
+        if "PYR" in mesh_group:
+            del mesh_group["PYR"]
+
+        if "TRI" in maps_group:
+            del maps_group["TRI"]
+        if "PYR" in maps_group:
+            del maps_group["PYR"]
+        
+        mesh_group.create_dataset("PYR", data=np.arange(150, dtype=np.int32).reshape(30, 5))
+        maps_group.create_dataset("PYR", data=np.arange(30, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_prism_with_missing_2d_quad():
+    """This has a PRISM but no quads
+    """
+    filename = create_geometry_template("missing_quads_for_prism.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "QUAD" in mesh_group:
+            del mesh_group["QUAD"]
+        if "PRISM" in mesh_group:
+            del mesh_group["PRISM"]
+
+        if "QUAD" in maps_group:
+            del maps_group["QUAD"]
+        if "PRISM" in maps_group:
+            del maps_group["PRISM"]
+        
+        mesh_group.create_dataset("PRISM", data=np.arange(150, dtype=np.int32).reshape(30, 5))
+        maps_group.create_dataset("PRISM", data=np.arange(30, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_prism_with_missing_2d_tri():
+    """This has a PRISM but no tris
+    """
+    filename = create_geometry_template("missing_tris_for_prism.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "TRI" in mesh_group:
+            del mesh_group["TRI"]
+        if "PRISM" in mesh_group:
+            del mesh_group["PRISM"]
+
+        if "TRI" in maps_group:
+            del maps_group["TRI"]
+        if "PRISM" in maps_group:
+            del maps_group["PRISM"]
+        
+        mesh_group.create_dataset("PRISM", data=np.arange(150, dtype=np.int32).reshape(30, 5))
+        maps_group.create_dataset("PRISM", data=np.arange(30, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_dangerous_group():
+    filename = create_geometry_template("dangerous_group.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.require_group("NEKTAR/GEOMETRY/HACKING")
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_multiple_dangerous_group():
+    filename = create_geometry_template("multiple_dangerous_group.h5")
+
+    with h5py.File(filename,"a") as f:
+        for i in range(0,100):
+            f.require_group(f"NEKTAR/GEOMETRY/HACKING{i}")
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_dangerous_group():
+    filename = create_geometry_template("dangerous_dataset.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.require_group("NEKTAR/GEOMETRY/HACKING")
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_dangerous_dataset():
+    filename = create_geometry_template("dangerous_datasets.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.create_dataset("NEKTAR/HACKING", data=np.random.rand(10))
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_multiple_dangerous_dataset():
+    filename = create_geometry_template("multiple_dangerous_datasets.h5")
+
+    with h5py.File(filename,"a") as f:
+        for i in range(0,100):
+            f.create_dataset(f"NEKTAR/GEOMETRY/MAPS/HACKING{i}", data=np.random.rand(10))
+
+    yield filename
+    os.remove(filename)
+
 def create_geometry_template(filename: str) -> str:
     """This generates the same file as ADR_2D_TriQuad.nekg
 

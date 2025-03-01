@@ -42,3 +42,16 @@ class HDF5SchemaMissingDatasetException(HDF5SchemaException):
 class HDF5SchemaInconsistentException(HDF5SchemaException):
     """Exception raised for errors in the HDF5 schema."""
     pass
+
+class HDF5SchemaMissingDefinitionException(HDF5SchemaException):
+    """Exception raised for errors in the HDF5 schema."""
+    pass
+
+class HDF5SchemaExtraDefinitionException(HDF5SchemaException):
+    """Exception raised for errors in the HDF5 schema."""
+    pass
+
+class GeometryFileException(Exception):
+    def __init__(self, file: str, message="Geometry file error"):
+        full_message = f"{message}: {file}"
+        super().__init__(full_message)

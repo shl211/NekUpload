@@ -1,5 +1,7 @@
 from NekUpload.utils import parsing
 import pytest
+import h5py
+from typing import List
 
 def test_split_equals_expr():
     expr = "abc def = 1234    "
@@ -76,3 +78,81 @@ def test_get_files_with_extension_missing_dot_extension():
 
     rst = parsing.get_all_files_with_extension(files,".rst")
     assert rst == files_rst
+
+def test_get_hdf5_groups_one_level_depth(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+    expected_root_groups = ["","NEKTAR"] #HDF5 files have a parent directory where everythin is derived from
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            groups: List[str] = parsing.get_hdf5_groups_with_depth_limit(f,1)
+            assert groups == expected_root_groups
+
+def test_get_hdf5_groups_multi_level_depth(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+    #HDF5 files have a parent directory where everythin is derived from
+    expected_root_groups = ["","NEKTAR","NEKTAR/GEOMETRY","NEKTAR/GEOMETRY/MAPS","NEKTAR/GEOMETRY/MESH"] 
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            groups: List[str] = parsing.get_hdf5_groups_with_depth_limit(f,5)
+            assert groups == expected_root_groups
+
+def test_get_hdf5_groups_multi_level_depth_new_start_point(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+    expected_groups = ["NEKTAR/GEOMETRY","NEKTAR/GEOMETRY/MAPS","NEKTAR/GEOMETRY/MESH"] 
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            groups: List[str] = parsing.get_hdf5_groups_with_depth_limit(f,1,"NEKTAR/GEOMETRY")
+            assert groups == expected_groups
+
+def test_get_hdf5_groups_test_limit(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+
+    #any more, and difficult to test as each file has different number of datasets
+    all_groups = ["","NEKTAR/GEOMETRY","NEKTAR/GEOMETRY/MAPS","NEKTAR/GEOMETRY/MESH"]
+
+    max_groups = range(0,5)
+    expected_nums = [min(max_num,len(all_groups)) for max_num in max_groups]
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            for max_num,expected_num in zip(max_groups,expected_nums):
+                groups: List[str] = parsing.get_hdf5_groups_with_depth_limit(f,3,"NEKTAR",max_num)
+                assert expected_num == len(groups)
+
+def test_get_hdf5_datasets_one_level_depth(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+    possible_datasets = [] #there are no datasets in first level of NEKTAR 
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            datasets: List[str] = parsing.get_hdf5_datasets_with_depth_limit(f,1)
+            assert possible_datasets == datasets
+
+def test_get_hdf5_datasets_multi_level_depth(valid_geometry_HDF5_files,geometry_possible_datasets):
+    nekg_files = valid_geometry_HDF5_files
+
+    possible_datasets: List[str] = geometry_possible_datasets
+    
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            datasets: List[str] = parsing.get_hdf5_datasets_with_depth_limit(f,3,"NEKTAR")
+            
+            #geometry file doesn't have all 3d elements if not used
+            #so just make sure all files are allowable
+            for dataset in datasets:
+                assert dataset in possible_datasets
+
+def test_get_hdf5_datasets_test_limit(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+
+    #any more, and difficult to test as each file has different number of datasets
+    max_datasets = [0,1,2,3,4,5,6,7,8]  
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            for max_num in max_datasets:
+                datasets: List[str] = parsing.get_hdf5_datasets_with_depth_limit(f,3,"NEKTAR",max_num)
+                assert max_num == len(datasets)

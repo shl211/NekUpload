@@ -1,6 +1,6 @@
-from typing import Tuple,Dict,Union,List
+from typing import Tuple,Dict,Union,List,Optional
 import math
-import ast
+import h5py
 from sympy import sympify
 
 #these are as defined in Nektar User Guide under Expressions
@@ -103,6 +103,76 @@ def get_all_files_with_extension(files: List[str],extension: str) -> List[str]:
         extension = f".{extension}"
     
     return [f for f in files if f.lower().endswith(extension.lower())]
+
+def get_hdf5_groups_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_path: str = "",max_groups: int = 100) -> List[str]:
+    """
+    Traverses the HDF5 hierarchy and returns group paths up to a specified depth.
+
+    Args:
+        hdf5_file: An open h5py.File object.
+        max_depth: The maximum depth to traverse.
+        start_path: the path to start the search from.
+        max_groups: If defined, specifies maximum number of groups to be found. Once exceeded, function will return.
+
+    Returns:
+        A list of group paths.
+    """
+    group_paths = []
+
+    def _traverse(group, current_path, current_depth):
+        if current_depth > max_depth:
+            return
+
+        if len(group_paths) >= max_groups:
+            return
+        
+        group_paths.append(current_path)
+
+        for name, obj in group.items():
+            if isinstance(obj, h5py.Group):
+                new_path = f"{current_path}/{name}" if current_path else name
+                _traverse(obj, new_path, current_depth + 1)
+
+    if start_path == "":
+        _traverse(hdf5_file, "", 0)
+    else:
+        _traverse(hdf5_file[start_path], start_path, 0)
+
+    return group_paths
+
+def get_hdf5_datasets_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_path: str = "",max_datasets: int=100) -> List[str]:
+    """Traverses the HDF5 hierarchy and returns dataset paths up to a specified depth.
+
+    Args:
+        hdf5_file: An open h5py.File object.
+        max_depth: The maximum depth to traverse.
+        start_path: The path to start the search from.
+        max_datasets: If defined, specifies maximum number of datasets to be found. Once exceeded, function will return.
+
+    Returns:
+        A list of dataset paths.
+    """
+    dataset_paths = []
+
+    def _traverse(group, current_path, current_depth):
+        if current_depth > max_depth:
+            return
+
+        for name, obj in group.items():
+            if len(dataset_paths) >= max_datasets:
+                return
+            new_path = f"{current_path}/{name}" if current_path else name
+            if isinstance(obj, h5py.Dataset):
+                dataset_paths.append(new_path)
+            elif isinstance(obj, h5py.Group):
+                _traverse(obj, new_path, current_depth + 1)
+
+    if start_path == "":
+        _traverse(hdf5_file, "", 0)
+    else:
+        _traverse(hdf5_file[start_path], start_path, 0)
+
+    return dataset_paths
 
 if __name__ == "__main__":
     params = {
