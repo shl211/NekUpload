@@ -89,6 +89,34 @@ def create_hex_with_missing_2d():
     os.remove(filename)
 
 @pytest.fixture
+def create_hex_with_insufficient_quads():
+    """This has a HEX but only 5 defined quads
+    """
+    filename = create_geometry_template("insufficient_quads_for_hexes.h5")
+
+    with h5py.File(filename,"a") as f:
+        mesh_group = f.require_group("NEKTAR/GEOMETRY/MESH")  # Ensure group exists
+        maps_group = f.require_group("NEKTAR/GEOMETRY/MAPS")
+        
+        if "QUAD" in mesh_group:
+            del mesh_group["QUAD"]
+        if "HEX" in mesh_group:
+            del mesh_group["HEX"]
+
+        if "QUAD" in maps_group:
+            del maps_group["QUAD"]
+        if "HEX" in maps_group:
+            del maps_group["HEX"]
+        
+        mesh_group.create_dataset("HEX", data=np.arange(180, dtype=np.int32).reshape(30, 6))
+        maps_group.create_dataset("HEX", data=np.arange(30, dtype=np.int32))
+        mesh_group.create_dataset("QUAD", data=np.arange(20, dtype=np.int32).reshape(5, 4))
+        maps_group.create_dataset("QUAD", data=np.arange(5, dtype=np.int32))
+        
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
 def create_tet_with_missing_2d():
     """This has a TET but no tris
     """

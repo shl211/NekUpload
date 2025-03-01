@@ -310,6 +310,20 @@ def test_hdf5_geometry_validator_prism_but_no_tris(create_prism_with_missing_2d_
         except Exception as e:
             assert False,e
 
+def test_hdf5_geometry_validator_prism_but_no_tris(create_hex_with_insufficient_quads):
+    file = create_hex_with_insufficient_quads
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as HEX exist, but insufficeint QUADS."
+        except HDF5SchemaMissingDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
 def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
     fld_files: List[str] = valid_output_fld_HDF5_files
 
