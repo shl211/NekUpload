@@ -226,6 +226,90 @@ def test_hdf5_geometry_validator_inconsistent_definitions(create_missing_inconsi
         except Exception as e:
             assert False,e
 
+def test_hdf5_geometry_validator_hex_but_no_quad(create_hex_with_missing_2d):
+    file = create_hex_with_missing_2d
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as HEX exist, but no QUADS."
+        except HDF5SchemaMissingDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_tet_but_no_tri(create_tet_with_missing_2d):
+    file = create_tet_with_missing_2d
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as TET exist, but no TRIS."
+        except HDF5SchemaMissingDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_pyr_but_no_quad(create_pyr_with_missing_2d_quad):
+    file = create_pyr_with_missing_2d_quad
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as PYR exist, but no QUADS."
+        except HDF5SchemaMissingDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_pyr_but_no_tris(create_pyr_with_missing_2d_tri):
+    file = create_pyr_with_missing_2d_tri
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as PYR exist, but no TRIS."
+        except HDF5SchemaMissingDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_prism_but_no_quad(create_prism_with_missing_2d_quad):
+    file = create_prism_with_missing_2d_quad
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as PRISM exist, but no QUADS."
+        except HDF5SchemaMissingDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_prism_but_no_tris(create_prism_with_missing_2d_tri):
+    file = create_prism_with_missing_2d_tri
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as PRISM exist, but no TRIS."
+        except HDF5SchemaMissingDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
 def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
     fld_files: List[str] = valid_output_fld_HDF5_files
 
@@ -250,4 +334,3 @@ def test_hdf5_output_validator_reject_wrong_files(valid_geometry_HDF5_files):
                 pass
             except Exception as e:
                 assert False,e
-

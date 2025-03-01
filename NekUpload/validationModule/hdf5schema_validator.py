@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import h5py
 from typing import List,Tuple,Set,Dict
 from types import MappingProxyType
-from .custom_exceptions import HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException,HDF5SchemaInconsistentException
+from .custom_exceptions import HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException,HDF5SchemaInconsistentException,HDF5SchemaMissingDefinitionException
 from dataclasses import dataclass,field
 
 class HDF5Definition(ABC):
@@ -184,63 +184,91 @@ class GeometrySchemaHDF5Validator:
         self.datasets_present: Set[str] = set()
         self.element_number: Dict[str] = {}
         
-    def validate(self):
-        #check mandatory groups and datasets first
+    def validate(self) -> bool:
+        #check mandatory groups
         for group in GeometrySchemaHDF5Validator.BASE_GROUPS.values():
             group.validate(self.file)
         
-        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MAPS)
-        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MESH)
-        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_1D_MAPS)
-        self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_1D_MESH)
+        #check all datasets
+        self.datasets_present.update(self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MAPS))
+        self.datasets_present.update(self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_MANDATORY_MESH))
+        self.datasets_present.update(self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_1D_MAPS))
+        self.datasets_present.update(self._check_mandatory_dataset(GeometrySchemaHDF5Validator.DATASETS_1D_MESH))
 
-        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_2D_MAPS)
-        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_2D_MESH)
-        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MAPS)
-        self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MESH)
+        self.datasets_present.update(self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_2D_MAPS))
+        self.datasets_present.update(self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_2D_MESH))
+        self.datasets_present.update(self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MAPS))
+        self.datasets_present.update(self._check_optional_dataset(GeometrySchemaHDF5Validator.DATASETS_3D_MESH))
 
-        #now check that each pair exists and have consistent shapes
-        #maps can't be defined without corresponding mesh and vice versa
-        for key in self.datasets_present:
-            #curve nodes only exception to above rule
-            if key != "CURVE_NODES":
-                self._check_pair_of_validated_datasets(GeometrySchemaHDF5Validator.DATASETS_MAPS.get(key),GeometrySchemaHDF5Validator.DATASETS_MESH.get(key))
+        self._check_consistent_maps_mesh_definition(self.datasets_present,GeometrySchemaHDF5Validator.DATASETS_MAPS,GeometrySchemaHDF5Validator.DATASETS_MESH)
 
+        self.element_number = self._get_number_of_elements(self.datasets_present,GeometrySchemaHDF5Validator.DATASETS_MESH)
+        self._check_element_construction(self.element_number)
 
+        return True
 
-    def _check_mandatory_dataset(self,mandatory_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> None:
-        """Helper function. Checks mandatiory datasets and if valid, adds to self.datasets_present the key
+    def _check_mandatory_dataset(self,mandatory_datasets: MappingProxyType[str,HDF5DatasetDefinition]) -> Set[str]:
+        """Helper function. Checks mandatory datasets and if all valid, return the keys of the present datasets
 
         Args:
-            mandatory_dataset (MappingProxyType[str,HDF5DatasetDefinition]): _description_
-        
-        Raises:
-            HDF5SchemaException: _description_
-        """
-        for key,dataset in mandatory_dataset.items():
-            if dataset.validate(self.file):
-                self.datasets_present.add(key)
+            mandatory_datasets (MappingProxyType[str,HDF5DatasetDefinition]): Dictionary of datasets that should be present
 
-    def _check_optional_dataset(self,optional_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> None:
-        """Helper function. Checks mandatiory datasets and if valid, adds to self.datasets_present the key
+        Returns:
+            Set[str]: Set of keys denoting which datasets are present
+        """
+        datasets_present_key: Set[str] = set()
+
+        for key,dataset in mandatory_datasets.items():
+            if dataset.validate(self.file):
+                datasets_present_key.add(key)
+
+        return datasets_present_key
+
+    def _check_optional_dataset(self,optional_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> Set[str]:
+        """Helper function. Checks optional datasets and valid datasets will have their keys added to present datasets, which is returned.
 
         Args:
             optional_dataset (MappingProxyType[str,HDF5DatasetDefinition]): _description_
 
+        Returns:
+            Set[str]: Set of keys denoting which datasets are present
+
         Raises:
             HDF5SchemaException: _description_
         """
+        datasets_present_key: Set[str] = set()
+
         for key,dataset in optional_dataset.items():
             try:
                 dataset.validate(self.file)
-                self.datasets_present.add(key)
+                datasets_present_key.add(key)
             except HDF5SchemaExistenceException:
                 pass #optional, so allow if doesn't exist, but any other definition error should be re-raised
             except Exception:
                 raise
 
-    def _check_pair_of_validated_datasets(self, dataset_1: HDF5DatasetDefinition, dataset_2: HDF5DatasetDefinition):
-        """_summary_
+        return datasets_present_key
+
+    def _check_consistent_maps_mesh_definition(self,
+                                                present_datasets_keys: Set[str],
+                                                dataset_maps: Dict[str,HDF5DatasetDefinition],
+                                                dataset_mesh: Dict[str,HDF5DatasetDefinition]) -> None:
+        """Check that for all present dataset keys, there is a consistent definition between the MAPS and MESH
+
+        Args:
+            present_datasets_keys (Set[str]): List of keys denoting datasets that are present
+            dataset_maps (Set[str,HDF5DatasetDefinition]): _description_
+            dataset_mesh (Dict[str,HDF5DatasetDefinition]): _description_
+        """
+        #now check that each pair exists and have consistent shapes
+        #maps can't be defined without corresponding mesh and vice versa
+        for key in present_datasets_keys:
+            #curve nodes only exception to above rule
+            if key != "CURVE_NODES":
+                self._check_pair_of_datasets(dataset_maps.get(key),dataset_mesh.get(key))
+
+    def _check_pair_of_datasets(self, dataset_map: HDF5DatasetDefinition, dataset_mesh: HDF5DatasetDefinition) -> None:
+        """Helper funcion for checking whether a map and mesh dataset have consistent definitions
 
         Args:
             dataset_1 (HDF5DatasetDefinition): _description_
@@ -249,23 +277,72 @@ class GeometrySchemaHDF5Validator:
         Raises:
             HDF5SchemaException: _description_
         """
-        data1 = self.file.get(dataset_1.get_path())
-        data2 = self.file.get(dataset_2.get_path())
+        data_map = self.file.get(dataset_map.get_path())
+        data_mesh = self.file.get(dataset_mesh.get_path())
 
-        if (data1 is not None and data2 is None) or (data2 is not None and data1 is None):
-            raise HDF5SchemaMissingDatasetException(self.file, f"HDF5 Schema Error: {dataset_1} and {dataset_2} should be defined together, but one exists and other doesn't")
+        if (data_map is not None and data_mesh is None) or (data_mesh is not None and data_map is None):
+            raise HDF5SchemaMissingDatasetException(self.file, f"HDF5 Schema Error: {dataset_map} and {dataset_mesh} should be defined together, \
+                                                    but one exists and other doesn't")
 
-        if data1 is not None and data2 is not None:
-            if isinstance(data1, h5py.Dataset) and isinstance(data2, h5py.Dataset):
-                shape1 = data1.shape
-                shape2 = data2.shape
-                if shape1[0] != shape2[0]:
-                    raise HDF5SchemaInconsistentException(self.file, f"HDF5 Schema Error: {dataset_1} has shape {shape1} and {dataset_2} has shape {shape2}. Inconsistent lengths {shape1[0]} != {shape2[0]}")
+        if data_map is not None and data_mesh is not None:
+            if isinstance(data_map, h5py.Dataset) and isinstance(data_mesh, h5py.Dataset):
+                shape_map = data_map.shape
+                shape_mesh = data_mesh.shape
+                if shape_map[0] != shape_mesh[0]:
+                    raise HDF5SchemaInconsistentException(self.file, f"HDF5 Schema Error: {dataset_map} has shape {shape_map} and {dataset_mesh} \
+                                                            has shape {shape_mesh}. Inconsistent lengths {shape_map[0]} != {shape_mesh[0]}")
 
-    #TODO
-    def _check_element_construction(self,datasets_present: Set[str]):
+    def _get_number_of_elements(self,
+                                present_datasets_keys: Set[str],
+                                dataset_mesh: Dict[str,HDF5DatasetDefinition]) -> Dict[str,int]:
+        """For all datasets present in the geometry file, generate a dictionary mapping dataset keys to number of elements defined.
+        Assumes consistency between maps and meshes, so meshes will be used as it contains CURVE_NODES
+
+        Args:
+            present_datasets_keys (Set[str]): _description_
+            dataset_mesh (Dict[str,HDF5DatasetDefinition]): _description_
+
+        Returns:
+            Dict[str,int]: _description_
+        """
+
+        number_elements: Dict[str,int] = {}
+
+        for dataset_key in present_datasets_keys:
+            dataset_definition: HDF5DatasetDefinition = dataset_mesh[dataset_key]
+            data = self.file.get(dataset_definition.get_path())
+            shape = data.shape
+            elmt_num = shape[0]
+            number_elements[dataset_key] = elmt_num
+
+        return number_elements
+
+    def _check_element_construction(self,num_elements: Dict[str,int]):
+        """Make sure element construction is consistent
+
+        Args:
+            num_elements (Dict[str,int]): _description_
+
+        Raises:
+            HDF5SchemaMissingDefinitionException: _description_
+            HDF5SchemaMissingDefinitionException: _description_
+            HDF5DatasetDefinition: _description_
+        """
         #3D elements can only be defined if corresponding 2D elements are present
-        pass
+        quads = num_elements.get("QUAD",0)
+        tris = num_elements.get("TRI",0)
+        
+        if num_elements.get("HEX",None) and quads < 6:
+            raise HDF5SchemaMissingDefinitionException(self.file,f"HDF5 Schema Error: HEX requires quads. There are only {quads} QUADS defined")
+
+        if num_elements.get("TET",None) and tris < 4:
+            raise HDF5SchemaMissingDefinitionException(self.file,f"HDF5 Schema Error: TET requires tris. There are only {tris} TRIS defined")
+            
+        if num_elements.get("PYR",None) and (tris < 4 or quads < 1):
+            raise HDF5SchemaMissingDefinitionException(self.file,f"HDF5 Schema Error: PYR requires quads and tris. There are only {tris} TRIS and {quads} QUADS defined")
+        
+        if num_elements.get("PRISM",None) and (tris < 2 or quads < 4):
+            raise HDF5SchemaMissingDefinitionException(self.file,f"HDF5 Schema Error: PRISM requires quads and tris. There are only {tris} TRIS and {quads} QUADS defined")
 
 class OutputSchemaHDF5Validator:
 
