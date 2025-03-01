@@ -1,4 +1,4 @@
-from typing import Tuple,Dict,Union,List
+from typing import Tuple,Dict,Union,List,Optional
 import math
 import h5py
 from sympy import sympify
@@ -104,7 +104,7 @@ def get_all_files_with_extension(files: List[str],extension: str) -> List[str]:
     
     return [f for f in files if f.lower().endswith(extension.lower())]
 
-def get_hdf5_groups_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_path: str = "") -> List[str]:
+def get_hdf5_groups_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_path: str = "",max_groups: int = 100) -> List[str]:
     """
     Traverses the HDF5 hierarchy and returns group paths up to a specified depth.
 
@@ -112,6 +112,7 @@ def get_hdf5_groups_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_p
         hdf5_file: An open h5py.File object.
         max_depth: The maximum depth to traverse.
         start_path: the path to start the search from.
+        max_groups: If defined, specifies maximum number of groups to be found. Once exceeded, function will return.
 
     Returns:
         A list of group paths.
@@ -122,6 +123,9 @@ def get_hdf5_groups_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_p
         if current_depth > max_depth:
             return
 
+        if len(group_paths) >= max_groups:
+            return
+        
         group_paths.append(current_path)
 
         for name, obj in group.items():
@@ -136,14 +140,14 @@ def get_hdf5_groups_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_p
 
     return group_paths
 
-def get_hdf5_datasets_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_path: str = "") -> List[str]:
-    """
-    Traverses the HDF5 hierarchy and returns dataset paths up to a specified depth.
+def get_hdf5_datasets_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_path: str = "",max_datasets: int=100) -> List[str]:
+    """Traverses the HDF5 hierarchy and returns dataset paths up to a specified depth.
 
     Args:
         hdf5_file: An open h5py.File object.
         max_depth: The maximum depth to traverse.
         start_path: The path to start the search from.
+        max_datasets: If defined, specifies maximum number of datasets to be found. Once exceeded, function will return.
 
     Returns:
         A list of dataset paths.
@@ -155,6 +159,8 @@ def get_hdf5_datasets_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start
             return
 
         for name, obj in group.items():
+            if len(dataset_paths) >= max_datasets:
+                return
             new_path = f"{current_path}/{name}" if current_path else name
             if isinstance(obj, h5py.Dataset):
                 dataset_paths.append(new_path)

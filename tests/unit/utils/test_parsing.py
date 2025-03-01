@@ -107,6 +107,21 @@ def test_get_hdf5_groups_multi_level_depth_new_start_point(valid_geometry_HDF5_f
             groups: List[str] = parsing.get_hdf5_groups_with_depth_limit(f,1,"NEKTAR/GEOMETRY")
             assert groups == expected_groups
 
+def test_get_hdf5_groups_test_limit(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+
+    #any more, and difficult to test as each file has different number of datasets
+    all_groups = ["","NEKTAR/GEOMETRY","NEKTAR/GEOMETRY/MAPS","NEKTAR/GEOMETRY/MESH"]
+
+    max_groups = range(0,5)
+    expected_nums = [min(max_num,len(all_groups)) for max_num in max_groups]
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            for max_num,expected_num in zip(max_groups,expected_nums):
+                groups: List[str] = parsing.get_hdf5_groups_with_depth_limit(f,3,"NEKTAR",max_num)
+                assert expected_num == len(groups)
+
 def test_get_hdf5_datasets_one_level_depth(valid_geometry_HDF5_files):
     nekg_files = valid_geometry_HDF5_files
     possible_datasets = [] #there are no datasets in first level of NEKTAR 
@@ -116,16 +131,10 @@ def test_get_hdf5_datasets_one_level_depth(valid_geometry_HDF5_files):
             datasets: List[str] = parsing.get_hdf5_datasets_with_depth_limit(f,1)
             assert possible_datasets == datasets
 
-def test_get_hdf5_datasets_multi_level_depth(valid_geometry_HDF5_files):
+def test_get_hdf5_datasets_multi_level_depth(valid_geometry_HDF5_files,geometry_possible_datasets):
     nekg_files = valid_geometry_HDF5_files
 
-    possible_datasets = ['NEKTAR/GEOMETRY/MAPS/COMPOSITE', 'NEKTAR/GEOMETRY/MAPS/CURVE_EDGE', 'NEKTAR/GEOMETRY/MAPS/CURVE_FACE', 'NEKTAR/GEOMETRY/MAPS/DOMAIN',
-                        'NEKTAR/GEOMETRY/MAPS/HEX', 'NEKTAR/GEOMETRY/MAPS/PRISM', 'NEKTAR/GEOMETRY/MAPS/PYR', 'NEKTAR/GEOMETRY/MAPS/QUAD',
-                        'NEKTAR/GEOMETRY/MAPS/SEG', 'NEKTAR/GEOMETRY/MAPS/TET', 'NEKTAR/GEOMETRY/MAPS/TRI', 'NEKTAR/GEOMETRY/MAPS/VERT',
-                        'NEKTAR/GEOMETRY/MESH/COMPOSITE', 'NEKTAR/GEOMETRY/MESH/CURVE_EDGE', 'NEKTAR/GEOMETRY/MESH/CURVE_FACE',
-                        'NEKTAR/GEOMETRY/MESH/CURVE_NODES', 'NEKTAR/GEOMETRY/MESH/DOMAIN', 'NEKTAR/GEOMETRY/MESH/HEX', 'NEKTAR/GEOMETRY/MESH/PRISM',
-                        'NEKTAR/GEOMETRY/MESH/PYR', 'NEKTAR/GEOMETRY/MESH/QUAD', 'NEKTAR/GEOMETRY/MESH/SEG', 'NEKTAR/GEOMETRY/MESH/TET', 'NEKTAR/GEOMETRY/MESH/TRI',
-                        'NEKTAR/GEOMETRY/MESH/VERT']
+    possible_datasets: List[str] = geometry_possible_datasets
     
     for hdf5_file in nekg_files:
         with h5py.File(hdf5_file) as f:
@@ -135,3 +144,15 @@ def test_get_hdf5_datasets_multi_level_depth(valid_geometry_HDF5_files):
             #so just make sure all files are allowable
             for dataset in datasets:
                 assert dataset in possible_datasets
+
+def test_get_hdf5_datasets_test_limit(valid_geometry_HDF5_files):
+    nekg_files = valid_geometry_HDF5_files
+
+    #any more, and difficult to test as each file has different number of datasets
+    max_datasets = [0,1,2,3,4,5,6,7,8]  
+
+    for hdf5_file in nekg_files:
+        with h5py.File(hdf5_file) as f:
+            for max_num in max_datasets:
+                datasets: List[str] = parsing.get_hdf5_datasets_with_depth_limit(f,3,"NEKTAR",max_num)
+                assert max_num == len(datasets)
