@@ -324,6 +324,63 @@ def test_hdf5_geometry_validator_prism_but_no_tris(create_hex_with_insufficient_
         except Exception as e:
             assert False,e
 
+def test_hdf5_geometry_validator_dangerous_group(create_dangerous_group):
+    file = create_dangerous_group
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as extra groups exist."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_multiple_group(create_multiple_dangerous_group):
+    file = create_multiple_dangerous_group
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as extra groups exist."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_dangerous_dataset(create_dangerous_dataset):
+    file = create_dangerous_dataset
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as extra datasets exist."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_geometry_validator_multiple_dataset(create_multiple_dangerous_dataset):
+    file = create_multiple_dangerous_dataset
+
+    with h5py.File(file) as f:
+        validator = GeometrySchemaHDF5Validator(f)
+
+        try:
+            validator.validate()  
+            assert False,f"{file} succeeded geometry hdf5 validation. Should fail as extra datasets exist."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+
 def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
     fld_files: List[str] = valid_output_fld_HDF5_files
 

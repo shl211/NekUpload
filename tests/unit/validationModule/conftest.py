@@ -246,6 +246,58 @@ def create_prism_with_missing_2d_tri():
     yield filename
     os.remove(filename)
 
+@pytest.fixture
+def create_dangerous_group():
+    filename = create_geometry_template("dangerous_group.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.require_group("NEKTAR/GEOMETRY/HACKING")
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_multiple_dangerous_group():
+    filename = create_geometry_template("multiple_dangerous_group.h5")
+
+    with h5py.File(filename,"a") as f:
+        for i in range(0,100):
+            f.require_group(f"NEKTAR/GEOMETRY/HACKING{i}")
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_dangerous_group():
+    filename = create_geometry_template("dangerous_dataset.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.require_group("NEKTAR/GEOMETRY/HACKING")
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_dangerous_dataset():
+    filename = create_geometry_template("dangerous_datasets.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.create_dataset("NEKTAR/HACKING", data=np.random.rand(10))
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_multiple_dangerous_dataset():
+    filename = create_geometry_template("multiple_dangerous_datasets.h5")
+
+    with h5py.File(filename,"a") as f:
+        for i in range(0,100):
+            f.create_dataset(f"NEKTAR/GEOMETRY/MAPS/HACKING{i}", data=np.random.rand(10))
+
+    yield filename
+    os.remove(filename)
+
 def create_geometry_template(filename: str) -> str:
     """This generates the same file as ADR_2D_TriQuad.nekg
 

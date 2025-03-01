@@ -2,8 +2,10 @@ from abc import ABC, abstractmethod
 import h5py
 from typing import List,Tuple,Set,Dict
 from types import MappingProxyType
-from .custom_exceptions import HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException,HDF5SchemaInconsistentException,HDF5SchemaMissingDefinitionException
+from .custom_exceptions import HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException
+from .custom_exceptions import HDF5SchemaInconsistentException,HDF5SchemaMissingDefinitionException,HDF5SchemaExtraDefinitionException
 from dataclasses import dataclass,field
+from NekUpload.utils import parsing
 
 class HDF5Definition(ABC):
     @abstractmethod
@@ -205,7 +207,41 @@ class GeometrySchemaHDF5Validator:
         self.element_number = self._get_number_of_elements(self.datasets_present,GeometrySchemaHDF5Validator.DATASETS_MESH)
         self._check_element_construction(self.element_number)
 
+        #finally check no extra unexpected payload in file
+        valid_groups_keys: List[str] = [group.get_path() for group in GeometrySchemaHDF5Validator.BASE_GROUPS.values()] + [""]#don't forget the empty root
+        self._check_only_valid_groups_exist(valid_groups_keys,len(valid_groups_keys))
+
+        valid_dataset_keys: List[str] = [dataset.get_path() for dataset in GeometrySchemaHDF5Validator.DATASETS_MESH.values()] + \
+                                        [dataset.get_path() for dataset in GeometrySchemaHDF5Validator.DATASETS_MAPS.values()]
+        self._check_only_valid_datasets_exist(valid_dataset_keys,len(valid_dataset_keys))
+
         return True
+    
+    def _check_only_valid_groups_exist(self,valid_groups: List[str],max_groups: int=100):
+        """Check that only valid groups exist.
+
+        Args:
+            valid_groups (str): _description_
+            max_groups (int): Set max limit on how many groups to find
+        """
+        groups = parsing.get_hdf5_groups_with_depth_limit(self.file,3,max_groups=max_groups)
+        print("D",groups)
+
+        for group in groups:
+            if group not in valid_groups:
+                raise HDF5SchemaExtraDefinitionException(self.file,f"Encountered unkown group: {group}")
+
+    def _check_only_valid_datasets_exist(self,valid_datasets: List[str],max_datasets: int=100):
+        """Check that only valid datasets exist.
+
+        Args:
+            valid_datasets (str): _description_
+            max_datasets (int): Set max limit on how many datasets to find
+        """
+        datasets = parsing.get_hdf5_datasets_with_depth_limit(self.file,3,max_datasets=max_datasets)
+        for dataset in datasets:
+            if dataset not in valid_datasets:
+                raise HDF5SchemaExtraDefinitionException(self.file,f"Encountered unkown dataset: {dataset}")
 
     def _check_mandatory_dataset(self,mandatory_datasets: MappingProxyType[str,HDF5DatasetDefinition]) -> Set[str]:
         """Helper function. Checks mandatory datasets and if all valid, return the keys of the present datasets
@@ -223,6 +259,7 @@ class GeometrySchemaHDF5Validator:
                 datasets_present_key.add(key)
 
         return datasets_present_key
+
 
     def _check_optional_dataset(self,optional_dataset: MappingProxyType[str,HDF5DatasetDefinition]) -> Set[str]:
         """Helper function. Checks optional datasets and valid datasets will have their keys added to present datasets, which is returned.
