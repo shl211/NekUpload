@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import h5py
-from typing import List,Tuple,Set,Dict
+from typing import List,Tuple,Set,Dict,Optional
 from types import MappingProxyType
 from .custom_exceptions import HDF5SchemaExistenceException,HDF5SchemaMissingDatasetException
 from .custom_exceptions import HDF5SchemaInconsistentException,HDF5SchemaMissingDefinitionException,HDF5SchemaExtraDefinitionException
@@ -399,13 +399,27 @@ class OutputSchemaHDF5Validator:
         self._check_mandatory_groups(OutputSchemaHDF5Validator.BASE_GROUPS)
         self._check_mandatory_datasets(OutputSchemaHDF5Validator.EXPECTED_DATASETS)
 
+        #acquire all other groups and datasets that should be present based on DECOMPOSITION definition
+        self._assert_decomposition()
         expansion_groups: Tuple[HDF5GroupDefinition] = tuple(self._get_expansion_groups())
+
+        optional_datasets: List[HDF5DatasetDefinition] = []
         
+        if polyorder_dataset := self._get_polyorder_dataset():
+            optional_datasets.append(polyorder_dataset)
+        if homo_y_ids_dataset := self._get_homogeneous_y_ids_dataset():
+            optional_datasets.append(homo_y_ids_dataset)
+        if homo_z_ids_dataset := self._get_homogeneous_z_ids_dataset():
+            optional_datasets.append(homo_z_ids_dataset)
+        if homo_strip_ids_dataset := self._get_homogeneous_strips_ids_dataset():
+            optional_datasets.append(homo_strip_ids_dataset)
+
         self._check_mandatory_groups(expansion_groups)
+        self._check_mandatory_datasets(optional_datasets)
         
         #check no extraneous groups or datasets
         valid_groups: Tuple[HDF5GroupDefinition] = OutputSchemaHDF5Validator.BASE_GROUPS + expansion_groups
-        valid_datasets = OutputSchemaHDF5Validator.EXPECTED_DATASETS
+        valid_datasets = OutputSchemaHDF5Validator.EXPECTED_DATASETS + tuple(optional_datasets)
         #root "" is also technically a valid group
         valid_groups_str = [group.get_path() for group in valid_groups] + [""]
         valid_datasets_str = [dataset.get_path() for dataset in valid_datasets]
@@ -420,6 +434,16 @@ class OutputSchemaHDF5Validator:
         for dataset in datasets:
             dataset.validate(self.file)
 
+    def _assert_decomposition(self):
+        """Assert decomposition has correct shape
+
+        Raises:
+            HDF5SchemaInconsistentException: _description_
+        """
+        #decomposition should come in group of 7
+        if self.file["NEKTAR/DECOMPOSITION"].shape[0] % 7 != 0:
+            raise HDF5SchemaInconsistentException(self.file,"HDF5 Schema Error: Decomposition shape should be multiple of 7")
+
     def _get_expansion_groups(self) -> List[HDF5GroupDefinition]:
         """Get the expansion groups that should be defined, based on what is in DECOMPOSITION
 
@@ -429,13 +453,7 @@ class OutputSchemaHDF5Validator:
         Returns:
             List[HDF5GroupDefinition]: _description_
         """
-        #DECOMPOSITION describes what other groups should be defined
         decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
-
-        #decomposition should come in group of 7
-        if decomposition_dataset.shape[0] % 7 != 0:
-            raise HDF5SchemaInconsistentException(self.file,"HDF5 Schema Error: Decomposition shape should be multiple of 7")
-
         #last of the 7 is a hash pointing to location in HDF5 file containing expansion data
         num_expansion_groups = decomposition_dataset.shape[0] // 7
 
@@ -446,6 +464,74 @@ class OutputSchemaHDF5Validator:
 
         return expected_groups
     
+    def _get_polyorder_dataset(self) -> Optional[HDF5DatasetDefinition]:
+        """Get the polyorder dataset definition if it should exist, based on DECOMPOSITION entries, every third entry
+
+        Returns:
+            Optional[HDF5DatasetDefinition]: _description_
+        """
+        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
+        size = decomposition_dataset.shape[0]
+        #3rd of the 7 grouping in decomposition
+        #is a number of modes that are polyorder???
+        num_polyorder_modes: int = 0
+
+        for i in range(2,size,7):
+            num_polyorder_modes += decomposition_dataset[i]
+
+        return HDF5DatasetDefinition("NEKTAR/POLYORDERS",(num_polyorder_modes,)) if num_polyorder_modes > 0 else None
+
+    def _get_homogeneous_y_ids_dataset(self) -> Optional[HDF5DatasetDefinition]:
+        """Get the Homogeneous Y IDs dataset definition if it should exist, 
+        based on DECOMPOSITION entries, every fourth entry
+
+        Returns:
+            Optional[HDF5DatasetDefinition]: _description_
+        """
+        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
+        size = decomposition_dataset.shape[0]
+        #4th of the 7 grouping in decomposition is number of z ids
+        num_homogeneous_y_ids: int = 0
+
+        for i in range(3,size,7):
+            num_homogeneous_y_ids += decomposition_dataset[i]
+
+        return HDF5DatasetDefinition("NEKTAR/HOMOGENEOUSYIDS",(num_homogeneous_y_ids,)) if num_homogeneous_y_ids > 0 else None
+
+    def _get_homogeneous_z_ids_dataset(self) -> Optional[HDF5DatasetDefinition]:
+        """Get the Homogeneous Z IDs dataset definition if it should exist, 
+        based on DECOMPOSITION entries, every fifth entry
+
+        Returns:
+            Optional[HDF5DatasetDefinition]: _description_
+        """
+        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
+        size = decomposition_dataset.shape[0]
+        #5th of the 7 grouping in decomposition is number of z ids
+        num_homogeneous_z_ids: int = 0
+
+        for i in range(4,size,7):
+            num_homogeneous_z_ids += decomposition_dataset[i]
+
+        return HDF5DatasetDefinition("NEKTAR/HOMOGENEOUSZIDS",(num_homogeneous_z_ids,)) if num_homogeneous_z_ids > 0 else None
+
+    def _get_homogeneous_strips_ids_dataset(self) -> Optional[HDF5DatasetDefinition]:
+        """Get the Homogeneous strips IDs dataset definition if it should exist, 
+        based on DECOMPOSITION entries, every fifth entry
+
+        Returns:
+            Optional[HDF5DatasetDefinition]: _description_
+        """
+        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
+        size = decomposition_dataset.shape[0]
+        #6th of the 7 grouping in decomposition is number of z ids
+        num_homogeneous_strips_ids: int = 0
+
+        for i in range(5,size,7):
+            num_homogeneous_strips_ids += decomposition_dataset[i]
+
+        return HDF5DatasetDefinition("NEKTAR/HOMOGENEOUSSIDS",(num_homogeneous_strips_ids,)) if num_homogeneous_strips_ids > 0 else None
+
     def _check_only_valid_groups_exist(self,valid_groups: List[str],max_groups: int=100):
         """Check that only valid groups exist.
 

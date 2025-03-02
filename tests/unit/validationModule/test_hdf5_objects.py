@@ -380,7 +380,6 @@ def test_hdf5_geometry_validator_multiple_dataset(create_multiple_dangerous_data
         except Exception as e:
             assert False,e
 
-@pytest.mark.skip
 def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
     fld_files: List[str] = valid_output_fld_HDF5_files
 
