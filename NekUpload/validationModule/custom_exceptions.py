@@ -55,3 +55,8 @@ class GeometryFileException(Exception):
     def __init__(self, file: str, message="Geometry file error"):
         full_message = f"{message}: {file}"
         super().__init__(full_message)
+
+class OutputFileException(Exception):
+    def __init__(self, file: str, message="Geometry file error"):
+        full_message = f"{message}: {file}"
+        super().__init__(full_message)
