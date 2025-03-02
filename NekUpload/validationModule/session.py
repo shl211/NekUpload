@@ -17,6 +17,18 @@ class ValidateSession:
         return xml_tree
 
     def is_valid_xml(self,xml_file: str,schema_file_path: str) -> bool:
+        """_summary_
+
+        Args:
+            xml_file (str): _description_
+            schema_file_path (str): _description_
+
+        Raises:
+            XMLSchemaException: _description_
+
+        Returns:
+            bool: _description_
+        """
         xsd_file = schema_file_path
         
         with open(xsd_file,"rb") as xsd:
@@ -30,11 +42,16 @@ class ValidateSession:
             return True
         else:
             raise XMLSchemaException(self.file_path,schema.error_log)
-        
-    def validate(self) -> bool:
+    
+    def check_schema(self) -> bool:
+        """_summary_
+
+        Returns:
+            bool: _description_
+        """
         xsd_schema = os.path.join(os.path.dirname(__file__), 'schemas/nektar.xsd') #ensure path always correct
         return self.is_valid_xml(self.file_path, xsd_schema)
-    
+        
     def check_file_dependencies(self, files: List[str]) -> bool:
         
         #check geometry files exist
