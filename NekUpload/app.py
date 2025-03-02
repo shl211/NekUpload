@@ -4,6 +4,7 @@ from tkinter import ttk #holds the more modern widgets
 from typing import List
 from NekUpload.metadataModule import *
 from NekUpload.uploadModule import invenioRDM
+from NekUpload.validator import NektarValidator
 import os
 from dotenv import load_dotenv
 
@@ -99,6 +100,46 @@ class NekUploadGUI:
         authors_from_app: List[InvenioOrgInfo | InvenioPersonInfo] = self.dynamic_fields_frame.author_list
         if not authors_from_app:
             logging.error("No authors specified. At least one required")
+            return
+
+        #check files
+        session_file_list = self.file_selector_notebook_frame.session_file_list
+        if not session_file_list:
+            logging.error("No session files specified. One is required")
+            return
+        
+        if len(session_file_list) > 1:
+            logging.error(f"{len(session_file_list)} session files selected. Only one should be specified")
+            return 
+        
+        geometry_file_list = self.file_selector_notebook_frame.geometry_file_list        
+        if not geometry_file_list:
+            logging.error("No geometry files specified. One is required")
+            return
+        
+        if len(geometry_file_list) > 1:
+            logging.error(f"{len(geometry_file_list)} geometry files selected. Only one should be specified")
+
+        output_files_list = self.file_selector_notebook_frame.output_file_list
+        if not output_files_list:
+            logging.error("No output files specified. One is required")
+            return
+        
+        if len(output_files_list) > 1:
+            logging.error(f"{len(output_files_list)} output files selected. Only one should be specified")
+            return
+
+        chk_file_list = self.file_selector_notebook_frame.checkpoint_file_list
+        other_files_list = self.file_selector_notebook_frame.filter_file_list + \
+                            self.file_selector_notebook_frame.supporting_file_list
+
+        validator = NektarValidator(session_file_list[0],geometry_file_list[0],output_files_list[0],
+                                    chk_file_list,other_files_list)
+
+        try: 
+            validator.validate()
+        except Exception as e:
+            logging.error(e)
             return
 
         title: str = self.static_fields_frame.title

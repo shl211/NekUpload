@@ -59,10 +59,6 @@ class FileSelectorNotebookFrame(ttk.Notebook):
         return self.output_frame.file_list
 
     @property
-    def output_file_list(self) -> List[str]:
-        return self.output_frame.file_list
-
-    @property
     def checkpoint_file_list(self) -> List[str]:
         return self.checkpoint_frame.file_list
 
