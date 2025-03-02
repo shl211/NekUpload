@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "NekUpload"
-version = "0.1.0"
+version = "0.2.0"
 authors = [
     { name="Stephen Liu", email="stephen.liu21@imperial.ac.uk" },
 ]
@@ -43,8 +43,10 @@ include-package-data = true
 nektar = "https://www.nektar.info"
 
 [project.scripts]
-nekupload-app = "NekUpload.app:main"
 nekupload = "NekUpload.cli:main"
+
+[project.gui-scripts]
+nekupload-app = "NekUpload.app:main"
 
 [tool.pytest.ini_options]
 log_cli = false
