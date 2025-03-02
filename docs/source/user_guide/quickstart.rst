@@ -70,7 +70,7 @@ For Windows:
 
 .. code::
 
-    $env:QUICKSTART_DB_KEY=<YOUR KEY HERE>
+    set QUICKSTART_DB_KEY=<YOUR KEY HERE>
 
 You can use the System Properties dialog to set persistent environment variables.
 
