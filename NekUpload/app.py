@@ -19,6 +19,8 @@ import logging
 class NekUploadGUI:
     def __init__(self,root: Tk) -> None:
         self.root: Tk = root
+        style = ttk.Style()
+        style.theme_use('default')
         self.mainframe: ttk.Frame = self._create_mainframe()
         
         self.header_frame = HeaderFrame(self.mainframe)
