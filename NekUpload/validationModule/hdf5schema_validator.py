@@ -386,38 +386,55 @@ class OutputSchemaHDF5Validator:
     NO_DIM_CONSTRAINTS = -1 #helper
 
     BASE_GROUPS = (HDF5GroupDefinition("NEKTAR",["FORMAT_VERSION"]),
-                   HDF5GroupDefinition("NEKTAR/Metadata",attributes=["ChkFileNum","Time"]), #TODO
-                   HDF5GroupDefinition("NEKTAR/Metadata/Provenance",attributes=["GitBranch","GitSHA1","Hostname","NektarVersion","Timestamp"]))
+                HDF5GroupDefinition("NEKTAR/Metadata",attributes=["ChkFileNum","Time"]), #TODO
+                HDF5GroupDefinition("NEKTAR/Metadata/Provenance",attributes=["GitBranch","GitSHA1","Hostname","NektarVersion","Timestamp"]))
 
     EXPECTED_DATASETS = (HDF5DatasetDefinition("NEKTAR/DATA",(NO_DIM_CONSTRAINTS,)),
-                         HDF5DatasetDefinition("NEKTAR/DECOMPOSITION",(NO_DIM_CONSTRAINTS,)),
-                         HDF5DatasetDefinition("NEKTAR/ELEMENTIDS",(NO_DIM_CONSTRAINTS,)))
+                        HDF5DatasetDefinition("NEKTAR/DECOMPOSITION",(NO_DIM_CONSTRAINTS,)),
+                        HDF5DatasetDefinition("NEKTAR/ELEMENTIDS",(NO_DIM_CONSTRAINTS,)))
 
     def __init__(self,f: h5py.File):        
         self.file: h5py.File = f
 
     def validate(self):
-        for group in OutputSchemaHDF5Validator.BASE_GROUPS:
+        self._check_mandatory_groups(OutputSchemaHDF5Validator.BASE_GROUPS)
+        self._check_mandatory_datasets(OutputSchemaHDF5Validator.EXPECTED_DATASETS)
+
+        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
+        expansion_groups: Tuple[HDF5GroupDefinition] = tuple(self._get_expansion_groups(decomposition_dataset))
+        
+        self._check_mandatory_groups(expansion_groups)
+
+    def _check_mandatory_groups(self,groups: Tuple[HDF5GroupDefinition]):
+        for group in groups:
             group.validate(self.file)
 
-        for dataset in OutputSchemaHDF5Validator.EXPECTED_DATASETS:
+    def _check_mandatory_datasets(self,datasets: Tuple[HDF5DatasetDefinition]):
+        for dataset in datasets:
             dataset.validate(self.file)
 
-        #there should be other groups defined based on decomposition
-        #DECOMPOSITION contains sequence of seven numbres, seventh number
-        #is a hash denoting a group containing expansion information
-        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
-        self._check_decomposition(decomposition_dataset)
+    def _get_expansion_groups(self,decomposition_dataset: h5py.Dataset) -> List[HDF5GroupDefinition]:
+        """Get the expansion groups that should be defined, based on what is in DECOMPOSITION
 
-    def _check_decomposition(self, decomposition_dataset: h5py.Dataset):
+        Args:
+            decomposition_dataset (h5py.Dataset): _description_
+
+        Raises:
+            HDF5SchemaInconsistentException: _description_
+
+        Returns:
+            List[HDF5GroupDefinition]: _description_
+        """
+        #decomposition should come in group of 7
         if decomposition_dataset.shape[0] % 7 != 0:
             raise HDF5SchemaInconsistentException(self.file,"HDF5 Schema Error: Decomposition shape should be multiple of 7")
 
-        expected_groups: List[HDF5GroupDefinition] = []
-        for i in range(6,decomposition_dataset.shape[0],7):
+        #last of the 7 is a hash pointing to location in HDF5 file containing expansion data
+        num_expansion_groups = decomposition_dataset.shape[0] // 7
 
+        expected_groups: List[HDF5GroupDefinition] = []
+        for i in range(6,7*num_expansion_groups,7):
             hash = decomposition_dataset[i]
             expected_groups.append(HDF5GroupDefinition(f"NEKTAR/{hash}",attributes=["BASIS","FIELDS","NUMMODESPERDIR","SHAPE"]))
 
-        for group in expected_groups:
-            group.validate(self.file)
+        return expected_groups
