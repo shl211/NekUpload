@@ -1,0 +1,12 @@
+NekUpload.frontend.static\_fields\_frame
+========================================
+
+.. automodule:: NekUpload.frontend.static_fields_frame
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      StaticFieldsFrame
+   

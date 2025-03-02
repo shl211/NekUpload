@@ -1,0 +1,18 @@
+NekUpload.app
+=============
+
+.. automodule:: NekUpload.app
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      main
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      NekUploadGUI
+   

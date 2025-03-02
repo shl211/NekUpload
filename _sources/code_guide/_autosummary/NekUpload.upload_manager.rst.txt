@@ -1,0 +1,12 @@
+NekUpload.upload\_manager
+=========================
+
+.. automodule:: NekUpload.upload_manager
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      UploadManager
+   

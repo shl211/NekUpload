@@ -1,0 +1,21 @@
+NekUpload.validationModule.custom\_exceptions
+=============================================
+
+.. automodule:: NekUpload.validationModule.custom_exceptions
+
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      GeometryFileException
+      HDF5SchemaException
+      HDF5SchemaExistenceException
+      HDF5SchemaExtraDefinitionException
+      HDF5SchemaInconsistentException
+      HDF5SchemaMissingDatasetException
+      HDF5SchemaMissingDefinitionException
+      MissingInputFileException
+      MissingOutputFileException
+      XMLSchemaException
+   

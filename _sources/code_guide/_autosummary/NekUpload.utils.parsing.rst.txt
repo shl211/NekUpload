@@ -1,0 +1,17 @@
+NekUpload.utils.parsing
+=======================
+
+.. automodule:: NekUpload.utils.parsing
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      evaluate_parameters
+      get_all_files_with_extension
+      get_both_sides_of_equals
+      get_hdf5_datasets_with_depth_limit
+      get_hdf5_groups_with_depth_limit
+      safe_resolve
+   

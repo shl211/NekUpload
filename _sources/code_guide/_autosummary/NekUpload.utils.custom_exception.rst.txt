@@ -1,0 +1,13 @@
+NekUpload.utils.custom\_exception
+=================================
+
+.. automodule:: NekUpload.utils.custom_exception
+
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      HDF5ReaderException
+      XMLReaderException
+   

@@ -1,0 +1,12 @@
+NekUpload.validationModule.geometry
+===================================
+
+.. automodule:: NekUpload.validationModule.geometry
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ValidateGeometry
+   
