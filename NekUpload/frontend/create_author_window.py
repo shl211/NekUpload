@@ -89,15 +89,17 @@ class CreateAuthorPersonWindow(Toplevel):
         """
         #enforce mandatory fields
         #don't return immediately so all incomplete fields highlighted together
-        is_exit = False
+        is_first_name_bad = False
+        is_last_name_bad = False
         if not self._given_name.get():
             style_guide.show_error_in_entry(self.given_name_entry)
-            is_exit = True
+            is_first_name_bad = True
         
         if not self._last_name.get():
             style_guide.show_error_in_entry(self.last_name_entry)
-            is_exit
+            is_last_name_bad = True
         
+        is_exit = is_first_name_bad or is_last_name_bad
         #exit now
         if is_exit:
             return
