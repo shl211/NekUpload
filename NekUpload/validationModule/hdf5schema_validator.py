@@ -400,8 +400,7 @@ class OutputSchemaHDF5Validator:
         self._check_mandatory_groups(OutputSchemaHDF5Validator.BASE_GROUPS)
         self._check_mandatory_datasets(OutputSchemaHDF5Validator.EXPECTED_DATASETS)
 
-        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
-        expansion_groups: Tuple[HDF5GroupDefinition] = tuple(self._get_expansion_groups(decomposition_dataset))
+        expansion_groups: Tuple[HDF5GroupDefinition] = tuple(self._get_expansion_groups())
         
         self._check_mandatory_groups(expansion_groups)
 
@@ -413,11 +412,8 @@ class OutputSchemaHDF5Validator:
         for dataset in datasets:
             dataset.validate(self.file)
 
-    def _get_expansion_groups(self,decomposition_dataset: h5py.Dataset) -> List[HDF5GroupDefinition]:
+    def _get_expansion_groups(self) -> List[HDF5GroupDefinition]:
         """Get the expansion groups that should be defined, based on what is in DECOMPOSITION
-
-        Args:
-            decomposition_dataset (h5py.Dataset): _description_
 
         Raises:
             HDF5SchemaInconsistentException: _description_
@@ -425,6 +421,9 @@ class OutputSchemaHDF5Validator:
         Returns:
             List[HDF5GroupDefinition]: _description_
         """
+        #DECOMPOSITION describes what other groups should be defined
+        decomposition_dataset: h5py.Dataset = self.file["NEKTAR/DECOMPOSITION"]
+
         #decomposition should come in group of 7
         if decomposition_dataset.shape[0] % 7 != 0:
             raise HDF5SchemaInconsistentException(self.file,"HDF5 Schema Error: Decomposition shape should be multiple of 7")
