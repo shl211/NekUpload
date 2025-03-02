@@ -208,7 +208,7 @@ class GeometrySchemaHDF5Validator:
         self._check_element_construction(self.element_number)
 
         #finally check no extra unexpected payload in file
-        valid_groups_keys: List[str] = [group.get_path() for group in GeometrySchemaHDF5Validator.BASE_GROUPS.values()] + [""]#don't forget the empty root
+        valid_groups_keys: List[str] = [group.get_path() for group in GeometrySchemaHDF5Validator.BASE_GROUPS.values()]
         self._check_only_valid_groups_exist(valid_groups_keys)
 
         valid_dataset_keys: List[str] = [dataset.get_path() for dataset in GeometrySchemaHDF5Validator.DATASETS_MESH.values()] + \
@@ -223,7 +223,10 @@ class GeometrySchemaHDF5Validator:
         Args:
             valid_groups (str): _description_
         """
-        max_groups = len(valid_groups) + 1 #plus one to search for any extra invalid groups
+        #plus one to search for any extra invalid groups
+        #"" is a valid group too, and is provided in function call
+        valid_groups.append("")
+        max_groups = len(valid_groups) + 1 
         groups = parsing.get_hdf5_groups_with_depth_limit(self.file,3,max_groups=max_groups)
 
         for group in groups:
@@ -409,9 +412,9 @@ class OutputSchemaHDF5Validator:
         
         #check no extraneous groups or datasets
         valid_groups: Tuple[HDF5GroupDefinition] = OutputSchemaHDF5Validator.BASE_GROUPS + expansion_groups
-        valid_datasets = OutputSchemaHDF5Validator.EXPECTED_DATASETS + optional_datasets
-        #root "" is also technically a valid group
-        valid_groups_str = [group.get_path() for group in valid_groups] + [""]
+        valid_datasets: Tuple[HDF5DatasetDefinition] = OutputSchemaHDF5Validator.EXPECTED_DATASETS + optional_datasets
+
+        valid_groups_str = [group.get_path() for group in valid_groups]
         valid_datasets_str = [dataset.get_path() for dataset in valid_datasets]
         self._check_only_valid_groups_exist(valid_groups_str)
         self._check_only_valid_datasets_exist(valid_datasets_str)
@@ -525,7 +528,10 @@ class OutputSchemaHDF5Validator:
         Args:
             valid_groups (str): _description_
         """
-        max_groups = len(valid_groups) + 1 #plus one to search for any extra invalid groups
+        #plus one to search for any extra invalid groups
+        #"" is a valid group too, and is provided in function call
+        valid_groups.append("")
+        max_groups = len(valid_groups) + 1 
         groups = parsing.get_hdf5_groups_with_depth_limit(self.file,3,max_groups=max_groups)
 
         for group in groups:

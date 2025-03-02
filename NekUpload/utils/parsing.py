@@ -106,7 +106,7 @@ def get_all_files_with_extension(files: List[str],extension: str) -> List[str]:
 
 def get_hdf5_groups_with_depth_limit(hdf5_file: h5py.File,max_depth: int,start_path: str = "",max_groups: int = 100) -> List[str]:
     """
-    Traverses the HDF5 hierarchy and returns group paths up to a specified depth.
+    Traverses the HDF5 hierarchy and returns group paths up to a specified depth. Will find "" as first group.
 
     Args:
         hdf5_file: An open h5py.File object.
