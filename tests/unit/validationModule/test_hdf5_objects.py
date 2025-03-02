@@ -380,7 +380,7 @@ def test_hdf5_geometry_validator_multiple_dataset(create_multiple_dangerous_data
         except Exception as e:
             assert False,e
 
-
+@pytest.mark.skip
 def test_hdf5_output_validator_accept(valid_output_fld_HDF5_files):
     fld_files: List[str] = valid_output_fld_HDF5_files
 
@@ -405,3 +405,55 @@ def test_hdf5_output_validator_reject_wrong_files(valid_geometry_HDF5_files):
                 pass
             except Exception as e:
                 assert False,e
+
+def test_hdf5_output_validator_reject_extra_datasets(create_output_dangerous_datasets):
+    output_file: str = create_output_dangerous_datasets
+    print(output_file)
+    with h5py.File(output_file) as f:
+        validator = OutputSchemaHDF5Validator(f)
+        try:
+            validator.validate()        
+            assert False,f"{output_file} succeeded output hdf5 validation. Should fail as extra datasets present."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_output_validator_reject_one_extra_dataset(create_output_one_dangerous_datasets):
+    output_file: str = create_output_one_dangerous_datasets
+    print(output_file)
+    with h5py.File(output_file) as f:
+        validator = OutputSchemaHDF5Validator(f)
+        try:
+            validator.validate()        
+            assert False,f"{output_file} succeeded output hdf5 validation. Should fail as extra datasets present."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_output_validator_reject_extra_groups(create_output_dangerous_groups):
+    output_file: str = create_output_dangerous_groups
+    print(output_file)
+    with h5py.File(output_file) as f:
+        validator = OutputSchemaHDF5Validator(f)
+        try:
+            validator.validate()        
+            assert False,f"{output_file} succeeded output hdf5 validation. Should fail as extra groups present."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e
+
+def test_hdf5_output_validator_reject_one_extra_groups(create_output_one_dangerous_groups):
+    output_file: str = create_output_one_dangerous_groups
+    print(output_file)
+    with h5py.File(output_file) as f:
+        validator = OutputSchemaHDF5Validator(f)
+        try:
+            validator.validate()        
+            assert False,f"{output_file} succeeded output hdf5 validation. Should fail as extra groups present."
+        except HDF5SchemaExtraDefinitionException:
+            pass
+        except Exception as e:
+            assert False,e

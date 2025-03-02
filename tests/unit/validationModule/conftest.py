@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 import pytest
 import os
+import datetime
 
 @pytest.fixture
 def create_missing_mesh_pair():
@@ -347,3 +348,98 @@ def create_geometry_template(filename: str) -> str:
         mesh.create_dataset("VERT", data=np.empty((49, 3), dtype=np.float64))
 
     return filename
+
+def create_output_template(filename: str):
+    """Creates an HDF5 file with the specified Nektar output data structure."""
+
+    with h5py.File(filename, 'w') as f:
+        # NEKTAR group
+        nektar_group = f.create_group("NEKTAR")
+        nektar_group.attrs["FORMAT_VERSION"] = 1
+
+        # NEKTAR/311836754199067146 group
+        group_311836754199067146 = nektar_group.create_group("311836754199067146")
+        group_311836754199067146.attrs["BASIS"] = np.array([4, 5])
+        group_311836754199067146.attrs["FIELDS"] = np.array(['u', 'v'], dtype=h5py.string_dtype())
+        group_311836754199067146.attrs["NUMMODESPERDIR"] = "UNIORDER:7,7"
+        group_311836754199067146.attrs["SHAPE"] = "Triangle"
+
+        # NEKTAR/3375946165239242764 group
+        group_3375946165239242764 = nektar_group.create_group("3375946165239242764")
+        group_3375946165239242764.attrs["BASIS"] = np.array([4, 4])
+        group_3375946165239242764.attrs["FIELDS"] = np.array(['u', 'v'], dtype=h5py.string_dtype())
+        group_3375946165239242764.attrs["NUMMODESPERDIR"] = "UNIORDER:6,6"
+        group_3375946165239242764.attrs["SHAPE"] = "Quadrilateral"
+
+        # DATA dataset
+        data = np.random.rand(3104).astype(np.float64)
+        f.create_dataset("NEKTAR/DATA", data=data, dtype='float64')
+
+        # DECOMPOSITION dataset
+        decomposition = np.array([22, 1232, 0, 0, 0, 0, 311836754199067146, 26, 1872, 0, 0, 0, 0, 3375946165239242764], dtype='uint64')
+        f.create_dataset("NEKTAR/DECOMPOSITION", data=decomposition, dtype='uint64')
+
+        # ELEMENTIDS dataset
+        elementids = np.arange(48, dtype='uint32')
+        f.create_dataset("NEKTAR/ELEMENTIDS", data=elementids, dtype='uint32')
+
+        # Metadata group
+        metadata_group = nektar_group.create_group("Metadata")
+        metadata_group.attrs["ChkFileNum"] = 1
+        metadata_group.attrs["SessionName0"] = "ADR_2D_TriQuad.xml"
+        metadata_group.attrs["SessionName1"] = "ADR_2D_TriQuad.nekg"
+        metadata_group.attrs["Time"] = 0.0050000000000000027
+
+        # Metadata/Provenance group
+        provenance_group = metadata_group.create_group("Provenance")
+        provenance_group.attrs["GitBranch"] = ""
+        provenance_group.attrs["GitSHA1"] = "ebf2aec4f840729ffb2845ead6d462be6f6f341a"
+        provenance_group.attrs["Hostname"] = "DESKTOP-NTFHSF8"
+        provenance_group.attrs["NektarVersion"] = "5.7.0"
+        now = datetime.datetime.now()
+        timestamp = now.strftime("%d-%b-%Y %H:%M:%S")
+        provenance_group.attrs["Timestamp"] = timestamp
+
+    return filename
+
+@pytest.fixture
+def create_output_dangerous_datasets():
+    filename = create_output_template("multiple_dangerous_output_datasets.h5")
+
+    with h5py.File(filename,"a") as f:
+        for i in range(0,100):
+            f.create_dataset(f"NEKTAR/HACKING{i}", data=np.random.rand(10))
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_output_dangerous_groups():
+    filename = create_output_template("multiple_dangerous_output_groups.h5")
+
+    with h5py.File(filename,"a") as f:
+        for i in range(0,100):
+            f.require_group(f"NEKTAR/HACKING{i}")
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_output_one_dangerous_datasets():
+    filename = create_output_template("one_dangerous_output_datasets.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.create_dataset(f"NEKTAR/HACKING", data=np.random.rand(10))
+
+    yield filename
+    os.remove(filename)
+
+@pytest.fixture
+def create_output_one_dangerous_groups():
+    filename = create_output_template("one_dangerous_output_groups.h5")
+
+    with h5py.File(filename,"a") as f:
+        f.require_group(f"NEKTAR/HACKING")
+
+    yield filename
+    os.remove(filename)
