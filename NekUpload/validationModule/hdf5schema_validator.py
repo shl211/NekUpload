@@ -209,34 +209,34 @@ class GeometrySchemaHDF5Validator:
 
         #finally check no extra unexpected payload in file
         valid_groups_keys: List[str] = [group.get_path() for group in GeometrySchemaHDF5Validator.BASE_GROUPS.values()] + [""]#don't forget the empty root
-        self._check_only_valid_groups_exist(valid_groups_keys,len(valid_groups_keys) + 1) #+1 to see if there are extra groups
+        self._check_only_valid_groups_exist(valid_groups_keys)
 
         valid_dataset_keys: List[str] = [dataset.get_path() for dataset in GeometrySchemaHDF5Validator.DATASETS_MESH.values()] + \
                                         [dataset.get_path() for dataset in GeometrySchemaHDF5Validator.DATASETS_MAPS.values()]
-        self._check_only_valid_datasets_exist(valid_dataset_keys,len(valid_dataset_keys) + 1) #+1 to see if there are extra datasets
+        self._check_only_valid_datasets_exist(valid_dataset_keys)
 
         return True
     
-    def _check_only_valid_groups_exist(self,valid_groups: List[str],max_groups: int=100):
+    def _check_only_valid_groups_exist(self,valid_groups: List[str]):
         """Check that only valid groups exist.
 
         Args:
             valid_groups (str): _description_
-            max_groups (int): Set max limit on how many groups to find
         """
+        max_groups = len(valid_groups) + 1 #plus one to search for any extra invalid groups
         groups = parsing.get_hdf5_groups_with_depth_limit(self.file,3,max_groups=max_groups)
 
         for group in groups:
             if group not in valid_groups:
                 raise HDF5SchemaExtraDefinitionException(self.file,f"Encountered unkown group: {group}")
 
-    def _check_only_valid_datasets_exist(self,valid_datasets: List[str],max_datasets: int=100):
+    def _check_only_valid_datasets_exist(self,valid_datasets: List[str]):
         """Check that only valid datasets exist.
 
         Args:
             valid_datasets (str): _description_
-            max_datasets (int): Set max limit on how many datasets to find
         """
+        max_datasets = len(valid_datasets) + 1
         datasets = parsing.get_hdf5_datasets_with_depth_limit(self.file,3,max_datasets=max_datasets)
         for dataset in datasets:
             if dataset not in valid_datasets:
@@ -384,8 +384,8 @@ class OutputSchemaHDF5Validator:
 
     NO_DIM_CONSTRAINTS = -1 #helper
 
-    BASE_GROUPS = (HDF5GroupDefinition("NEKTAR",["FORMAT_VERSION"]),
-                HDF5GroupDefinition("NEKTAR/Metadata",attributes=["ChkFileNum","Time"]), #TODO
+    BASE_GROUPS = (HDF5GroupDefinition("NEKTAR",attributes=["FORMAT_VERSION"]),
+                HDF5GroupDefinition("NEKTAR/Metadata",attributes=["ChkFileNum","Time"]), #this is bare minimum, depending on solver, can have more, also sessionFile#
                 HDF5GroupDefinition("NEKTAR/Metadata/Provenance",attributes=["GitBranch","GitSHA1","Hostname","NektarVersion","Timestamp"]))
 
     EXPECTED_DATASETS = (HDF5DatasetDefinition("NEKTAR/DATA",(NO_DIM_CONSTRAINTS,)),
@@ -413,8 +413,8 @@ class OutputSchemaHDF5Validator:
         #root "" is also technically a valid group
         valid_groups_str = [group.get_path() for group in valid_groups] + [""]
         valid_datasets_str = [dataset.get_path() for dataset in valid_datasets]
-        self._check_only_valid_groups_exist(valid_groups_str,len(valid_groups_str)+1) #+1 to check for extra datasets
-        self._check_only_valid_datasets_exist(valid_datasets_str,len(valid_datasets_str)+1)
+        self._check_only_valid_groups_exist(valid_groups_str)
+        self._check_only_valid_datasets_exist(valid_datasets_str)
 
     def _check_mandatory_groups(self,groups: Tuple[HDF5GroupDefinition]):
         for group in groups:
@@ -519,27 +519,27 @@ class OutputSchemaHDF5Validator:
 
         return HDF5DatasetDefinition("NEKTAR/POLYORDERS",(num_polyorder_modes,)) if num_polyorder_modes > 0 else None
 
-    def _check_only_valid_groups_exist(self,valid_groups: List[str],max_groups: int=100):
+    def _check_only_valid_groups_exist(self,valid_groups: List[str]):
         """Check that only valid groups exist.
 
         Args:
             valid_groups (str): _description_
-            max_groups (int): Set max limit on how many groups to find
         """
+        max_groups = len(valid_groups) + 1 #plus one to search for any extra invalid groups
         groups = parsing.get_hdf5_groups_with_depth_limit(self.file,3,max_groups=max_groups)
 
         for group in groups:
             if group not in valid_groups:
                 raise HDF5SchemaExtraDefinitionException(self.file,f"Encountered unkown group: {group}")
 
-    def _check_only_valid_datasets_exist(self,valid_datasets: List[str],max_datasets: int=100):
+    def _check_only_valid_datasets_exist(self,valid_datasets: List[str]):
         """Check that only valid datasets exist.
 
         Args:
             valid_datasets (str): _description_
-            max_datasets (int): Set max limit on how many datasets to find
         """
-        datasets = parsing.get_hdf5_datasets_with_depth_limit(self.file,2,max_datasets=max_datasets)
+        max_datasets = len(valid_datasets) + 1
+        datasets = parsing.get_hdf5_datasets_with_depth_limit(self.file,3,max_datasets=max_datasets)
         for dataset in datasets:
             if dataset not in valid_datasets:
                 raise HDF5SchemaExtraDefinitionException(self.file,f"Encountered unkown dataset: {dataset}")
