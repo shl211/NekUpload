@@ -391,9 +391,7 @@ class OutputSchemaHDF5Validator:
                 HDF5GroupDefinition("NEKTAR/Metadata",attributes=["ChkFileNum","Time"]), #this is bare minimum, depending on solver, can have more, also sessionFile#
                 HDF5GroupDefinition("NEKTAR/Metadata/Provenance",attributes=["GitBranch","GitSHA1","Hostname","NektarVersion","Timestamp"]))
 
-    EXPECTED_DATASETS = (HDF5DatasetDefinition("NEKTAR/DATA",(NO_DIM_CONSTRAINTS,)),
-                        HDF5DatasetDefinition("NEKTAR/DECOMPOSITION",(NO_DIM_CONSTRAINTS,)),
-                        HDF5DatasetDefinition("NEKTAR/ELEMENTIDS",(NO_DIM_CONSTRAINTS,)))
+    EXPECTED_DATASETS = (HDF5DatasetDefinition("NEKTAR/DECOMPOSITION",(NO_DIM_CONSTRAINTS,)),)
 
     def __init__(self,f: h5py.File):        
         self.file: h5py.File = f
@@ -418,6 +416,9 @@ class OutputSchemaHDF5Validator:
         valid_datasets_str = [dataset.get_path() for dataset in valid_datasets]
         self._check_only_valid_groups_exist(valid_groups_str)
         self._check_only_valid_datasets_exist(valid_datasets_str)
+
+        #check some more DECOMPOSITION data
+
 
     def _check_mandatory_groups(self,groups: Tuple[HDF5GroupDefinition]):
         for group in groups:
@@ -465,7 +466,9 @@ class OutputSchemaHDF5Validator:
         """
         optional_datasets: List[HDF5DatasetDefinition] = []
 
-        optionals = {"NEKTAR/POLYORDERS": 2,
+        optionals = {"NEKTAR/ELEMENTIDS": 0,
+                    "NEKTAR/DATA": 1,
+                    "NEKTAR/POLYORDERS": 2,
                     "NEKTAR/HOMOGENEOUSYIDS": 3,
                     "NEKTAR/HOMOGENEOUSZIDS": 4,
                     "NEKTAR/HOMOGENEOUSSIDS": 5}
