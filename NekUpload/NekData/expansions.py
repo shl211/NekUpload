@@ -1,36 +1,78 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict
 from .data_type import IntegrationPoint,BasisType,Elements
 from abc import ABC, abstractmethod
 import logging
+from types import MappingProxyType
+
+class ExpansionValidationException(Exception):
+    """Custom exception for errors in expansion validation."""
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
 #Note -> See MeshGraph.cpp/DefineBasisKeyFromExpansionTypeHomo
 #  ReadExpansionInfo etc. for more info in terms of how expansions are handled
 
 class ExpansionData():
+
+    DIMENSIONS: MappingProxyType[Elements,int] = {Elements.SEG: 1,
+                                        Elements.QUAD: 2,Elements.TRI: 2,
+                                        Elements.HEX: 3,Elements.TET: 3,Elements.PYR: 3, Elements.PRISM: 3}
+
     def __init__(self,element: Elements):
         self.element = element
         
-        self.num_modes = None
-        self.num_points = None
+        self.num_modes: Tuple[int,...] = None
+        self.num_points: Tuple[int,...] = None
         self.fields = None
-        self.num_integration_points = None
-        self.integration_point_type = None
-        self.basis = None
+        self.integration_point_type: Tuple[IntegrationPoint,...] = None
+        self.basis: Tuple[BasisType,...] = None
 
-    def add_basis(self,basis_type: Tuple[BasisType]):
+    def add_basis(self,basis_type: Tuple[BasisType,...]):
         self.basis = basis_type
 
-    def add_integration_points(self,integration_points: Tuple[IntegrationPoint]):
+    def add_integration_points(self,integration_points: Tuple[IntegrationPoint,...]):
         self.integration_point_type = integration_points
 
-    def add_num_modes(self,num_modes: Tuple[int]):
+    def add_num_modes(self,num_modes: Tuple[int,...]):
         self.num_modes = num_modes
 
-    def add_num_points(self,num_points: Tuple[int]):
+    def add_num_points(self,num_points: Tuple[int,...]):
         self.num_points = num_points
 
-    def verify():
-        pass
+    def validate(self):
+        """Check expansion definition is correct.
+        """
+        expected_dim = ExpansionData.DIMENSIONS[self.element]
+
+        if len(self.num_modes) != expected_dim:
+            raise ExpansionValidationException(f"Element {self.element} expects dimension {expected_dim}, modes are: {self.num_modes}")
+        if len(self.num_points) != expected_dim:
+            raise ExpansionValidationException(f"Element {self.element} expects dimension {expected_dim}, points are: {self.num_points}")
+        if len(self.integration_point_type) != expected_dim:
+            raise ExpansionValidationException(f"Element {self.element} expects dimension {expected_dim}, point types are: {self.integration_point_type}")
+        if len(self.basis) != expected_dim:
+            raise ExpansionValidationException(f"Element {self.element} expects dimension {expected_dim}, basis are: {self.basis}")
+
+        return True
+
+    def get_num_coefficients(self):
+        """Given the expansion definition, compute number of coefficients to be computed for each
+        element of this expansion type.
+
+        Returns:
+            _type_: _description_
+        """
+        if self.element == Elements.SEG: 
+            return self.num_modes[0]
+        elif self.element == Elements.QUAD:
+            return self.num_modes[0] * self.num_modes[1]
+        elif self.element == Elements.TRI:
+            Na: int = self.num_modes[0]
+            Nb: int = self.num_modes[1]
+            return Na * (Na - 1) / 2 + Na * (Nb - Na)
+
+
 
 #preferred interface for constructing data
 class ExpansionBuilder(ABC):
