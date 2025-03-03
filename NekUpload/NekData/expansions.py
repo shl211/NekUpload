@@ -1,4 +1,4 @@
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Optional, Dict, Callable
 from .data_type import IntegrationPoint,BasisType,Elements
 from abc import ABC, abstractmethod
 import logging
@@ -19,14 +19,21 @@ class ExpansionData():
                                         Elements.QUAD: 2,Elements.TRI: 2,
                                         Elements.HEX: 3,Elements.TET: 3,Elements.PYR: 3, Elements.PRISM: 3}
 
-    def __init__(self,element: Elements):
-        self.element = element
+    def __init__(self,
+                element: Elements,
+                basis_type: Tuple[BasisType,...]=None,
+                num_modes: Tuple[int,...]=None,
+                integration_point_type: Tuple[IntegrationPoint,...]=None,
+                num_points: Tuple[int,...]=None,
+                fields: Tuple[str,...]=None):
         
-        self.num_modes: Tuple[int,...] = None
-        self.num_points: Tuple[int,...] = None
-        self.fields = None
-        self.integration_point_type: Tuple[IntegrationPoint,...] = None
-        self.basis: Tuple[BasisType,...] = None
+        self.element = element
+        self.basis: Tuple[BasisType,...] = basis_type
+        self.num_points: Tuple[int,...] = num_points
+        self.integration_point_type: Tuple[IntegrationPoint,...] = integration_point_type
+        self.num_modes: Tuple[int,...] = num_modes
+        
+        self.fields: Tuple[str] = fields
 
     def add_basis(self,basis_type: Tuple[BasisType,...]):
         self.basis = basis_type
@@ -72,7 +79,237 @@ class ExpansionData():
             Nb: int = self.num_modes[1]
             return Na * (Na - 1) / 2 + Na * (Nb - Na)
 
+#preferred interface for constructing data
+class ExpansionFactory(ABC):
+    BASIS_MAP: MappingProxyType[Elements,Tuple[BasisType,...]]
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint,...]]
+    NUM_MODES_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]]
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]]
 
+    def __init__(self):
+        pass
+
+    def get_expansion(self,element: Elements, nummodes: int,fields: Optional[Tuple[str,...]]=None):
+        basis: Optional[BasisType] = self.BASIS_MAP.get(element,None)
+        integration_points: Optional[IntegrationPoint] = self.INTEGRATION_POINTS_MAP.get(element,None)
+        
+        num_modes_callable: Optional[Callable[[int],Tuple[int,...]]] = self.NUM_MODES_MAP.get(element,None)
+        num_points_callable: Optional[Callable[[int],Tuple[int,...]]] = self.NUM_POINTS_MAP.get(element,None)
+        
+        if basis and integration_points and num_modes_callable and num_points_callable:
+            num_modes = num_modes_callable(nummodes)
+            num_points = num_points_callable(nummodes)
+            return ExpansionData(element,basis,num_modes,integration_points,num_points,fields)
+        else:
+            raise ExpansionValidationException(f"{self.__class__.__name__} has no default definition for {element}")
+
+#see nektar/library/SpatialDomains/MeshGraph.cpp for default expansions
+class ModifiedExpansionFactory(ExpansionFactory):
+    BASIS_MAP: MappingProxyType[Elements,Tuple[BasisType,...]] = MappingProxyType({
+            Elements.SEG: (BasisType.MODIFIED_A,),
+            Elements.TRI: (BasisType.MODIFIED_A, BasisType.MODIFIED_B),
+            Elements.QUAD: (BasisType.MODIFIED_A, BasisType.MODIFIED_A),
+            Elements.HEX: (BasisType.MODIFIED_A, BasisType.MODIFIED_A, BasisType.MODIFIED_A),
+            Elements.PRISM: (BasisType.MODIFIED_A, BasisType.MODIFIED_A, BasisType.MODIFIED_B),
+            Elements.PYR: (BasisType.MODIFIED_A, BasisType.MODIFIED_A, BasisType.MODIFIED_PYR_C),
+            Elements.TET: (BasisType.MODIFIED_A, BasisType.MODIFIED_B, BasisType.MODIFIED_C),
+        })
+    
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint]] = MappingProxyType({
+            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
+            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
+            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
+            Elements.HEX: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
+            Elements.PRISM: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
+            Elements.PYR: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0),
+            Elements.TET: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0),
+        })
+    
+    NUM_MODES_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+            Elements.SEG: lambda nummodes: (nummodes,),
+            Elements.QUAD: lambda nummodes: (nummodes, nummodes),
+            Elements.TRI: lambda nummodes: (nummodes, nummodes),
+            Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+            Elements.PRISM: lambda nummodes: (nummodes, nummodes, nummodes),
+            Elements.PYR: lambda nummodes: (nummodes, nummodes, nummodes),
+            Elements.TET: lambda nummodes: (nummodes, nummodes, nummodes),
+        })
+
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes,quad_offset=1: (nummodes+quad_offset,),
+        Elements.QUAD: lambda nummodes,quad_offset=1: (nummodes+quad_offset,nummodes+quad_offset),
+        Elements.TRI: lambda nummodes,quad_offset=1: (nummodes+quad_offset, nummodes+quad_offset-1),
+        Elements.HEX: lambda nummodes, quad_offset=1: (nummodes+quad_offset, nummodes+quad_offset, nummodes+quad_offset),
+        Elements.PRISM: lambda nummodes, quad_offset=1: (nummodes+quad_offset,nummodes+quad_offset,nummodes+quad_offset-1),
+        Elements.PYR: lambda nummodes, quad_offset=1: (nummodes+quad_offset,nummodes+quad_offset,nummodes+quad_offset),
+        Elements.TET: lambda nummodes, quad_offset=1: (nummodes+quad_offset, nummodes+quad_offset-1, nummodes+quad_offset-1),
+    })
+
+class ModifiedQuadPlus1ExpansionFactory(ModifiedExpansionFactory):
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes,quad_offset=2: (nummodes+quad_offset,),
+        Elements.QUAD: lambda nummodes,quad_offset=2: (nummodes+quad_offset,nummodes+quad_offset),
+        Elements.TRI: lambda nummodes,quad_offset=2: (nummodes+quad_offset, nummodes+quad_offset-1),
+        Elements.HEX: lambda nummodes, quad_offset=2: (nummodes+quad_offset, nummodes+quad_offset, nummodes+quad_offset),
+        Elements.PRISM: lambda nummodes, quad_offset=2: (nummodes+quad_offset,nummodes+quad_offset,nummodes+quad_offset-1),
+        Elements.PYR: lambda nummodes, quad_offset=2: (nummodes+quad_offset,nummodes+quad_offset,nummodes+quad_offset),
+        Elements.TET: lambda nummodes, quad_offset=2: (nummodes+quad_offset, nummodes+quad_offset-1, nummodes+quad_offset-1),
+    })
+
+class ModifiedQuadPlus2ExpansionFactory(ModifiedExpansionFactory):
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes,quad_offset=3: (nummodes+quad_offset,),
+        Elements.QUAD: lambda nummodes,quad_offset=3: (nummodes+quad_offset,nummodes+quad_offset),
+        Elements.TRI: lambda nummodes,quad_offset=3: (nummodes+quad_offset, nummodes+quad_offset-1),
+        Elements.HEX: lambda nummodes, quad_offset=3: (nummodes+quad_offset, nummodes+quad_offset, nummodes+quad_offset),
+        Elements.PRISM: lambda nummodes, quad_offset=3: (nummodes+quad_offset,nummodes+quad_offset,nummodes+quad_offset-1),
+        Elements.PYR: lambda nummodes, quad_offset=3: (nummodes+quad_offset,nummodes+quad_offset,nummodes+quad_offset),
+        Elements.TET: lambda nummodes, quad_offset=3: (nummodes+quad_offset, nummodes+quad_offset-1, nummodes+quad_offset-1),
+    })
+
+class ModifiedGLLRadau10ExpansionFactory(ModifiedExpansionFactory):
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint]] = MappingProxyType({
+            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
+            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
+            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
+            Elements.HEX: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
+            Elements.PRISM: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
+            Elements.PYR: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0),
+            Elements.TET: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
+        })
+
+class GLLLagranageExpansionFactory(ExpansionFactory):
+    BASIS_MAP: MappingProxyType[Elements,Tuple[BasisType,...]] = MappingProxyType({
+            Elements.SEG: (BasisType.GLL_LAGRANGE,),
+            Elements.QUAD: (BasisType.GLL_LAGRANGE, BasisType.GLL_LAGRANGE),
+            Elements.TRI: (BasisType.GLL_LAGRANGE, BasisType.ORTHO_B),
+            Elements.HEX: (BasisType.GLL_LAGRANGE, BasisType.GLL_LAGRANGE, BasisType.GLL_LAGRANGE)
+        })
+
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint]] = MappingProxyType({
+            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
+            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
+            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
+            Elements.HEX: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
+        })
+        
+    NUM_MODES_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+            Elements.SEG: lambda nummodes: (nummodes,),
+            Elements.QUAD: lambda nummodes: (nummodes, nummodes),
+            Elements.TRI: lambda nummodes: (nummodes, nummodes),
+            Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+        })
+
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes,quad_offset=1: (nummodes+quad_offset,),
+        Elements.QUAD: lambda nummodes,quad_offset=1: (nummodes+quad_offset,nummodes+quad_offset),
+        Elements.TRI: lambda nummodes,quad_offset=1: (nummodes+quad_offset, nummodes+quad_offset-1),
+        Elements.HEX: lambda nummodes, quad_offset=1: (nummodes+quad_offset, nummodes+quad_offset, nummodes+quad_offset),
+    })
+class GLLLagrangeSEMExpansionFactory(GLLLagranageExpansionFactory):
+    NUM_MODES_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes: (nummodes,),
+        Elements.QUAD: lambda nummodes: (nummodes, nummodes),
+        Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+    })
+
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes: (nummodes,),
+        Elements.QUAD: lambda nummodes: (nummodes,nummodes),
+        Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+    })
+
+class GaussLagrangeExpansionFactory(ExpansionFactory):
+    BASIS_MAP: MappingProxyType[Elements,Tuple[BasisType,...]] = MappingProxyType({
+            Elements.SEG: (BasisType.GAUSS_LAGRANGE,),
+            Elements.QUAD: (BasisType.GAUSS_LAGRANGE, BasisType.GAUSS_LAGRANGE),
+            Elements.HEX: (BasisType.GAUSS_LAGRANGE, BasisType.GAUSS_LAGRANGE, BasisType.GAUSS_LAGRANGE)
+        })
+
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint]] = MappingProxyType({
+            Elements.SEG: (IntegrationPoint.GAUSS_GAUSS_LEGENDRE,),
+            Elements.QUAD: (IntegrationPoint.GAUSS_GAUSS_LEGENDRE, IntegrationPoint.GAUSS_GAUSS_LEGENDRE),
+            Elements.HEX: (IntegrationPoint.GAUSS_GAUSS_LEGENDRE, IntegrationPoint.GAUSS_GAUSS_LEGENDRE, IntegrationPoint.GAUSS_GAUSS_LEGENDRE)
+        })
+        
+    NUM_MODES_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+            Elements.SEG: lambda nummodes: (nummodes,),
+            Elements.QUAD: lambda nummodes: (nummodes, nummodes),
+            Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+        })
+
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes: (nummodes,),
+        Elements.QUAD: lambda nummodes: (nummodes,nummodes),
+        Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+    })
+
+class OrthogonalExpansionFactory(ExpansionFactory):
+    BASIS_MAP: MappingProxyType[Elements,Tuple[BasisType,...]] = MappingProxyType({
+            Elements.SEG: (BasisType.ORTHO_A,),
+            Elements.QUAD: (BasisType.ORTHO_A, BasisType.ORTHO_A),
+            Elements.TRI: (BasisType.ORTHO_A, BasisType.ORTHO_B),
+            Elements.TET: (BasisType.ORTHO_A, BasisType.ORTHO_B, BasisType.ORTHO_C)
+        })
+
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint]] = MappingProxyType({
+            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
+            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
+            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
+            Elements.TET: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
+        })
+        
+    NUM_MODES_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+            Elements.SEG: lambda nummodes: (nummodes,),
+            Elements.QUAD: lambda nummodes: (nummodes, nummodes),
+            Elements.TRI: lambda nummodes: (nummodes, nummodes),
+            Elements.TET: lambda nummodes: (nummodes, nummodes, nummodes),
+        })
+
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes: (nummodes+1,),
+        Elements.QUAD: lambda nummodes: (nummodes+1,nummodes+1),
+        Elements.TRI: lambda nummodes: (nummodes+1,nummodes),
+        Elements.TET: lambda nummodes: (nummodes+1, nummodes, nummodes),
+    })
+
+class FourierExpansionFactory(ExpansionFactory):
+    BASIS_MAP: MappingProxyType[Elements,Tuple[BasisType,...]] = MappingProxyType({
+            Elements.SEG: (BasisType.FOURIER,),
+            Elements.QUAD: (BasisType.FOURIER, BasisType.FOURIER),
+            Elements.HEX: (BasisType.FOURIER, BasisType.FOURIER, BasisType.FOURIER)
+        })
+
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint]] = MappingProxyType({
+            Elements.SEG: (IntegrationPoint.FOURIER_EVENLY_SPACED,),
+            Elements.QUAD: (IntegrationPoint.FOURIER_EVENLY_SPACED, IntegrationPoint.FOURIER_EVENLY_SPACED),
+            Elements.HEX: (IntegrationPoint.FOURIER_EVENLY_SPACED, IntegrationPoint.FOURIER_EVENLY_SPACED, IntegrationPoint.FOURIER_EVENLY_SPACED)
+        })
+        
+    NUM_MODES_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+            Elements.SEG: lambda nummodes: (nummodes,),
+            Elements.QUAD: lambda nummodes: (nummodes, nummodes),
+            Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+        })
+
+    NUM_POINTS_MAP: MappingProxyType[Elements,Callable[[int],Tuple[int,...]]] = MappingProxyType({
+        Elements.SEG: lambda nummodes: (nummodes,),
+        Elements.QUAD: lambda nummodes: (nummodes,nummodes),
+        Elements.HEX: lambda nummodes: (nummodes, nummodes, nummodes),
+    })
+
+class FourierSingleModeExpansionFactory(FourierExpansionFactory):
+    BASIS_MAP: MappingProxyType[Elements,Tuple[BasisType,...]] = MappingProxyType({
+        Elements.SEG: (BasisType.FOURIER_SINGLE_MODE,),
+        Elements.QUAD: (BasisType.FOURIER_SINGLE_MODE, BasisType.FOURIER_SINGLE_MODE),
+        Elements.HEX: (BasisType.FOURIER_SINGLE_MODE, BasisType.FOURIER_SINGLE_MODE, BasisType.FOURIER_SINGLE_MODE)
+    })
+
+    INTEGRATION_POINTS_MAP: MappingProxyType[Elements,Tuple[IntegrationPoint]] = MappingProxyType({
+            Elements.SEG: (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,),
+            Elements.QUAD: (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED, IntegrationPoint.FOURIER_SINGLE_MODE_SPACED),
+            Elements.HEX: (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED, IntegrationPoint.FOURIER_SINGLE_MODE_SPACED, IntegrationPoint.FOURIER_SINGLE_MODE_SPACED)
+        })
 
 #preferred interface for constructing data
 class ExpansionBuilder(ABC):
@@ -82,10 +319,10 @@ class ExpansionBuilder(ABC):
         if not self._verify():
             msg = f"{__class__}: Expansion not defined for {self.element}"
             raise ValueError(msg)
-
+        
     def _verify(self) -> bool:
         valid_elements = {Elements.SEG,Elements.TRI,Elements.QUAD,Elements.HEX,
-                          Elements.TET,Elements.PRISM,Elements.PYR}
+                        Elements.TET,Elements.PRISM,Elements.PYR}
 
         return self.element in valid_elements
 
@@ -105,297 +342,8 @@ class ExpansionBuilder(ABC):
     def add_fields(self):
         pass
 
-    def getExpansion(self):
+    def get_expansion(self):
         return self.expansion
-
-#see nektar/library/SpatialDomains/MeshGraph.cpp DefineBasisKeyFromExpansionType for default expansions
-class ModifiedExpansionBuilder(ExpansionBuilder):
-    def add_basis(self):
-        basis_map = {
-            Elements.SEG: (BasisType.MODIFIED_A,),
-            Elements.QUAD: (BasisType.MODIFIED_A, BasisType.MODIFIED_A),
-            Elements.HEX: (BasisType.MODIFIED_A, BasisType.MODIFIED_A, BasisType.MODIFIED_A),
-            Elements.TRI: (BasisType.MODIFIED_A, BasisType.MODIFIED_B),
-            Elements.TET: (BasisType.MODIFIED_A, BasisType.MODIFIED_B, BasisType.MODIFIED_C),
-            Elements.PYR: (BasisType.MODIFIED_A, BasisType.MODIFIED_A, BasisType.MODIFIED_PYR_C),
-            Elements.PRISM: (BasisType.MODIFIED_A, BasisType.MODIFIED_A, BasisType.MODIFIED_B)
-        }
-
-        self.expansion.add_basis(basis_map.get(self.element, ()))
-
-    def add_points(self):
-        integration_points_map = {
-            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
-            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
-            Elements.HEX: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
-            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
-            Elements.TET: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0),
-            Elements.PYR: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0),
-            Elements.PRISM: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
-        }
-        
-        self.expansion.add_integration_points(integration_points_map.get(self.element, ()))
-
-    def add_num_modes(self, num_modes: int) -> None:
-        quad_offset = 1
-        total_points = num_modes + quad_offset
-        
-        num_modes_map = {
-            Elements.SEG: (num_modes,),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes),
-            Elements.TRI: (num_modes, num_modes),
-            Elements.TET: (num_modes, num_modes, num_modes),
-            Elements.PYR: (num_modes, num_modes, num_modes),
-            Elements.PRISM: (num_modes, num_modes, num_modes)
-        }
-        
-        num_points_map = {
-            Elements.SEG: (total_points,),
-            Elements.QUAD: (total_points, total_points),
-            Elements.HEX: (total_points, total_points, total_points),
-            Elements.TRI: (total_points, total_points - 1),
-            Elements.TET: (total_points, total_points - 1, total_points - 1),
-            Elements.PYR: (total_points, total_points, total_points),
-            Elements.PRISM: (total_points, total_points, total_points - 1)
-        }
-        
-        self.expansion.add_num_modes(num_modes_map.get(self.element, ()))
-        self.expansion.add_num_points(num_points_map.get(self.element, ()))
-
-    def add_fields(self):
-        pass
-
-class ModifiedQuadPlus1ExpansionBuilder(ModifiedExpansionBuilder):
-    def add_num_modes(self, num_modes: int) -> None:
-        quad_offset = 2
-        total_points = num_modes + quad_offset
-        
-        num_modes_map = {
-            Elements.SEG: (num_modes,),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes),
-            Elements.TRI: (num_modes, num_modes),
-            Elements.TET: (num_modes, num_modes, num_modes),
-            Elements.PYR: (num_modes, num_modes, num_modes),
-            Elements.PRISM: (num_modes, num_modes, num_modes)
-        }
-        
-        num_points_map = {
-            Elements.SEG: (total_points,),
-            Elements.QUAD: (total_points, total_points),
-            Elements.HEX: (total_points, total_points, total_points),
-            Elements.TRI: (total_points, total_points - 1),
-            Elements.TET: (total_points, total_points - 1, total_points - 1),
-            Elements.PYR: (total_points, total_points, total_points),
-            Elements.PRISM: (total_points, total_points, total_points - 1)
-        }
-        
-        self.expansion.add_num_modes(num_modes_map.get(self.element, ()))
-        self.expansion.add_num_points(num_points_map.get(self.element, ()))
-
-class ModifiedQuadPlus2ExpansionBuilder(ModifiedExpansionBuilder):
-    def add_num_modes(self, num_modes: int) -> None:
-        quad_offset = 3
-        total_points = num_modes + quad_offset
-        
-        num_modes_map = {
-            Elements.SEG: (num_modes,),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes),
-            Elements.TRI: (num_modes, num_modes),
-            Elements.TET: (num_modes, num_modes, num_modes),
-            Elements.PYR: (num_modes, num_modes, num_modes),
-            Elements.PRISM: (num_modes, num_modes, num_modes)
-        }
-        
-        num_points_map = {
-            Elements.SEG: (total_points,),
-            Elements.QUAD: (total_points, total_points),
-            Elements.HEX: (total_points, total_points, total_points),
-            Elements.TRI: (total_points, total_points - 1),
-            Elements.TET: (total_points, total_points - 1, total_points - 1),
-            Elements.PYR: (total_points, total_points, total_points),
-            Elements.PRISM: (total_points, total_points, total_points - 1)
-        }
-        
-        self.expansion.add_num_modes(num_modes_map.get(self.element, ()))
-        self.expansion.add_num_points(num_points_map.get(self.element, ()))
-
-class ModifiedGLLRadau10ExpansionBuilder(ModifiedExpansionBuilder):
-    def add_points(self):
-        integration_points_map = {
-            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
-            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
-            Elements.HEX: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
-            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
-            Elements.TET: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
-            Elements.PYR: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0),
-            Elements.PRISM: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
-        }
-        
-        self.expansion.add_integration_points(integration_points_map.get(self.element, ()))
-
-class GLLLagranageExpansionBuilder(ExpansionBuilder):
-    def _verify(self) ->  bool:
-        valid_elements = {Elements.SEG,Elements.TRI,Elements.QUAD,Elements.HEX}
-
-        return self.element in valid_elements
-    
-    def add_basis(self):
-        basis_map = {
-            Elements.SEG: (BasisType.GLL_LAGRANGE,),
-            Elements.TRI: (BasisType.GLL_LAGRANGE, BasisType.ORTHO_B),
-            Elements.QUAD: (BasisType.GLL_LAGRANGE, BasisType.GLL_LAGRANGE),
-            Elements.HEX: (BasisType.GLL_LAGRANGE, BasisType.GLL_LAGRANGE, BasisType.GLL_LAGRANGE)
-        }
-
-        self.expansion.add_basis(basis_map.get(self.element, ()))
-        
-    def add_points(self):
-        integration_points_map = {
-            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
-            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
-            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
-            Elements.HEX: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
-        }
-
-        self.expansion.add_integration_points(integration_points_map.get(self.element, ()))
-        
-    def add_num_modes(self, num_modes: int):
-        quad_offset = 1
-        total_points = num_modes + quad_offset
-        
-        num_modes_map = {
-            Elements.SEG: (num_modes,),
-            Elements.TRI: (num_modes, num_modes),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes)
-        }
-        
-        num_points_map = {
-            Elements.SEG: (total_points,),
-            Elements.TRI: (total_points, total_points - 1),
-            Elements.QUAD: (total_points, total_points),
-            Elements.HEX: (total_points, total_points, total_points)
-        }
-        
-        self.expansion.add_num_modes(num_modes_map.get(self.element, ()))
-        self.expansion.add_num_points(num_points_map.get(self.element, ()))
-        
-    def add_fields(self):
-        pass
-
-class GaussLagrangeExpansionBuilder(ExpansionBuilder):
-    def _verify(self) ->  bool:
-        valid_elements = {Elements.SEG,Elements.QUAD,Elements.HEX}
-
-        return self.element in valid_elements        
-
-    def add_basis(self):
-        basis_map = {
-            Elements.SEG: (BasisType.GAUSS_LAGRANGE,),
-            Elements.QUAD: (BasisType.GAUSS_LAGRANGE, BasisType.GAUSS_LAGRANGE),
-            Elements.HEX: (BasisType.GAUSS_LAGRANGE, BasisType.GAUSS_LAGRANGE, BasisType.GAUSS_LAGRANGE)
-        }
-
-        self.expansion.add_basis(basis_map.get(self.element, ()))
-
-    def add_points(self):
-        integration_points_map = {
-            Elements.SEG: (IntegrationPoint.GAUSS_GAUSS_LEGENDRE,),
-            Elements.QUAD: (IntegrationPoint.GAUSS_GAUSS_LEGENDRE, IntegrationPoint.GAUSS_GAUSS_LEGENDRE),
-            Elements.HEX: (IntegrationPoint.GAUSS_GAUSS_LEGENDRE, IntegrationPoint.GAUSS_GAUSS_LEGENDRE, IntegrationPoint.GAUSS_GAUSS_LEGENDRE)
-        }
-
-        self.expansion.add_integration_points(integration_points_map.get(self.element, ()))
-
-    def add_num_modes(self, num_modes):
-        num_modes_map = {
-            Elements.SEG: (num_modes,),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes)
-        }
-        
-        num_points_map = {
-            Elements.SEG: (num_modes,),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes)
-        }
-        
-        self.expansion.add_num_modes(num_modes_map.get(self.element, ()))
-        self.expansion.add_num_points(num_points_map.get(self.element, ()))
-    
-    def add_fields(self):
-        pass
-
-class OrthogonalExpansionBuilder(ExpansionBuilder):
-    def _verify(self) -> bool:
-        valid_elements = {Elements.SEG,Elements.TRI,Elements.QUAD,Elements.TET}
-        return self.element in valid_elements
-
-    def add_basis(self):
-        basis_map = {
-            Elements.SEG: (BasisType.ORTHO_A,),
-            Elements.TRI: (BasisType.ORTHO_A, BasisType.ORTHO_B),
-            Elements.QUAD: (BasisType.ORTHO_A, BasisType.ORTHO_A),
-            Elements.TET: (BasisType.ORTHO_A, BasisType.ORTHO_B, BasisType.ORTHO_C)
-        }
-
-        self.expansion.add_basis(basis_map.get(self.element, ()))
-
-    def add_points(self):
-        integration_points_map = {
-            Elements.SEG: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,),
-            Elements.TRI: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0),
-            Elements.QUAD: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_LOBATTO_LEGENDRE),
-            Elements.TET: (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE, IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0, IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
-        }
-
-        self.expansion.add_integration_points(integration_points_map.get(self.element, ()))
-
-    def add_num_modes(self, num_modes):
-        total_points = num_modes + 1
-        num_modes_map = {
-            Elements.SEG: (num_modes,),
-            Elements.TRI: (num_modes, num_modes),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.TET: (num_modes, num_modes, num_modes)
-        }
-        
-        num_points_map = {
-            Elements.SEG: (total_points,),
-            Elements.TRI: (total_points, total_points - 1),
-            Elements.QUAD: (total_points, total_points),
-            Elements.TET: (total_points, total_points - 1, total_points - 1)
-        }
-        
-        self.expansion.add_num_modes(num_modes_map.get(self.element, ()))
-        self.expansion.add_num_points(num_points_map.get(self.element, ()))
-        
-    def add_fields(self):
-        pass
-
-class GLLLagrangeSEMExpansionBuilder(GLLLagranageExpansionBuilder):
-    def _verify(self) -> bool:
-        valid_elements = {Elements.SEG, Elements.QUAD, Elements.HEX}
-        return self.element in valid_elements
-
-    def add_num_modes(self, num_modes: int):
-        num_modes_map = {
-            Elements.SEG: (num_modes,),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes)
-        }
-        
-        num_points_map = {
-            Elements.SEG: (num_modes,),
-            Elements.QUAD: (num_modes, num_modes),
-            Elements.HEX: (num_modes, num_modes, num_modes)
-        }
-        
-        self.expansion.add_num_modes(num_modes_map.get(self.element, ()))
-        self.expansion.add_num_points(num_points_map.get(self.element, ()))
 
 class FourierExpansionBuilder(ExpansionBuilder):
     def _verify(self) -> bool:

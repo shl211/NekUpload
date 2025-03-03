@@ -6,21 +6,16 @@ import pytest
 # Modified Expansion Builder
 #
 def test_modified_expansion_seg():
-    expansion_builder = nd.ModifiedExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.ModifiedExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (6,)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -29,21 +24,16 @@ def test_modified_expansion_seg():
     #assert(expected_field == expansion.field)
     
 def test_modified_expansion_tri():
-    expansion_builder = nd.ModifiedExpansionBuilder(Elements.TRI)
+    expansion_factory = nd.ModifiedExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -52,21 +42,16 @@ def test_modified_expansion_tri():
     #assert(expected_field == expansion.field)
 
 def test_modified_expansion_quad():
-    expansion_builder = nd.ModifiedExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.ModifiedExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -75,21 +60,16 @@ def test_modified_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_modified_expansion_hex():
-    expansion_builder = nd.ModifiedExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.ModifiedExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -98,21 +78,16 @@ def test_modified_expansion_hex():
     #assert(expected_field == expansion.field)
 
 def test_modified_expansion_tet():
-    expansion_builder = nd.ModifiedExpansionBuilder(Elements.TET)
+    expansion_factory = nd.ModifiedExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0,IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B,BasisType.MODIFIED_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -121,21 +96,16 @@ def test_modified_expansion_tet():
     #assert(expected_field == expansion.field)
 
 def test_modified_expansion_pyr():
-    expansion_builder = nd.ModifiedExpansionBuilder(Elements.PYR)
+    expansion_factory = nd.ModifiedExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_PYR_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -144,21 +114,16 @@ def test_modified_expansion_pyr():
     #assert(expected_field == expansion.field)
 
 def test_modified_expansion_prism():
-    expansion_builder = nd.ModifiedExpansionBuilder(Elements.PRISM)
+    expansion_factory = nd.ModifiedExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,6,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -170,21 +135,16 @@ def test_modified_expansion_prism():
 # Modified Quad Plus One Expansion Builder
 #
 def test_modified_plus_1_expansion_seg():
-    expansion_builder = nd.ModifiedQuadPlus1ExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.ModifiedQuadPlus1ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (7,)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -193,21 +153,16 @@ def test_modified_plus_1_expansion_seg():
     #assert(expected_field == expansion.field)
     
 def test_modified_plus_1_expansion_tri():
-    expansion_builder = nd.ModifiedQuadPlus1ExpansionBuilder(Elements.TRI)
+    expansion_factory = nd.ModifiedQuadPlus1ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
 
     expected_modes = (5,5)
     expected_points = (7,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -216,21 +171,16 @@ def test_modified_plus_1_expansion_tri():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_1_expansion_quad():
-    expansion_builder = nd.ModifiedQuadPlus1ExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.ModifiedQuadPlus1ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (7,7)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -239,21 +189,16 @@ def test_modified_plus_1_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_1_expansion_hex():
-    expansion_builder = nd.ModifiedQuadPlus1ExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.ModifiedQuadPlus1ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (7,7,7)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -262,21 +207,16 @@ def test_modified_plus_1_expansion_hex():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_1_expansion_tet():
-    expansion_builder = nd.ModifiedQuadPlus1ExpansionBuilder(Elements.TET)
+    expansion_factory = nd.ModifiedQuadPlus1ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (7,6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0,IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B,BasisType.MODIFIED_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -285,21 +225,16 @@ def test_modified_plus_1_expansion_tet():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_1_expansion_pyr():
-    expansion_builder = nd.ModifiedQuadPlus1ExpansionBuilder(Elements.PYR)
+    expansion_factory = nd.ModifiedQuadPlus1ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (7,7,7)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_PYR_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -308,21 +243,16 @@ def test_modified_plus_1_expansion_pyr():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_1_expansion_prism():
-    expansion_builder = nd.ModifiedQuadPlus1ExpansionBuilder(Elements.PRISM)
+    expansion_factory = nd.ModifiedQuadPlus1ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (7,7,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -334,21 +264,16 @@ def test_modified_plus_1_expansion_prism():
 # Modified Quad Plus Two Expansion Builder
 #
 def test_modified_plus_2_expansion_seg():
-    expansion_builder = nd.ModifiedQuadPlus2ExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.ModifiedQuadPlus2ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (8,)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -357,21 +282,16 @@ def test_modified_plus_2_expansion_seg():
     #assert(expected_field == expansion.field)
     
 def test_modified_plus_2_expansion_tri():
-    expansion_builder = nd.ModifiedQuadPlus2ExpansionBuilder(Elements.TRI)
+    expansion_factory = nd.ModifiedQuadPlus2ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
 
     expected_modes = (5,5)
     expected_points = (8,7)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -380,21 +300,16 @@ def test_modified_plus_2_expansion_tri():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_2_expansion_quad():
-    expansion_builder = nd.ModifiedQuadPlus2ExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.ModifiedQuadPlus2ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (8,8)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -403,21 +318,16 @@ def test_modified_plus_2_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_2_expansion_hex():
-    expansion_builder = nd.ModifiedQuadPlus2ExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.ModifiedQuadPlus2ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (8,8,8)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -426,21 +336,16 @@ def test_modified_plus_2_expansion_hex():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_2_expansion_tet():
-    expansion_builder = nd.ModifiedQuadPlus2ExpansionBuilder(Elements.TET)
+    expansion_factory = nd.ModifiedQuadPlus2ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (8,7,7)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0,IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B,BasisType.MODIFIED_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -449,21 +354,16 @@ def test_modified_plus_2_expansion_tet():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_2_expansion_pyr():
-    expansion_builder = nd.ModifiedQuadPlus2ExpansionBuilder(Elements.PYR)
+    expansion_factory = nd.ModifiedQuadPlus2ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (8,8,8)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_PYR_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -472,21 +372,16 @@ def test_modified_plus_2_expansion_pyr():
     #assert(expected_field == expansion.field)
 
 def test_modified_plus_2_expansion_prism():
-    expansion_builder = nd.ModifiedQuadPlus2ExpansionBuilder(Elements.PRISM)
+    expansion_factory = nd.ModifiedQuadPlus2ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (8,8,7)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -498,21 +393,16 @@ def test_modified_plus_2_expansion_prism():
 # Modified GLL Expansion Builder
 #
 def test_modified_GLL_radau_expansion_seg():
-    expansion_builder = nd.ModifiedGLLRadau10ExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.ModifiedGLLRadau10ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (6,)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -521,21 +411,16 @@ def test_modified_GLL_radau_expansion_seg():
     #assert(expected_field == expansion.field)
     
 def test_modified_GLL_radau_expansion_tri():
-    expansion_builder = nd.ModifiedGLLRadau10ExpansionBuilder(Elements.TRI)
+    expansion_factory = nd.ModifiedGLLRadau10ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -544,21 +429,16 @@ def test_modified_GLL_radau_expansion_tri():
     #assert(expected_field == expansion.field)
 
 def test_modified_GLL_radau_expansion_quad():
-    expansion_builder = nd.ModifiedGLLRadau10ExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.ModifiedGLLRadau10ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -567,21 +447,16 @@ def test_modified_GLL_radau_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_modified_GLL_radau_expansion_hex():
-    expansion_builder = nd.ModifiedGLLRadau10ExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.ModifiedGLLRadau10ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -590,21 +465,16 @@ def test_modified_GLL_radau_expansion_hex():
     #assert(expected_field == expansion.field)
 
 def test_modified_GLL_radau_expansion_tet():
-    expansion_builder = nd.ModifiedGLLRadau10ExpansionBuilder(Elements.TET)
+    expansion_factory = nd.ModifiedGLLRadau10ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_B,BasisType.MODIFIED_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -613,21 +483,16 @@ def test_modified_GLL_radau_expansion_tet():
     #assert(expected_field == expansion.field)
 
 def test_modified_GLL_radau_expansion_pyr():
-    expansion_builder = nd.ModifiedGLLRadau10ExpansionBuilder(Elements.PYR)
+    expansion_factory = nd.ModifiedGLLRadau10ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA2_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_PYR_C)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -636,21 +501,16 @@ def test_modified_GLL_radau_expansion_pyr():
     #assert(expected_field == expansion.field)
 
 def test_modified_GLL_radau_expansion_prism():
-    expansion_builder = nd.ModifiedGLLRadau10ExpansionBuilder(Elements.PRISM)
+    expansion_factory = nd.ModifiedGLLRadau10ExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,6,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.MODIFIED_A,BasisType.MODIFIED_A,BasisType.MODIFIED_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -662,21 +522,16 @@ def test_modified_GLL_radau_expansion_prism():
 # GLL Lagrange Expansion Builder
 #
 def test_GLL_lagrange_expansion_seg():
-    expansion_builder = nd.GLLLagranageExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.GLLLagranageExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (6,)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.GLL_LAGRANGE,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -685,21 +540,16 @@ def test_GLL_lagrange_expansion_seg():
     #assert(expected_field == expansion.field)
     
 def test_GLL_lagrange_expansion_tri():
-    expansion_builder = nd.GLLLagranageExpansionBuilder(Elements.TRI)
+    expansion_factory = nd.GLLLagranageExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.GLL_LAGRANGE,BasisType.ORTHO_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -708,21 +558,16 @@ def test_GLL_lagrange_expansion_tri():
     #assert(expected_field == expansion.field)
 
 def test_GLL_lagrange_expansion_quad():
-    expansion_builder = nd.GLLLagranageExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.GLLLagranageExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.GLL_LAGRANGE,BasisType.GLL_LAGRANGE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -731,21 +576,16 @@ def test_GLL_lagrange_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_GLL_lagrange_expansion_hex():
-    expansion_builder = nd.GLLLagranageExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.GLLLagranageExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.GLL_LAGRANGE,BasisType.GLL_LAGRANGE,BasisType.GLL_LAGRANGE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -756,49 +596,56 @@ def test_GLL_lagrange_expansion_hex():
 def test_GLL_lagrange_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GLLLagranageExpansionBuilder(Elements.TET)
+        expansion_factory = nd.GLLLagranageExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
+
         msg = "TET should not have a GLL Lagrange Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_GLL_lagrange_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GLLLagranageExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.GLLLagranageExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
+
         msg = "PYR should not have a GLL Lagrange Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_GLL_lagrange_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GLLLagranageExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.GLLLagranageExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a GLL Lagrange Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
 # Gauss Lagrange Expansion Builder
 #
 def test_gauss_lagrange_expansion_seg():
-    expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.GaussLagrangeExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (5,)
     expected_integr_type = (IntegrationPoint.GAUSS_GAUSS_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.GAUSS_LAGRANGE,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -809,28 +656,25 @@ def test_gauss_lagrange_expansion_seg():
 def test_gauss_lagrange_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.GaussLagrangeExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
         msg = "TRI should not have a Gauss Lagrange Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_gauss_lagrange_expansion_quad():
-    expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.GaussLagrangeExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_GAUSS_LEGENDRE,IntegrationPoint.GAUSS_GAUSS_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.GAUSS_LAGRANGE,BasisType.GAUSS_LAGRANGE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -839,21 +683,16 @@ def test_gauss_lagrange_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_gauss_lagrange_expansion_hex():
-    expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.GaussLagrangeExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (5,5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_GAUSS_LEGENDRE,IntegrationPoint.GAUSS_GAUSS_LEGENDRE,IntegrationPoint.GAUSS_GAUSS_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.GAUSS_LAGRANGE,BasisType.GAUSS_LAGRANGE,BasisType.GAUSS_LAGRANGE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -864,49 +703,56 @@ def test_gauss_lagrange_expansion_hex():
 def test_gauss_lagrange_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.TET)
+        expansion_factory = nd.GaussLagrangeExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
+
         msg = "TET should not have a Gauss Lagrange Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_gauss_lagrange_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.GaussLagrangeExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
+
         msg = "PYR should not have a Gauss Lagrange Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_gauss_lagrange_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.GaussLagrangeExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a Gauss Lagrange Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
 # Orthogonal Expansion Builder
 #
 def test_orthogonal_expansion_seg():
-    expansion_builder = nd.OrthogonalExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.OrthogonalExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (6,)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.ORTHO_A,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -915,21 +761,16 @@ def test_orthogonal_expansion_seg():
     #assert(expected_field == expansion.field)
     
 def test_orthogonal_expansion_tri():
-    expansion_builder = nd.OrthogonalExpansionBuilder(Elements.TRI)
+    expansion_factory = nd.OrthogonalExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_RADAU_M_ALPHA1_BETA0)
     expected_field = ("")
     expected_basis = (BasisType.ORTHO_A,BasisType.ORTHO_B)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -938,21 +779,16 @@ def test_orthogonal_expansion_tri():
     #assert(expected_field == expansion.field)
 
 def test_orthogonal_expansion_quad():
-    expansion_builder = nd.OrthogonalExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.OrthogonalExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (6,6)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.ORTHO_A,BasisType.ORTHO_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -963,17 +799,20 @@ def test_orthogonal_expansion_quad():
 def test_orthogonal_expansion_hex():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.OrthogonalExpansionBuilder(Elements.HEX)
+        expansion_factory = nd.OrthogonalExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
         msg = "HEX should not have a Orthogonal Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
-
 def test_orthogonal_expansion_tet():
-    expansion_builder = nd.OrthogonalExpansionBuilder(Elements.TET)
+    expansion_factory = nd.OrthogonalExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (6,5,5)
@@ -981,55 +820,52 @@ def test_orthogonal_expansion_tet():
     expected_field = ("")
     expected_basis = (BasisType.ORTHO_A,BasisType.ORTHO_B,BasisType.ORTHO_C)
 
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
-
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
     assert(expected_integr_type == expansion.integration_point_type)
     assert(expected_points == expansion.num_points)
     #assert(expected_field == expansion.field)
 
-def test_gauss_lagrange_expansion_pyr():
+def test_orthogonal_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.OrthogonalExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.OrthogonalExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
+
         msg = "PYR should not have a Orthogonal Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
-def test_gauss_lagrange_expansion_prism():
+def test_orthogonal_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GaussLagrangeExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.OrthogonalExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a Orthogonal Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
 # GLL Lagrange SEM Expansion Builder
 #
 def test_GLL_lagrange_SEM_expansion_seg():
-    expansion_builder = nd.GLLLagrangeSEMExpansionBuilder(Elements.SEG)
+    expansion_builder = nd.GLLLagrangeSEMExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_builder.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (5,)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,)
     expected_field = ("")
     expected_basis = (BasisType.GLL_LAGRANGE,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1040,28 +876,26 @@ def test_GLL_lagrange_SEM_expansion_seg():
 def test_GLL_lagrange_SEM_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GLLLagrangeSEMExpansionBuilder(Elements.TRI)
+        expansion_builder = nd.GLLLagrangeSEMExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_builder.get_expansion(Elements.TRI,num_modes)
         msg = "TRI should not have a GLL Lagrange SEM Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_GLL_lagrange_SEM_expansion_quad():
-    expansion_builder = nd.GLLLagrangeSEMExpansionBuilder(Elements.QUAD)
+    expansion_builder = nd.GLLLagrangeSEMExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_builder.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.GLL_LAGRANGE,BasisType.GLL_LAGRANGE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1070,21 +904,16 @@ def test_GLL_lagrange_SEM_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_GLL_lagrange_SEM_expansion_hex():
-    expansion_builder = nd.GLLLagrangeSEMExpansionBuilder(Elements.HEX)
+    expansion_builder = nd.GLLLagrangeSEMExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_builder.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (5,5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.GLL_LAGRANGE,BasisType.GLL_LAGRANGE,BasisType.GLL_LAGRANGE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1095,49 +924,56 @@ def test_GLL_lagrange_SEM_expansion_hex():
 def test_GLL_lagrange_SEM_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GLLLagrangeSEMExpansionBuilder(Elements.TET)
+        expansion_builder = nd.GLLLagrangeSEMExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_builder.get_expansion(Elements.TET,num_modes)
+
         msg = "TET should not have a GLL Lagrange SEM Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_GLL_lagrange_SEM_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GLLLagrangeSEMExpansionBuilder(Elements.PYR)
+        expansion_builder = nd.GLLLagrangeSEMExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_builder.get_expansion(Elements.PYR,num_modes)
+        
         msg = "PYR should not have a GLL Lagrange SEM Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_GLL_lagrange_SEM_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.GLLLagrangeSEMExpansionBuilder(Elements.PRISM)
+        expansion_builder = nd.GLLLagrangeSEMExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_builder.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a GLL Lagrange SEM Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
 # Fourier Expansion Builder
 #
 def test_fourier_expansion_seg():
-    expansion_builder = nd.FourierExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.FourierExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (5,)
     expected_integr_type = (IntegrationPoint.FOURIER_EVENLY_SPACED,)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1148,28 +984,27 @@ def test_fourier_expansion_seg():
 def test_fourier_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.FourierExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
+
         msg = "TRI should not have a Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_expansion_quad():
-    expansion_builder = nd.FourierExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.FourierExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_EVENLY_SPACED,IntegrationPoint.FOURIER_EVENLY_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER,BasisType.FOURIER)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1178,21 +1013,16 @@ def test_fourier_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_fourier_expansion_hex():
-    expansion_builder = nd.FourierExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.FourierExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (5,5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_EVENLY_SPACED,IntegrationPoint.FOURIER_EVENLY_SPACED,IntegrationPoint.FOURIER_EVENLY_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER,BasisType.FOURIER,BasisType.FOURIER)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1203,49 +1033,56 @@ def test_fourier_expansion_hex():
 def test_fourier_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierExpansionBuilder(Elements.TET)
+        expansion_factory = nd.FourierExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
+
         msg = "TET should not have a Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.FourierExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
+
         msg = "PYR should not have a Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.FourierExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
 # Fourier Single Mode Builder
 #
 def test_fourier_single_mode_expansion_seg():
-    expansion_builder = nd.FourierSingleModeExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.FourierSingleModeExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (5,)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_SINGLE_MODE,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1256,28 +1093,27 @@ def test_fourier_single_mode_expansion_seg():
 def test_fourier_single_mode_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierSingleModeExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.FourierSingleModeExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
+
         msg = "TRI should not have a Fourier Single Mode Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_single_mode_expansion_quad():
-    expansion_builder = nd.FourierSingleModeExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.FourierSingleModeExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_SINGLE_MODE,BasisType.FOURIER_SINGLE_MODE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1286,21 +1122,16 @@ def test_fourier_single_mode_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_fourier_single_mode_expansion_hex():
-    expansion_builder = nd.FourierSingleModeExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.FourierSingleModeExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (5,5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_SINGLE_MODE,BasisType.FOURIER_SINGLE_MODE,BasisType.FOURIER_SINGLE_MODE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.getExpansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1311,28 +1142,40 @@ def test_fourier_single_mode_expansion_hex():
 def test_fourier_single_mode_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierSingleModeExpansionBuilder(Elements.TET)
+        expansion_factory = nd.FourierSingleModeExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
+
         msg = "TET should not have a Fourier Single Mode Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_single_mode_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierSingleModeExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.FourierSingleModeExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
+
         msg = "PYR should not have a Fourier Single Mode Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierSingleModeExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.FourierSingleModeExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a Fourier Single Mode Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
@@ -1353,7 +1196,7 @@ def test_fourier_half_mode_re_expansion_seg():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1385,7 +1228,7 @@ def test_fourier_half_mode_re_expansion_quad():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1408,7 +1251,7 @@ def test_fourier_half_mode_re_expansion_hex():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1461,7 +1304,7 @@ def test_fourier_half_mode_im_expansion_seg():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1493,7 +1336,7 @@ def test_fourier_half_mode_im_expansion_quad():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1516,7 +1359,7 @@ def test_fourier_half_mode_im_expansion_hex():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1569,7 +1412,7 @@ def test_chebyshev_expansion_seg():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1601,7 +1444,7 @@ def test_chebyshev_expansion_quad():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1624,7 +1467,7 @@ def test_chebyshev_expansion_hex():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1695,7 +1538,7 @@ def test_fourier_chebyshev_expansion_quad():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1775,7 +1618,7 @@ def test_chebyshev_fourier_expansion_quad():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1855,7 +1698,7 @@ def test_fourier_modified_expansion_quad():
     expansion_builder.add_num_modes(num_modes)
     expansion_builder.add_points()
 
-    expansion = expansion_builder.getExpansion()
+    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
