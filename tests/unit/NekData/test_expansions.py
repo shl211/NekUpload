@@ -1182,21 +1182,16 @@ def test_fourier_expansion_prism():
 # Fourier Half Mode Re Builder
 #
 def test_fourier_half_mode_re_expansion_seg():
-    expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.FourierHalfModeReExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (5,)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_HALF_MODE_RE,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1207,28 +1202,27 @@ def test_fourier_half_mode_re_expansion_seg():
 def test_fourier_half_mode_re_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.FourierHalfModeReExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
+
         msg = "TRI should not have a Fourier Half Mode Real Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_half_mode_re_expansion_quad():
-    expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.FourierHalfModeReExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_HALF_MODE_RE,BasisType.FOURIER_HALF_MODE_RE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1237,21 +1231,16 @@ def test_fourier_half_mode_re_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_fourier_half_mode_re_expansion_hex():
-    expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.FourierHalfModeReExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (5,5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_HALF_MODE_RE,BasisType.FOURIER_HALF_MODE_RE,BasisType.FOURIER_HALF_MODE_RE)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1262,49 +1251,56 @@ def test_fourier_half_mode_re_expansion_hex():
 def test_fourier_half_mode_re_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.TET)
+        expansion_factory = nd.FourierHalfModeReExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
+
         msg = "TET should not have a Fourier Half Mode Real Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_half_mode_re_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.FourierHalfModeReExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
+
         msg = "PYR should not have a Fourier Half Mode Real Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_half_mode_re_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.FourierHalfModeReExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a Fourier Half Mode Real Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
 # Fourier Half Mode Im Builder
 #
 def test_fourier_half_mode_im_expansion_seg():
-    expansion_builder = nd.FourierHalfModeImExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.FourierHalfModeImExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (5,)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_HALF_MODE_IM,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1315,28 +1311,27 @@ def test_fourier_half_mode_im_expansion_seg():
 def test_fourier_half_mode_im_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeReExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.FourierHalfModeImExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
+
         msg = "TRI should not have a Fourier Half Mode Imaginary Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_half_mode_im_expansion_quad():
-    expansion_builder = nd.FourierHalfModeImExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.FourierHalfModeImExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_HALF_MODE_IM,BasisType.FOURIER_HALF_MODE_IM)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1345,21 +1340,16 @@ def test_fourier_half_mode_im_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_fourier_half_mode_im_expansion_hex():
-    expansion_builder = nd.FourierHalfModeImExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.FourierHalfModeImExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (5,5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED,IntegrationPoint.FOURIER_SINGLE_MODE_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER_HALF_MODE_IM,BasisType.FOURIER_HALF_MODE_IM,BasisType.FOURIER_HALF_MODE_IM)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1370,49 +1360,53 @@ def test_fourier_half_mode_im_expansion_hex():
 def test_fourier_half_mode_im_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeImExpansionBuilder(Elements.TET)
+        expansion_factory = nd.FourierHalfModeImExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
         msg = "TET should not have a Fourier Half Mode Imaginary Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_half_mode_im_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeImExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.FourierHalfModeImExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
         msg = "PYR should not have a Fourier Half Mode Imaginary Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_half_mode_im_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierHalfModeImExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.FourierHalfModeImExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
         msg = "PRISM should not have a Fourier Half Mode Imaginary Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
 # Chebyshev Builder
 #
 def test_chebyshev_expansion_seg():
-    expansion_builder = nd.ChebyshevExpansionBuilder(Elements.SEG)
+    expansion_factory = nd.ChebyshevExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
 
     expected_modes = (5,)
     expected_points = (5,)
     expected_integr_type = (IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV,)
     expected_field = ("")
     expected_basis = (BasisType.CHEBYSHEV,)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1423,28 +1417,27 @@ def test_chebyshev_expansion_seg():
 def test_chebyshev_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.ChebyshevExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
+
         msg = "TRI should not have a Chebyshev definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_chebyshev_expansion_quad():
-    expansion_builder = nd.ChebyshevExpansionBuilder(Elements.QUAD)
+    expansion_factory = nd.ChebyshevExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV,IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV)
     expected_field = ("")
     expected_basis = (BasisType.CHEBYSHEV,BasisType.CHEBYSHEV)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1453,21 +1446,16 @@ def test_chebyshev_expansion_quad():
     #assert(expected_field == expansion.field)
 
 def test_chebyshev_expansion_hex():
-    expansion_builder = nd.ChebyshevExpansionBuilder(Elements.HEX)
+    expansion_factory = nd.ChebyshevExpansionFactory()
 
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
 
     expected_modes = (5,5,5)
     expected_points = (5,5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV,IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV,IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV)
     expected_field = ("")
     expected_basis = (BasisType.CHEBYSHEV,BasisType.CHEBYSHEV,BasisType.CHEBYSHEV)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1478,28 +1466,40 @@ def test_chebyshev_expansion_hex():
 def test_chebyshev_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevExpansionBuilder(Elements.TET)
+        expansion_factory = nd.ChebyshevExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
+
         msg = "TET should not have a Chebyshev Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_chebyshev_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.ChebyshevExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
+
         msg = "PYR should not have a Chebyshev Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_chebyshev_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.ChebyshevExpansionFactory()
+
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
+
         msg = "PRISM should not have a Chebyshev Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
@@ -1508,37 +1508,35 @@ def test_chebyshev_expansion_prism():
 def test_fourier_chebyshev_expansion_seg():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierChebyshevExpansionBuilder(Elements.SEG)
+        expansion_factory = nd.FourierChebyshevExpansionFactory()
+        num_modes=5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
         msg = "SEG should not have a Fourier Chebyshev definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
     
 def test_fourier_chebyshev_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierChebyshevExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.FourierChebyshevExpansionFactory()
+        num_modes=5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
         msg = "TRI should not have a Fourier Chebyshev definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_chebyshev_expansion_quad():
-    expansion_builder = nd.FourierChebyshevExpansionBuilder(Elements.QUAD)
-
-    num_modes = 5
+    expansion_factory = nd.FourierChebyshevExpansionFactory()
+    num_modes=5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.FOURIER_EVENLY_SPACED,IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER,BasisType.CHEBYSHEV)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1549,37 +1547,45 @@ def test_fourier_chebyshev_expansion_quad():
 def test_fourier_chebyshev_expansion_hex():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierChebyshevExpansionBuilder(Elements.HEX)
+        expansion_factory = nd.FourierChebyshevExpansionFactory()
+        num_modes=5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
         msg = "HEX should not have a Fourier Chebyshev Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_chebyshev_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierChebyshevExpansionBuilder(Elements.TET)
+        expansion_factory = nd.FourierChebyshevExpansionFactory()
+        num_modes=5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
         msg = "TET should not have a Fourier Chebyshev Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_chebyshev_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierChebyshevExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.FourierChebyshevExpansionFactory()
+        num_modes=5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
         msg = "PYR should not have a Fourier Chebyshev Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_chebyshev_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.FourierChebyshevExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.FourierChebyshevExpansionFactory()
+        num_modes=5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
         msg = "PRISM should not have a Fourier Chebyshev Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
@@ -1588,37 +1594,35 @@ def test_fourier_chebyshev_expansion_prism():
 def test_chebyshev_fourier_expansion_seg():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevFourierExpansionBuilder(Elements.SEG)
+        expansion_factory = nd.ChebyshevFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
         msg = "SEG should not have a Chebyshev Fourier definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
     
 def test_chebyshev_fourier_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevFourierExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.ChebyshevFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
         msg = "TRI should not have a Chebyshev Fourier definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_chebyshev_fourier_expansion_quad():
-    expansion_builder = nd.ChebyshevFourierExpansionBuilder(Elements.QUAD)
-
+    expansion_factory = nd.ChebyshevFourierExpansionFactory()
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,5)
     expected_integr_type = (IntegrationPoint.GAUSS_GAUSS_CHEBYSHEV,IntegrationPoint.FOURIER_EVENLY_SPACED)
     expected_field = ("")
     expected_basis = (BasisType.CHEBYSHEV,BasisType.FOURIER)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1629,37 +1633,45 @@ def test_chebyshev_fourier_expansion_quad():
 def test_chebyshev_fourier_expansion_hex():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevFourierExpansionBuilder(Elements.HEX)
+        expansion_factory = nd.ChebyshevFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
         msg = "HEX should not have a Chebyshev Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_chebyshev_fourier_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevFourierExpansionBuilder(Elements.TET)
+        expansion_factory = nd.ChebyshevFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
         msg = "TET should not have a Chebyshev Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_chebyshev_fourier_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevFourierExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.ChebyshevFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
         msg = "PYR should not have a Chebyshev Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_chebyshev_fourier_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ChebyshevFourierExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.ChebyshevFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
         msg = "PRISM should not have a Chebyshev Fourier Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 ########################################################################
@@ -1668,37 +1680,36 @@ def test_chebyshev_fourier_expansion_prism():
 def test_fourier_modified_expansion_seg():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ModifiedFourierExpansionBuilder(Elements.SEG)
+        expansion_factory = nd.ModifiedFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.SEG,num_modes)
+
         msg = "SEG should not have a Fourier Modified definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
     
 def test_fourier_modified_expansion_tri():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ModifiedFourierExpansionBuilder(Elements.TRI)
+        expansion_factory = nd.ModifiedFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TRI,num_modes)
         msg = "TRI should not have a Fourier Modified definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_modified_expansion_quad():
-    expansion_builder = nd.ModifiedFourierExpansionBuilder(Elements.QUAD)
-
+    expansion_factory = nd.ModifiedFourierExpansionFactory()
     num_modes = 5
+    expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.QUAD,num_modes)
 
     expected_modes = (5,5)
     expected_points = (5,6)
     expected_integr_type = (IntegrationPoint.FOURIER_EVENLY_SPACED,IntegrationPoint.GAUSS_LOBATTO_LEGENDRE)
     expected_field = ("")
     expected_basis = (BasisType.FOURIER,BasisType.MODIFIED_A)
-
-    expansion_builder.add_basis()
-    expansion_builder.add_num_modes(num_modes)
-    expansion_builder.add_points()
-
-    expansion = expansion_builder.get_expansion()
 
     assert(expected_basis == expansion.basis)
     assert(expected_modes == expansion.num_modes)
@@ -1709,35 +1720,43 @@ def test_fourier_modified_expansion_quad():
 def test_fourier_modified_expansion_hex():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ModifiedFourierExpansionBuilder(Elements.HEX)
+        expansion_factory = nd.ModifiedFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.HEX,num_modes)
         msg = "HEX should not have a Fourier Modified Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_modified_expansion_tet():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ModifiedFourierExpansionBuilder(Elements.TET)
+        expansion_factory = nd.ModifiedFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.TET,num_modes)
         msg = "TET should not have a Fourier Modified Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_modified_expansion_pyr():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ModifiedFourierExpansionBuilder(Elements.PYR)
+        expansion_factory = nd.ModifiedFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PYR,num_modes)
         msg = "PYR should not have a Fourier Modified Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
 
 def test_fourier_modified_expansion_prism():
     #no definition for this, expect correct rejection
     try:
-        expansion_builder = nd.ModifiedFourierExpansionBuilder(Elements.PRISM)
+        expansion_factory = nd.ModifiedFourierExpansionFactory()
+        num_modes = 5
+        expansion: nd.ExpansionData = expansion_factory.get_expansion(Elements.PRISM,num_modes)
         msg = "PRISM should not have a Fourier Modified Expansion definition"
         pytest.fail(msg)#if no exception thrown, fails
-    except ValueError:
+    except nd.ExpansionValidationException:
         pass
