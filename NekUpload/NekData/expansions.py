@@ -90,6 +90,17 @@ class ExpansionDefinition():
         if len(self.basis) != expected_dim:
             raise ExpansionValidationException(f"Element {self.element} expects dimension {expected_dim}, basis are: {self.basis}")
 
+        if self.element == Elements.TRI and self.num_modes[0] > self.num_modes[1]:
+            raise ExpansionValidationException(f"Element {self.element} has invalid mode configuration: num_modes[0] ({self.num_modes[0]}) should not be greater than num_modes[1] ({self.num_modes[1]})")
+        if self.element == Elements.TET and (self.num_modes[0] > self.num_modes[2] or self.num_modes[1] > self.num_modes[2]):
+            raise ExpansionValidationException(f"Element {self.element} has invalid mode configuration: num_modes[0] ({self.num_modes[0]}) should not be greater than num_modes[1] ({self.num_modes[1]})")
+        if self.element == Elements.PYR and (self.num_modes[0] > self.num_modes[2] or self.num_modes[1] > self.num_modes[2]):
+            raise ExpansionValidationException(f"Element {self.element} has invalid mode configuration: num_modes[0] ({self.num_modes[0]}) should not be greater than num_modes[1] ({self.num_modes[1]})")
+        if self.element == Elements.PRISM and self.num_modes[0] > self.num_modes[2]:
+            raise ExpansionValidationException(f"Element {self.element} has invalid mode configuration: num_modes[0] ({self.num_modes[0]}) should not be greater than num_modes[1] ({self.num_modes[1]})")
+
+
+
         return True
 
     def get_num_coefficients(self):
