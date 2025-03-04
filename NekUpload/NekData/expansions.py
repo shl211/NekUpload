@@ -13,11 +13,49 @@ class ExpansionValidationException(Exception):
 #Note -> See MeshGraph.cpp/DefineBasisKeyFromExpansionTypeHomo
 #  ReadExpansionInfo etc. for more info in terms of how expansions are handled
 
-class ExpansionData():
+class ExpansionDefinition():
 
-    DIMENSIONS: MappingProxyType[Elements,int] = {Elements.SEG: 1,
+    @staticmethod
+    def _compute_tri_coefficients(num_modes_0,num_modes_1):
+        return num_modes_0 * (num_modes_0 - 1) // 2 + num_modes_0 * (num_modes_1 - num_modes_0)
+
+    #TODO optimise this if needed
+    @staticmethod
+    def _compute_tet_coefficients(num_modes_0,num_modes_1,num_modes_2):
+        num_coeffs = 0
+        for a in range(num_modes_0):
+            for b in range(num_modes_1 - a):
+                for c in range(num_modes_2-a-b):
+                    num_coeffs += 1
+
+        return num_coeffs
+    
+    #TODO optimise this if needed
+    @staticmethod
+    def _compute_pyr_coefficients(num_modes_0,num_modes_1,num_modes_2):
+        num_coeffs = 0
+        for a in range(num_modes_0):
+            for b in range(num_modes_1):
+                for c in range(num_modes_2-max(a,b)):
+                    num_coeffs += 1
+
+        return num_coeffs
+
+    DIMENSIONS: MappingProxyType[Elements,int] = MappingProxyType({
+                                        Elements.SEG: 1,
                                         Elements.QUAD: 2,Elements.TRI: 2,
-                                        Elements.HEX: 3,Elements.TET: 3,Elements.PYR: 3, Elements.PRISM: 3}
+                                        Elements.HEX: 3,Elements.TET: 3,Elements.PYR: 3, Elements.PRISM: 3
+                                    })
+
+    NUMBER_OF_COEFFICIENTS: MappingProxyType[Elements,Callable[[Tuple[int,...]],int]] = MappingProxyType({
+                                        Elements.SEG: lambda num_modes: num_modes[0],
+                                        Elements.QUAD: lambda num_modes: num_modes[0] * num_modes[1],
+                                        Elements.TRI: lambda num_modes: ExpansionDefinition._compute_tri_coefficients(num_modes[0],num_modes[1]),
+                                        Elements.HEX: lambda num_modes: num_modes[0]*num_modes[1]*num_modes[2],
+                                        Elements.PYR: lambda num_modes: ExpansionDefinition._compute_pyr_coefficients(num_modes[0],num_modes[1],num_modes[2]),
+                                        Elements.PRISM: lambda num_modes: num_modes[1] * ExpansionDefinition._compute_tri_coefficients(num_modes[0],num_modes[2]),
+                                        Elements.TET: lambda num_modes: ExpansionDefinition._compute_tet_coefficients(num_modes[0],num_modes[1],num_modes[2]),
+                                    })
 
     def __init__(self,
                 element: Elements,
@@ -34,23 +72,14 @@ class ExpansionData():
         self.num_modes: Tuple[int,...] = num_modes
         
         self.fields: Tuple[str] = fields
+        
+        #make sure only valid definitions lead to initialisation
+        self._validate()
 
-    def add_basis(self,basis_type: Tuple[BasisType,...]):
-        self.basis = basis_type
-
-    def add_integration_points(self,integration_points: Tuple[IntegrationPoint,...]):
-        self.integration_point_type = integration_points
-
-    def add_num_modes(self,num_modes: Tuple[int,...]):
-        self.num_modes = num_modes
-
-    def add_num_points(self,num_points: Tuple[int,...]):
-        self.num_points = num_points
-
-    def validate(self):
+    def _validate(self):
         """Check expansion definition is correct.
         """
-        expected_dim = ExpansionData.DIMENSIONS[self.element]
+        expected_dim = ExpansionDefinition.DIMENSIONS[self.element]
 
         if len(self.num_modes) != expected_dim:
             raise ExpansionValidationException(f"Element {self.element} expects dimension {expected_dim}, modes are: {self.num_modes}")
@@ -70,14 +99,8 @@ class ExpansionData():
         Returns:
             _type_: _description_
         """
-        if self.element == Elements.SEG: 
-            return self.num_modes[0]
-        elif self.element == Elements.QUAD:
-            return self.num_modes[0] * self.num_modes[1]
-        elif self.element == Elements.TRI:
-            Na: int = self.num_modes[0]
-            Nb: int = self.num_modes[1]
-            return Na * (Na - 1) / 2 + Na * (Nb - Na)
+        num_coeff_callable: Callable[[Tuple[int,...]],int] = ExpansionDefinition.NUMBER_OF_COEFFICIENTS[self.element]
+        return num_coeff_callable(self.num_modes)
 
 #preferred interface for constructing data
 class ExpansionFactory(ABC):
@@ -99,7 +122,7 @@ class ExpansionFactory(ABC):
         if basis and integration_points and num_modes_callable and num_points_callable:
             num_modes = num_modes_callable(nummodes)
             num_points = num_points_callable(nummodes)
-            return ExpansionData(element,basis,num_modes,integration_points,num_points,fields)
+            return ExpansionDefinition(element,basis,num_modes,integration_points,num_points,fields)
         else:
             raise ExpansionValidationException(f"{self.__class__.__name__} has no default definition for {element}")
 
