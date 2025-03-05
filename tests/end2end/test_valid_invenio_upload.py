@@ -81,7 +81,7 @@ def test_valid_invenio_upload(load_env):
     record_id = database.record_id
     request_id = database.request_id
 
-    get_record_response = invenioAPI.get_record(URL,TOKEN,record_id)
+    get_record_response = invenioAPI.get_draft_record(URL,TOKEN,record_id)
     record_data = get_record_response.json()
 
     #check uploaded metadata is correct

@@ -465,7 +465,7 @@ def submit_record_for_review(url: str,token: str,record_id: str,payload: Dict[st
         logging.error(err_msg)
         raise APIError(err_msg)
 
-def get_record(url: str, token: str, record_id: str) -> requests.Response:
+def get_draft_record(url: str, token: str, record_id: str) -> requests.Response:
     """Get record associated with record_id
 
     Args:
@@ -601,6 +601,35 @@ def cancel_review_request(url:str,token:str,request_id:str,payload: Dict[str,str
         logging.error(err_msg)
         raise APIError(err_msg)   
     
+def get_record(url:str,token:str,record_id:str) -> requests.Response:
+        #sanitise incoming data
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+        
+    if url.endswith('/'):
+        url = url[:-1]
+
+    header = {"Authorization": f"Bearer {token}"}
+    get_request = url + f"/api/records/{record_id}"
+
+    try: 
+        response = requests.get(get_request,headers=header)
+        response.raise_for_status()
+
+        if response.status_code == 200:
+            _log_debug_response(f"Record {record_id} retrieved.",response)
+            return response
+        else:
+            err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
+            logging.error(err_msg)
+            raise APIError(err_msg,response=response)     
+    except requests.exceptions.RequestException as e:
+        err_msg = f"Request Error: {e}"
+        logging.error(err_msg)
+        raise APIError(err_msg)
+
 def _log_debug_response(msg: str, response: requests.Response) -> None:
     """Log a debug statement to logger, with message and response.
     Will take form msg: response. For long responses, they are shortened when logged. 

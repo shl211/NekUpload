@@ -453,7 +453,7 @@ def test_valid_get_record(mocker,sample_host_name,sample_metadata, sample_record
     mock_get = mocker.patch("requests.get",return_value=mock_response)
 
     #now test api call
-    response = invenioAPI.get_record(sample_host_name,sample_token,sample_record_id)
+    response = invenioAPI.get_draft_record(sample_host_name,sample_token,sample_record_id)
 
     # check behaviour
     assert response.status_code == 200
