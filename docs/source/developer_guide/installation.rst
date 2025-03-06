@@ -40,7 +40,7 @@ Installing the Package
 .. code::
 
     git clone https://github.com/shl211/NekUpload
-    pip install -e .
+    pip install -e . [dev]
 
 Note that this requires Python version >=3.11.
 
