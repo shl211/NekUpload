@@ -15,6 +15,7 @@ from NekUpload.frontend.dynamic_fields_frame import DynamicFieldsFrame
 from NekUpload.frontend.file_selector import FileSelectorNotebookFrame
 from NekUpload.frontend import style_guide
 import logging
+from NekUpload.manager import NekManager
 
 class NekUploadGUI:
     def __init__(self,root: Tk) -> None:
@@ -176,7 +177,7 @@ class NekUploadGUI:
         metadata_json = {"metadata": metadata_payload}
         print(metadata_json)
 
-        upload_manager = invenioRDM()
+
         
         URL = self.static_fields_frame.host_name
         COMMUNITY_SLUG = self.static_fields_frame.community_slug
@@ -184,10 +185,10 @@ class NekUploadGUI:
         file_list = self.file_selector_notebook_frame.get_file_list()
         load_dotenv()
 
-        if file_list:
-            upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),file_list,metadata_json,COMMUNITY_SLUG)
-        else:
-            print("Failed to upload as no files detected")
+        upload_manager = invenioRDM()
+        manager = NekManager(geometry_file_list[0],session_file_list[0],output_files_list[0],metadata,upload_manager)
+        manager.execute_upload(URL,API_KEY_ENV_VAR,COMMUNITY_SLUG)
+        #upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),file_list,metadata_json,COMMUNITY_SLUG)
 
 def main() -> None:
     root: Tk = Tk() 
