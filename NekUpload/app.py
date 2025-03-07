@@ -136,15 +136,6 @@ class NekUploadGUI:
         other_files_list = self.file_selector_notebook_frame.filter_file_list + \
                             self.file_selector_notebook_frame.supporting_file_list
 
-        validator = NektarValidator(session_file_list[0],geometry_file_list[0],output_files_list[0],
-                                    chk_file_list,other_files_list)
-
-        try: 
-            validator.validate()
-        except Exception as e:
-            logging.error(e)
-            return
-
         title: str = self.static_fields_frame.title
         publication_date: str = self.static_fields_frame.publication_date
         
@@ -177,13 +168,24 @@ class NekUploadGUI:
         URL = self.static_fields_frame.host_name
         COMMUNITY_SLUG = self.static_fields_frame.community_slug
         API_KEY_ENV_VAR = self.static_fields_frame.api_key_env_var
-        file_list = self.file_selector_notebook_frame.get_file_list()
         load_dotenv()
 
         upload_manager = invenioRDM()
-        manager = NekManager(geometry_file_list[0],session_file_list[0],output_files_list[0],metadata,upload_manager)
+        manager = NekManager(geometry_file_list[0],
+                            session_file_list[0],
+                            output_files_list[0],
+                            chk_file_list,
+                            other_files_list,
+                            metadata,
+                            upload_manager)
+
+        try: 
+            manager.validate()
+        except Exception as e:
+            logging.error(f"Validation failed: {e}")
+            return
+        
         manager.execute_upload(URL,os.getenv(API_KEY_ENV_VAR,None),COMMUNITY_SLUG)
-        #upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),file_list,metadata_json,COMMUNITY_SLUG)
 
 def main() -> None:
     root: Tk = Tk() 
