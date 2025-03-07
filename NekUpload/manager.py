@@ -10,13 +10,13 @@ class NekManager:
                 metadata: InvenioMetadata,
                 uploader: invenioRDM):
         
-
         self.metadata_manager = metadata
         self.upload_manager = uploader
         self.file_list = [geometry_file,session_file,output_file]
         self.auto_metadata_extractor = AutoExtractor(session_file,geometry_file,output_file)
 
     def execute_upload(self,url:str,token:str,community_id:str):
+        self._update_metadata_with_auto_extraction()
         metadata_json = self.metadata_manager.get_metadata_payload()
         metadata = {"metadata": metadata_json}
 

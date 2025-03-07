@@ -69,8 +69,8 @@ class AutoExtractor:
                 results["GITHASH"] = git_hash
         
         with h5py.File(self.geometry_file) as f:
-            min_coords1,max_coords1 = HDF5Extractor.extract_attribute(f,"NEKTAR/GEOMETRY/MESH/VERT")
-            min_coords2,max_coords2 = HDF5Extractor.extract_attribute(f,"NEKTAR/GEOMETRY/MESH/CURVE_NODES")
+            min_coords1,max_coords1 = HDF5Extractor.extract_min_max_coords(f,"NEKTAR/GEOMETRY/MESH/VERT")
+            min_coords2,max_coords2 = HDF5Extractor.extract_min_max_coords(f,"NEKTAR/GEOMETRY/MESH/CURVE_NODES")
 
             min_coords = np.minimum(min_coords1,min_coords2)
             max_coords = np.maximum(max_coords1,max_coords2)

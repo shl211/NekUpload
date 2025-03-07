@@ -169,15 +169,10 @@ class NekUploadGUI:
             #also affiliations, but not supported in backend for now
             author_list.append(author_info)
 
-        #create metadata
+        #create metadata and add user defined data
         metadata = InvenioMetadata(title,publication_date,author_list,"dataset")
         metadata.add_publisher("NekUpload App")
         metadata.add_description("This was uploaded via NekUpload app")
-        metadata_payload = metadata.get_metadata_payload()
-        metadata_json = {"metadata": metadata_payload}
-        print(metadata_json)
-
-
         
         URL = self.static_fields_frame.host_name
         COMMUNITY_SLUG = self.static_fields_frame.community_slug
@@ -187,7 +182,7 @@ class NekUploadGUI:
 
         upload_manager = invenioRDM()
         manager = NekManager(geometry_file_list[0],session_file_list[0],output_files_list[0],metadata,upload_manager)
-        manager.execute_upload(URL,API_KEY_ENV_VAR,COMMUNITY_SLUG)
+        manager.execute_upload(URL,os.getenv(API_KEY_ENV_VAR,None),COMMUNITY_SLUG)
         #upload_manager.upload_files(URL,os.getenv(API_KEY_ENV_VAR,None),file_list,metadata_json,COMMUNITY_SLUG)
 
 def main() -> None:
