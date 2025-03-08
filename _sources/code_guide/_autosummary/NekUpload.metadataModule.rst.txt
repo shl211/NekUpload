@@ -1,0 +1,17 @@
+NekUpload.metadataModule
+========================
+
+.. automodule:: NekUpload.metadataModule
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   extractor
+   identifier
+   invenioMetadata
+   metadata
+   user

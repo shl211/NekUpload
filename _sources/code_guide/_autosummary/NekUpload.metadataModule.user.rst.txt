@@ -1,0 +1,14 @@
+NekUpload.metadataModule.user
+=============================
+
+.. automodule:: NekUpload.metadataModule.user
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InvenioOrgInfo
+      InvenioPersonInfo
+      UserInfo
+   

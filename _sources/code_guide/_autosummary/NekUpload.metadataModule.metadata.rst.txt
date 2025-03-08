@@ -1,0 +1,12 @@
+NekUpload.metadataModule.metadata
+=================================
+
+.. automodule:: NekUpload.metadataModule.metadata
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Metadata
+   

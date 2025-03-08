@@ -1,0 +1,16 @@
+NekUpload.NekData.data\_type
+============================
+
+.. automodule:: NekUpload.NekData.data_type
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BasisType
+      Elements
+      ExpansionType
+      IntegrationPoint
+      SolverType
+   

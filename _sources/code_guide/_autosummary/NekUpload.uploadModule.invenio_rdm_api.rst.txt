@@ -1,0 +1,27 @@
+NekUpload.uploadModule.invenio\_rdm\_api
+========================================
+
+.. automodule:: NekUpload.uploadModule.invenio_rdm_api
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      cancel_review_request
+      commit_file_upload
+      create_draft_record
+      create_new_record_version
+      delete_draft
+      delete_review_request
+      get_community
+      get_draft_record
+      get_record
+      prepare_file_upload
+      publish_draft
+      reserve_doi_draft
+      submit_record_for_review
+      submit_record_to_community
+      update_draft_record
+      upload_file
+   
