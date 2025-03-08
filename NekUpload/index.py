@@ -8,6 +8,7 @@ from NekUpload.newFrontend.scenes.upload import UploadScene
 from NekUpload.newFrontend.scenes.review import ReviewScene
 from NekUpload.newFrontend.scenes.explore import ExploreScene
 from NekUpload.newFrontend.scenes.help import HelpScene
+from NekUpload.newFrontend.scenes.settings import SettingScene
 
 class NekUploadNewGUI:
     def __init__(self):
@@ -34,6 +35,7 @@ class NekUploadNewGUI:
         review_page = ReviewScene(self.root)
         explore_page = ExploreScene(self.root)
         help_page = HelpScene(self.root)
+        setting_page = SettingScene(self.root)
 
         #create page frame and default to INFO
         #menu buttons will direct pages to here
@@ -46,6 +48,7 @@ class NekUploadNewGUI:
         self.menu.add_link_to_button("REVIEW",lambda: self.switch_page(review_page))
         self.menu.add_link_to_button("EXPLORE",lambda: self.switch_page(explore_page))
         self.menu.add_link_to_button("HELP",lambda: self.switch_page(help_page))
+        self.menu.add_link_to_button("SETTINGS",lambda: self.switch_page(setting_page))
 
         #help with visualising for now
         self.header.config(style="primary.TFrame")  # Bootstrap theme color
@@ -59,7 +62,6 @@ class NekUploadNewGUI:
             self.page.grid(row=1, column=1,sticky=NSEW)  # Show new page
             self.page.grid_propagate(False)
             self.page.config(style="success.TFrame")  #help with visualisation for now
-            print("Page size:", self.page.winfo_width(), self.page.winfo_height())
 
     def run(self):
         self.root.mainloop()
