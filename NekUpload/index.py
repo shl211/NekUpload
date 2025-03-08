@@ -12,7 +12,7 @@ from NekUpload.newFrontend.scenes.settings import SettingScene
 
 class NekUploadNewGUI:
     def __init__(self):
-        self.root = ttk.Window(themename="litera")
+        self.root = ttk.Window(themename="sandstone")
         self.root.title("NekUpload")
         self.root.attributes('-zoomed', True)
 
@@ -51,7 +51,6 @@ class NekUploadNewGUI:
         self.menu.add_link_to_button("SETTINGS",lambda: self.switch_page(setting_page))
 
         self.menu.config(style="danger.TFrame")  # Another color for menu
-        self.page.config(style="success.TFrame")  #
 
     def switch_page(self, new_page: ttk.Frame):
         if self.page != new_page:
@@ -59,7 +58,6 @@ class NekUploadNewGUI:
             self.page = new_page
             self.page.grid(row=1, column=1,sticky=NSEW)  # Show new page
             self.page.grid_propagate(False)
-            self.page.config(style="success.TFrame")  #help with visualisation for now
 
     def run(self):
         self.root.mainloop()

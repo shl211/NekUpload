@@ -23,7 +23,7 @@ class SettingScene(ttk.Frame):
         
         preset_label = ttk.Label(
             master=frame,
-            text="I am uploading to: "
+            text="I am accessing: "
         )
         preset_label.grid(row=0,column=0,padx=5,pady=5,sticky=W)
 
@@ -60,29 +60,16 @@ class SettingScene(ttk.Frame):
             text="API Key"
         )
 
-        api_key_label = ttk.Label(
-            master=frame,
-            text="API Key: "
-        )
-        api_key_label.grid(row=0, column=0, padx=5, pady=5, sticky=W)
-
-        self._api_key = tk.StringVar()
-        api_key_entry = ttk.Entry(
-            master=frame,
-            textvariable=self._api_key
-        )
-        api_key_entry.grid(row=0, column=1, padx=5, pady=5, sticky=W)
-
         radio_label = ttk.Label(
             master=frame,
-            text="Select Option: "
+            text="I have: "
         )
         radio_label.grid(row=1, column=0, padx=5, pady=5, sticky=W)
 
         self._radio_value = tk.StringVar(value="Option1")
         radio_option1 = ttk.Radiobutton(
             master=frame,
-            text="Option 1",
+            text="API key",
             value="Option1",
             variable=self._radio_value
         )
@@ -90,11 +77,24 @@ class SettingScene(ttk.Frame):
 
         radio_option2 = ttk.Radiobutton(
             master=frame,
-            text="Option 2",
+            text="API key stored in environment variable",
             value="Option2",
             variable=self._radio_value
         )
         radio_option2.grid(row=1, column=2, padx=5, pady=5, sticky=W)
+
+        api_key_label = ttk.Label(
+            master=frame,
+            text="API Key: "
+        )
+        api_key_label.grid(row=2, column=0, padx=5, pady=5, sticky=W)
+
+        self._api_key = tk.StringVar()
+        api_key_entry = ttk.Entry(
+            master=frame,
+            textvariable=self._api_key
+        )
+        api_key_entry.grid(row=2, column=1, padx=5, pady=5, sticky=W)
 
         return frame
 
