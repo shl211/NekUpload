@@ -22,11 +22,11 @@ class NekUploadNewGUI:
 
         #create a header
         self.header = Header(self.root)
-        self.header.grid(row=0,column=0,columnspan=2,sticky=(N,E,S,W))
+        self.header.grid(row=0, column=0, columnspan=2, sticky=(N, E, S, W), ipadx=10, ipady=10)
 
         #create a menu
         self.menu = Menu(self.root)
-        self.menu.grid(row=1,column=0,padx=10,pady=10,sticky=NSEW)
+        self.menu.grid(row=1, column=0, sticky=NSEW, ipadx=10, ipady=10)
 
         #pages and which button they link to
         info_page = InfoScene(self.root)
@@ -38,7 +38,8 @@ class NekUploadNewGUI:
         #create page frame and default to INFO
         #menu buttons will direct pages to here
         self.page = info_page
-        self.page.grid(row=1,column=1,padx=20,pady=10,sticky=NSEW)
+        self.page.grid(row=1,column=1,sticky=NSEW)
+        self.page.grid_propagate(False)
 
         self.menu.add_link_to_button("UPLOAD",lambda: self.switch_page(upload_page))
         self.menu.add_link_to_button("INFO",lambda: self.switch_page(info_page))
@@ -55,9 +56,10 @@ class NekUploadNewGUI:
         if self.page != new_page:
             self.page.grid_forget()
             self.page = new_page
-            self.page.grid(row=1, column=1, padx=20, pady=10, sticky=NSEW)  # Show new page
+            self.page.grid(row=1, column=1,sticky=NSEW)  # Show new page
+            self.page.grid_propagate(False)
             self.page.config(style="success.TFrame")  #help with visualisation for now
-
+            print("Page size:", self.page.winfo_width(), self.page.winfo_height())
 
     def run(self):
         self.root.mainloop()
