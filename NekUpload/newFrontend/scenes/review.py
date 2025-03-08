@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-class InfoScene(ttk.Frame):
+class ReviewScene(ttk.Frame):
     def __init__(self,parent):
         super().__init__(parent)
 
@@ -12,10 +12,11 @@ class InfoScene(ttk.Frame):
         self.columnconfigure(2,weight=1)
 
         self.placeholder = ttk.Label(
-            master=self,  # Ensure label is inside this frame
-            text="INFO HERE",
-            font=("TkDefaultFont", 20),  # Make text larger for visibility
-            anchor="center"  # Center text inside the label
+            master=self,
+            text="REVIEW HERE",
+            font=("TkDefaultFont", 20),
+            anchor="center"
         )
 
         self.placeholder.grid(row=1,column=1,sticky=(NSEW))
+        
