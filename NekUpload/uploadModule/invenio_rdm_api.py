@@ -73,8 +73,8 @@ def create_draft_record(url: str, token: str,metadata: Dict[str,Any]=None,custom
         logging.error(err_msg)
         raise APIError(err_msg)
 
-def create_draft_record_from_published_record(url: str, token: str,record_id: str) -> requests.Response:
-    """Create a record draft in InvenioRDM. Not fully implemented with access, files and custom_fields yet.
+def update_draft_record(url: str, token: str,record_id: str,metadata: Dict[str,Any]=None,custom_fields:Dict[str,Any] = None,upload_file_enabled: bool=True) -> requests.Response:
+    """Update a record draft in InvenioRDM. Not fully implemented with access, files and custom_fields yet.
 
     Args:
         url (str): Base url route to the invenio database, of form http:// or https://
@@ -95,6 +95,11 @@ def create_draft_record_from_published_record(url: str, token: str,record_id: st
         logging.error(msg)
         raise ClientError(msg)
 
+    if not _is_valid_metadata(metadata):
+        msg = f"Metadata must be a Dict, currently is a {type(metadata)}"
+        logging.error(msg)
+        raise ClientError(msg)
+
     header = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {token}"
@@ -104,12 +109,21 @@ def create_draft_record_from_published_record(url: str, token: str,record_id: st
         url = url[:-1]
     records_url = url + f"/api/records/{record_id}/draft"
 
+    #add other payloads to metadata
+    #TODO very very bad interface currently
+    files = {"files": {"enabled": upload_file_enabled}}
+
+    if custom_fields:
+        metadata.update({"custom_fields": custom_fields})
+
+    metadata.update(files)
+
     try:
-        response = requests.post(records_url, headers=header)
+        response = requests.put(records_url, headers=header, json=metadata)
         response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
         
-        if response.status_code == 201:
-            _log_debug_response("Record created succesfully",response)
+        if response.status_code == 200:
+            _log_debug_response("Record updated succesfully",response)
             return response
         else:
             err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
@@ -119,6 +133,67 @@ def create_draft_record_from_published_record(url: str, token: str,record_id: st
         err_msg = f"Request Error: {e}"
         logging.error(err_msg)
         raise APIError(err_msg)
+
+def create_new_record_version(url:str,token:str,record_id: str) -> requests.Response:
+    #sanitise incoming data
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+    
+    header = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token}"
+    }
+
+    if url.endswith('/'):
+        url = url[:-1]
+    record_url = url + f"/api/records/{record_id}/versions"
+
+    try:
+        response = requests.post(record_url,headers=header)
+        response.raise_for_status()
+
+        if response.status_code == 201:
+            _log_debug_response("New record version created", response)
+            return response
+        else:
+            err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
+            logging.error(err_msg)
+            raise APIError(err_msg,response=response)
+    except requests.exceptions.RequestException as e:
+        err_msg = f"Request Error: {e}"
+        logging.error(err_msg)
+        raise APIError(err_msg)
+
+def reserve_doi_draft(url:str,token:str,record_id: str) -> requests.Response:
+    """Reserves a DOI for a draft record."""
+
+    api_url = f"{url}/api/records/{record_id}/draft/pids/doi"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.post(api_url,headers=headers)
+        response.raise_for_status()
+
+        if response.status_code == 201:
+            _log_debug_response("Reserved DOI", response)
+            return response
+        else:
+            err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
+            logging.error(err_msg)
+            raise APIError(err_msg,response=response)
+    except requests.exceptions.RequestException as e:
+        err_msg = f"Request Error: {e}"
+        logging.error(err_msg)
+        raise APIError(err_msg)
+
+# Example usage:
+# doi_response = reserve_doi_draft(URL, TOKEN, draft_id)
+# print(json.dumps(doi_response, indent=4))
 
 def prepare_file_upload(url: str,token: str,record_id: str,file_name_list: List[str]) -> requests.Response:
     """Creates a location in the Invenio database record to store the files. Capable of batch file preparation.
