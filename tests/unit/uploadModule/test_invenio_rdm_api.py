@@ -71,7 +71,7 @@ def test_valid_create_draft_record(mocker,sample_host_name,sample_metadata, samp
     mock_post = mocker.patch("requests.post",return_value=mock_response)
 
     #now test api call
-    response = invenioAPI.create_record(sample_host_name,sample_token,metadata=sample_metadata)
+    response = invenioAPI.create_draft_record(sample_host_name,sample_token,metadata=sample_metadata)
 
     # check behaviour
     assert response.status_code == 201

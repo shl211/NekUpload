@@ -12,7 +12,7 @@ Always return a response, so clients have flexibility to choose how they want to
 For now, lets not worry about other error codes
 """
 
-def create_record(url: str, token: str,metadata: Dict[str,Any]=None,custom_fields:Dict[str,Any] = None,upload_file_enabled: bool=True) -> requests.Response:
+def create_draft_record(url: str, token: str,metadata: Dict[str,Any]=None,custom_fields:Dict[str,Any] = None,upload_file_enabled: bool=True) -> requests.Response:
     """Create a record draft in InvenioRDM. Not fully implemented with access, files and custom_fields yet.
 
     Args:
@@ -59,6 +59,53 @@ def create_record(url: str, token: str,metadata: Dict[str,Any]=None,custom_field
 
     try:
         response = requests.post(records_url, headers=header, json=metadata)
+        response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
+        
+        if response.status_code == 201:
+            _log_debug_response("Record created succesfully",response)
+            return response
+        else:
+            err_msg = f"Unexpected status code: {response.status_code} - {response.text}"
+            logging.error(err_msg)
+            raise APIError(err_msg,response=response) 
+    except requests.exceptions.RequestException as e:
+        err_msg = f"Request Error: {e}"
+        logging.error(err_msg)
+        raise APIError(err_msg)
+
+def create_draft_record_from_published_record(url: str, token: str,record_id: str) -> requests.Response:
+    """Create a record draft in InvenioRDM. Not fully implemented with access, files and custom_fields yet.
+
+    Args:
+        url (str): Base url route to the invenio database, of form http:// or https://
+        token (str): Personal access token
+        metadata (Dict[str,Any]): Metadata to be uploaded
+        custom_fields (Dict[str,Any]): Custom fields metadata for record (v10 and newer)
+
+    Returns:
+        requests.Response: Returns a requests.Response object on success (201 status code) 
+    
+    Raises:
+        APIError: If an error occurs during the API call. 
+        ClientError: If an error occurs due to invalid message parameters
+    """
+
+    if not _is_valid_base_url(url):
+        msg = f"url {url} is invalid. Should be of form http://example or https://example"
+        logging.error(msg)
+        raise ClientError(msg)
+
+    header = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token}"
+    }
+
+    if url.endswith('/'):
+        url = url[:-1]
+    records_url = url + f"/api/records/{record_id}/draft"
+
+    try:
+        response = requests.post(records_url, headers=header)
         response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
         
         if response.status_code == 201:
