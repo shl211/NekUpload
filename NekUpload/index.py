@@ -22,7 +22,7 @@ class NekUploadNewGUI:
 
         #create a header
         self.header = Header(self.root)
-        self.header.grid(row=0,column=0,padx=20,pady=20,columnspan=2,sticky=(N,E,S,W))
+        self.header.grid(row=0,column=0,columnspan=2,sticky=(N,E,S,W))
 
         #create a menu
         self.menu = Menu(self.root)
@@ -56,7 +56,7 @@ class NekUploadNewGUI:
             self.page.grid_forget()
             self.page = new_page
             self.page.grid(row=1, column=1, padx=20, pady=10, sticky=NSEW)  # Show new page
-            self.page.config(style="success.TFrame")  #
+            self.page.config(style="success.TFrame")  #help with visualisation for now
 
 
     def run(self):
