@@ -16,13 +16,13 @@ class NekUploadNewGUI:
         self.root.title("NekUpload")
         self.root.attributes('-zoomed', True)
 
-        self.root.rowconfigure(0, weight=1)
+        #self.root.rowconfigure(0, weight=1)
         self.root.rowconfigure(1, weight=10)
         self.root.columnconfigure(0, weight=1)
         self.root.columnconfigure(1, weight=20)
 
         #create a header
-        self.header = Header(self.root)
+        self.header: ttk.Frame = Header(self.root)
         self.header.grid(row=0, column=0, columnspan=2, sticky=(N, E, S, W), ipadx=10, ipady=10)
 
         #create a menu
@@ -50,8 +50,6 @@ class NekUploadNewGUI:
         self.menu.add_link_to_button("HELP",lambda: self.switch_page(help_page))
         self.menu.add_link_to_button("SETTINGS",lambda: self.switch_page(setting_page))
 
-        #help with visualising for now
-        self.header.config(style="primary.TFrame")  # Bootstrap theme color
         self.menu.config(style="danger.TFrame")  # Another color for menu
         self.page.config(style="success.TFrame")  #
 
