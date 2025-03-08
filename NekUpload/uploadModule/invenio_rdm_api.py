@@ -12,7 +12,7 @@ Always return a response, so clients have flexibility to choose how they want to
 For now, lets not worry about other error codes
 """
 
-def create_record(url: str, token: str,metadata: Dict[str,Any]=None,custom_fields:Dict[str,Any] = None) -> requests.Response:
+def create_record(url: str, token: str,metadata: Dict[str,Any]=None,custom_fields:Dict[str,Any] = None,upload_file_enabled: bool=True) -> requests.Response:
     """Create a record draft in InvenioRDM. Not fully implemented with access, files and custom_fields yet.
 
     Args:
@@ -47,6 +47,15 @@ def create_record(url: str, token: str,metadata: Dict[str,Any]=None,custom_field
     if url.endswith('/'):
         url = url[:-1]
     records_url = url + "/api/records"
+
+    #add other payloads to metadata
+    #TODO very very bad interface currently
+    files = {"files": {"enabled": upload_file_enabled}}
+
+    if custom_fields:
+        metadata.update({"custom_fields": custom_fields})
+
+    metadata.update(files)
 
     try:
         response = requests.post(records_url, headers=header, json=metadata)
