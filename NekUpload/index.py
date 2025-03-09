@@ -40,7 +40,7 @@ class NekUploadNewGUI:
         #create page frame and default to INFO
         #menu buttons will direct pages to here
         self.page = info_page
-        self.page.grid(row=1,column=1,sticky=NSEW)
+        self.page.grid(row=1, column=1,sticky=NSEW,ipadx=20,ipady=20)  # Show new page
 
         self.menu.add_link_to_button("UPLOAD",lambda: self.switch_page(upload_page))
         self.menu.add_link_to_button("INFO",lambda: self.switch_page(info_page))
@@ -53,7 +53,7 @@ class NekUploadNewGUI:
         if self.page != new_page:
             self.page.grid_forget()
             self.page = new_page
-            self.page.grid(row=1, column=1,sticky=NSEW)  # Show new page
+            self.page.grid(row=1, column=1,sticky=NSEW,ipadx=20,ipady=20)  # Show new page
 
     def run(self):
         self.root.mainloop()
