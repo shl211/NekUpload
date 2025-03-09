@@ -14,7 +14,6 @@ class SettingScene(ttk.Frame):
         self.api_key_info: ttk.LabelFrame = self._get_api_key(self)
         self.api_key_info.grid(row=1,column=0,padx=10,pady=10,sticky=NSEW)
 
-
     def _get_repository_info(self,parent) -> ttk.LabelFrame:
         frame = ttk.LabelFrame(
             master=parent,
@@ -66,12 +65,13 @@ class SettingScene(ttk.Frame):
         )
         radio_label.grid(row=1, column=0, padx=5, pady=5, sticky=W)
 
-        self._radio_value = tk.StringVar(value="Option1")
+        self._api_radio_value = tk.StringVar(value="Option1")
         radio_option1 = ttk.Radiobutton(
             master=frame,
             text="API key",
             value="Option1",
-            variable=self._radio_value
+            variable=self._api_radio_value,
+            command=self.update_api_form
         )
         radio_option1.grid(row=1, column=1, padx=5, pady=5, sticky=W)
 
@@ -79,24 +79,31 @@ class SettingScene(ttk.Frame):
             master=frame,
             text="API key stored in environment variable",
             value="Option2",
-            variable=self._radio_value
+            variable=self._api_radio_value,
+            command=self.update_api_form
         )
         radio_option2.grid(row=1, column=2, padx=5, pady=5, sticky=W)
 
-        api_key_label = ttk.Label(
+        self.api_key_label = ttk.Label(
             master=frame,
             text="API Key: "
         )
-        api_key_label.grid(row=2, column=0, padx=5, pady=5, sticky=W)
+        self.api_key_label.grid(row=2, column=0, padx=5, pady=5, sticky=W)
 
         self._api_key = tk.StringVar()
         api_key_entry = ttk.Entry(
             master=frame,
             textvariable=self._api_key
         )
-        api_key_entry.grid(row=2, column=1, padx=5, pady=5, sticky=W)
+        api_key_entry.grid(row=2, column=1,columnspan=2, padx=5, pady=5, sticky=W)
 
         return frame
+
+    def update_api_form(self,event=None):
+        if self._api_radio_value.get() == "Option1":
+            self.api_key_label.configure(text="API Key: ")
+        elif self._api_radio_value.get() == "Option2":
+            self.api_key_label.configure(text="API Environment Variable: ")
 
     def on_combobox_select(self,event: tk.Event):
         """Callback for combobox selection, sets default values in some fields
