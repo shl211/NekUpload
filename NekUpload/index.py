@@ -16,8 +16,8 @@ class NekUploadNewGUI:
         self.root.title("NekUpload")
         self.root.attributes('-zoomed', True)
 
-        #self.root.rowconfigure(0, weight=1)
-        self.root.rowconfigure(1, weight=10)
+        self.root.rowconfigure(0, weight=0)
+        self.root.rowconfigure(1, weight=1)
         self.root.columnconfigure(0, weight=1)
         self.root.columnconfigure(1, weight=20)
 
@@ -41,7 +41,6 @@ class NekUploadNewGUI:
         #menu buttons will direct pages to here
         self.page = info_page
         self.page.grid(row=1,column=1,sticky=NSEW)
-        self.page.grid_propagate(False)
 
         self.menu.add_link_to_button("UPLOAD",lambda: self.switch_page(upload_page))
         self.menu.add_link_to_button("INFO",lambda: self.switch_page(info_page))
@@ -50,14 +49,11 @@ class NekUploadNewGUI:
         self.menu.add_link_to_button("HELP",lambda: self.switch_page(help_page))
         self.menu.add_link_to_button("SETTINGS",lambda: self.switch_page(setting_page))
 
-        self.menu.config(style="danger.TFrame")  # Another color for menu
-
     def switch_page(self, new_page: ttk.Frame):
         if self.page != new_page:
             self.page.grid_forget()
             self.page = new_page
             self.page.grid(row=1, column=1,sticky=NSEW)  # Show new page
-            self.page.grid_propagate(False)
 
     def run(self):
         self.root.mainloop()

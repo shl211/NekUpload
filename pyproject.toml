@@ -32,7 +32,7 @@ classifiers = [
 include-package-data = true
 
 [tool.setuptools.package-data]
-"NekUpload" = ["validationModule/schemas/*"]
+"NekUpload" = ["validationModule/schemas/*","newFrontend/assets/*"]
 
 [project.optional-dependencies]
 dev = [
