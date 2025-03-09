@@ -175,9 +175,10 @@ class UploadScene(ScrolledFrame):
         browse.grid(row=1,column=2,sticky=NSEW)
 
         help_logo:ttk.Label = HelpNotification(geometry_file_frame)
+        help_logo.add_help_message("This will be the title of the geometry record")
         help_logo2:ttk.Label = HelpNotification(geometry_file_frame)
-        help_logo2.grid(row=0, column=3, sticky=NSEW)
-        help_logo.grid(row=1, column=3, sticky=NSEW)
+        help_logo2.add_help_message("Only HDF5 formatted geometry files are accepted")
+        help_logo.grid(row=0, column=3, sticky=NSEW)
+        help_logo2.grid(row=1, column=3, sticky=NSEW)
 
         return geometry_file_frame
-    
