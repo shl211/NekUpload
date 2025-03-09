@@ -2,21 +2,18 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from typing import Callable, Dict
 from pathlib import Path
+from ttkbootstrap.scrolled import ScrolledFrame
 
 PATH = Path(__file__).parent.parent / "assets"
 
-class Menu(ttk.Frame):
+class Menu(ScrolledFrame):
     """A menu frame with buttons for various actions."""
 
     def __init__(self, parent):
         """Initializes the Menu frame."""
-        super().__init__(parent)
+        super().__init__(parent, autohide=True,width=150)
         
-        self.columnconfigure(0, minsize=150)
-        self.mainframe = ttk.Frame(master=self)
-        
-        self.mainframe.grid(row=0,column=0,sticky=NSEW)
-        self.mainframe.columnconfigure(0,weight=1)
+        self.columnconfigure(0, weight=1)
 
         self.button_data: Dict[str, Dict] = {
             "INFO": {"row": 0, 
@@ -65,7 +62,7 @@ class Menu(ttk.Frame):
         
         for text, data in self.button_data.items():
             button = ttk.Button(
-                master=self.mainframe,
+                master=self,
                 text=text,
                 compound=TOP,
                 image=data.get("icon",None),
