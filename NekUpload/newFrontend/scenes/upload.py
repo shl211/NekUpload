@@ -5,6 +5,7 @@ from ttkbootstrap.scrolled import ScrolledFrame
 from typing import List,Dict,Tuple
 from .upload_widgets.geometry import UploadGeometryFrame
 from .upload_widgets.session import UploadSessionFrame
+from .upload_widgets.output import UploadOutputFrame
 from .upload_widgets.basic import UploadInfoFrame
 from NekUpload.newFrontend.components.settings_manager import SettingsManager
 
@@ -29,6 +30,8 @@ class UploadScene(ScrolledFrame):
         geometry_section.grid(row=2,column=0,sticky=(NSEW),padx=10,pady=5)
         input_section: ttk.Labelframe = UploadSessionFrame(self)
         input_section.grid(row=3,column=0,sticky=(NSEW),padx=10,pady=5)
+        output_section: ttk.Labelframe = UploadOutputFrame(self)
+        output_section.grid(row=4,column=0,sticky=(NSEW),padx=10,pady=5)
 
         self.bind("<Configure>", self.update_wraplength)
 
