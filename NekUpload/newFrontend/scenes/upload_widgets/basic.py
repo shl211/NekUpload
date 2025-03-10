@@ -270,4 +270,4 @@ class UploadInfoFrame(ttk.Labelframe):
         Returns:
             str: _description_
         """
-        return self.publication_date.get()
+        return self.date_entry.entry.get()
