@@ -12,18 +12,27 @@ class SettingScene(ttk.Frame):
         self.columnconfigure(0,weight=1)
 
         self.repository_info: ttk.LabelFrame = self._get_repository_info(self)
-        self.repository_info.grid(row=0,column=0,padx=10,pady=10,sticky=NSEW)
+        self.repository_info.grid(row=0,column=0,columnspan=2,padx=10,pady=10,sticky=NSEW)
 
         self.api_key_info: ttk.LabelFrame = self._get_api_key(self)
-        self.api_key_info.grid(row=1,column=0,padx=10,pady=10,sticky=NSEW)
+        self.api_key_info.grid(row=1,column=0,padx=10,columnspan=2,pady=10,sticky=NSEW)
 
         #add a save button to save the settings configuration
+        warning_label = ttk.Label(
+            master=self,
+            text="REMEMBER TO SAVE YOUR SETTINGS -->",
+            bootstyle=DANGER,
+            anchor="e"
+        )
+        warning_label.grid(row=2,column=0,sticky=E)
+
+
         self.save_settings_button = ttk.Button(
             master=self,
             text="SAVE",
             command=self._save_settings
         )
-        self.save_settings_button.grid(row=2,column=0,padx=10,sticky=E)
+        self.save_settings_button.grid(row=2,column=1,padx=10,sticky=E)
 
         #initialise settings
         self._update_settings(self.api_key,self.host_url)
