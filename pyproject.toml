@@ -22,7 +22,7 @@ dependencies = [
     "packaging",
     "pyyaml",
     "ruamel.yaml",
-    "ttkboostrap"
+    "ttkbootstrap"
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
