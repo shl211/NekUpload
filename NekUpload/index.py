@@ -32,11 +32,11 @@ class NekUploadNewGUI:
 
         #pages and which button they link to
         info_page = InfoScene(self.root)
-        upload_page = UploadScene(self.root,self.root)
         review_page = ReviewScene(self.root)
         explore_page = ExploreScene(self.root)
         help_page = HelpScene(self.root)
         setting_page = SettingScene(self.root)
+        upload_page = UploadScene(self.root,self.root,setting_page)
 
         #create page frame and default to INFO
         #menu buttons will direct pages to here

@@ -1,12 +1,12 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import tkinter as tk
-from ttkbootstrap.tableview import Tableview
 from .create_author_window import CreateAuthorOrgWindow,CreateAuthorPersonWindow
-from typing import Dict
+from typing import Dict,List,Any
+from NekUpload.newFrontend.scenes.settings import SettingScene
 
 class UploadInfoFrame(ttk.Labelframe):
-    def __init__(self,root,parent):
+    def __init__(self,root,parent,setting_scene: SettingScene):
         super().__init__(
             master=parent,
             text="Basic Upload Information",
@@ -14,7 +14,8 @@ class UploadInfoFrame(ttk.Labelframe):
             padding=10
         )
         self.root = root
-        
+        self.setting_scene = setting_scene
+
         self.columnconfigure(0,weight=1)
         self.columnconfigure(1,weight=1)
         self.columnconfigure(2,weight=5)
@@ -30,45 +31,98 @@ class UploadInfoFrame(ttk.Labelframe):
 
         presets = ttk.Combobox(
             master=self,
-            values=["Nektar", "Custom"],
+            values=["Nektar++","Demo (InvenioRDM Demo Only)","Custom"],
             state="readonly"
         )
         presets.set("Nektar")
-        presets.grid(row=0, column=1, padx=5, pady=5, sticky=W)
+        presets.grid(row=0, column=1, padx=5, pady=5, sticky=EW)
+        presets.bind("<<ComboboxSelected>>",self._on_combobox_select)
 
+        community_slug_label = ttk.Label(
+            master=self,
+            text="Community (URL Slug or UUID): ",
+            bootstyle=PRIMARY
+        )
+        community_slug_label.grid(row=1,column=0,sticky=W)
+
+        self._community_slug = tk.StringVar()
+        self._community_slug.set("nektar")
+        community_slug_entry = ttk.Entry(
+            master=self,
+            textvariable=self._community_slug
+        )
+        community_slug_entry.grid(row=1,column=1,padx=5,pady=5,sticky=EW)
+
+        add_author_frame: ttk.Frame = self._add_authors_frame(self)
+        add_author_frame.grid(row=2,column=0,sticky=NSEW,rowspan=2,columnspan=3)
+
+    def add_listener_to_settings(self,setting_scene: SettingScene):
+        self.setting_scene = setting_scene
+
+    def _add_authors_frame(self,parent) -> ttk.Frame:
+        frame = ttk.Frame(
+            master=parent
+        )
+        frame.columnconfigure(0,weight=1)
+        frame.columnconfigure(1,weight=1)
+        frame.columnconfigure(2,weight=1)
+
+        #note that this mirrors self.author_listbox data in terms of order
+        #should probably consolidate at some point
         self.authors = []
 
         add_author_person_button = ttk.Button(
-            master=self,
+            master=frame,
             text="Add Person",
             command=self._create_author_person
         )
         add_author_person_button.grid(row=1,column=0,padx=5,pady=5,sticky=NSEW)
 
         add_author_org_button = ttk.Button(
-            master=self,
+            master=frame,
             text="Add Organisation",
             command=self._create_author_org
         )
         add_author_org_button.grid(row=1,column=1,padx=5,pady=5,sticky=NSEW)
 
-        coldata = [
-            {"text" : "Name", "stretch": False},
-            "Type",
-            {"text": "Persistent ID Type", "stretch": False},
-            {"text": "Persistent ID", "stretch": False},
-        ]
+        #have a listbox to specify the creation
+        self.author_listbox = tk.Listbox(frame,selectmode=EXTENDED)
+        scrollbar_y= ttk.Scrollbar(frame,command=self.author_listbox.yview)
+        scrollbar_x = ttk.Scrollbar(frame,command=self.author_listbox.xview,orient=HORIZONTAL)
+        self.author_listbox.config(yscrollcommand=scrollbar_y.set,xscrollcommand=scrollbar_x)
+        scrollbar_y.config(command=self.author_listbox.yview)
+        scrollbar_x.config(command=self.author_listbox.xview)
 
-        rowdata = []
-        self.authors_table_display = Tableview(
-            master=self,
-            coldata=coldata,
-            rowdata=rowdata,
-            searchable=False,
-            bootstyle=DEFAULT,
-        )
-        self.authors_table_display.grid(row=3,column=0,columnspan=10,sticky=NSEW)
-    
+        self.author_listbox.grid(row=2,column=0,columnspan=2,sticky=(NSEW))
+        scrollbar_x.grid(row=3,column=0,columnspan=2,sticky=(W,E))
+        scrollbar_y.grid(row=2,column=2,sticky=(N,S,W))
+
+        #add a delete button
+        delete_button = ttk.Button(frame,text="Delete",command=self._delete_selected_author)
+        delete_button.grid(row=4,column=1,padx=5,pady=5,sticky=NSEW)
+        return frame
+
+    def _delete_selected_author(self) -> None:
+        """Delete the selected author from the list of authors. Deletion is accomplished via a Button connected to a Listbox.
+        """
+        selection_indices = self.author_listbox.curselection()
+        if selection_indices:
+            # 1. Get the items to delete *before* modifying the listbox
+            items_to_delete = [self.author_listbox.get(index) for index in selection_indices]
+
+            # 2. Delete from the listbox (reverse order to prevent issues with shifting indices)
+            for index,item in zip(sorted(selection_indices, reverse=True),sorted(items_to_delete,reverse=True)):
+                self.author_listbox.delete(index)
+
+                #delete from self.authors using the index
+                # self.authors should mirror same order as listbox
+                try:
+                    self.authors.pop(index)
+                except ValueError:
+                    print(f"Warning: Item '{item}' not found in self.authors")  # Handle potential mismatch
+
+        print(self.authors)
+
     def _create_author_person(self) -> None:
         """Opens a new window with a form to specify the author as a person
         """
@@ -104,7 +158,7 @@ class UploadInfoFrame(ttk.Labelframe):
         print("Author Data: ", author_data)
 
         self.authors.append(author_data)        
-        self._add_to_table_display(author_data)
+        self.author_listbox.insert(END,f"{author_data['name']}")
 
         window.destroy()
 
@@ -122,16 +176,46 @@ class UploadInfoFrame(ttk.Labelframe):
         author_data['id'] = window.id
 
         print("Author Data: ", author_data)
+        self.author_listbox.insert(END,f"{author_data['name']}")
 
-        self.authors.append(author_data)
-        self._add_to_table_display(author_data)
         window.destroy()
+    
+    def _on_combobox_select(self,event: tk.Event):
+        """Callback for combobox selection, sets default values in some fields
 
-    def _add_to_table_display(self,author_data: Dict[str,str]):
-        self.authors_table_display.insert_row(values=[
-            author_data['name'],
-            author_data["type"],
-            author_data["id_type"],
-            author_data["id"]
-        ])
-        self.authors_table_display.load_table_data(clear_filters=True)
+        Args:
+            event (Event): _description_
+        """
+        selected_value = event.widget.get()
+
+        if selected_value == "Nektar++":
+            self._community_slug.set("nektar")#tbc
+        elif selected_value == "Demo (InvenioRDM Demo Only)":
+            self._community_slug.set("test_nekupload")
+        elif selected_value == "Custom":
+            self._community_slug.set("")
+
+    #Sets settings for default config
+    def set_AE_db_default(self):
+        """Set default settings for sending to AE database
+        """
+        self.host_url = "https://data.ae.ic.ac.uk"
+
+    def set_default(self):
+        """No default settings
+        """
+        self.host_url = ""
+
+
+    @property
+    def author_list(self) -> List[Dict[str,Any]]:
+        """Read only access to list of authors
+
+        Returns:
+            List[Dict[str,Any]]: Dictionary containing information on authors
+        """
+        return self.authors
+    
+    @property
+    def community_slug(self) -> str:
+        return self._community_slug.get()

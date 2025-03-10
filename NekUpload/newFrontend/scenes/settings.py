@@ -50,13 +50,13 @@ class SettingScene(ttk.Frame):
         )
         preset_label.grid(row=0,column=0,padx=5,pady=5,sticky=W)
 
-        presets = ttk.Combobox(
+        self.presets = ttk.Combobox(
             master=frame,
             values=["AE Datastore", "InvenioRDM Demo", "Custom"],
             state="readonly"
         )
-        presets.set("AE Datastore")
-        presets.grid(row=0, column=1, padx=5, pady=5, sticky=W)
+        self.presets.set("AE Datastore")
+        self.presets.grid(row=0, column=1, padx=5, pady=5, sticky=W)
 
         host_label = ttk.Label(
             master=frame,
@@ -72,7 +72,7 @@ class SettingScene(ttk.Frame):
         host_entry.grid(row=1, column=1, padx=5, pady=5, sticky=W)
 
         #set the defaults
-        presets.bind("<<ComboboxSelected>>",self.on_combobox_select)
+        self.presets.bind("<<ComboboxSelected>>",self.on_combobox_select)
         self.set_AE_db_default()
 
         return frame
@@ -183,3 +183,7 @@ class SettingScene(ttk.Frame):
         elif self._api_radio_value.get() == "Option2":
             #if given as environment variable
             return os.getenv(self._api_key.get(),None)
+        
+    @property
+    def target_database(self):
+        return self.presets.get()
