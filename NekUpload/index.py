@@ -31,7 +31,7 @@ class NekUploadNewGUI:
 
         #pages and which button they link to
         info_page = InfoScene(self.root)
-        upload_page = UploadScene(self.root)
+        upload_page = UploadScene(self.root,self.root)
         review_page = ReviewScene(self.root)
         explore_page = ExploreScene(self.root)
         help_page = HelpScene(self.root)
