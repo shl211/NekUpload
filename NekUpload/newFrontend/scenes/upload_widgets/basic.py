@@ -65,11 +65,8 @@ class UploadInfoFrame(ttk.Labelframe):
         )
         self.date_entry.grid(row=2,column=1,columnspan=1,padx=5,pady=5,sticky=EW)
 
-
         add_author_frame: ttk.Frame = self._add_authors_frame(self)
         add_author_frame.grid(row=3,column=0,sticky=NSEW,rowspan=2,columnspan=3)
-
-
 
         #update final value of combobox
         self._update_community_slug_value()
@@ -265,3 +262,12 @@ class UploadInfoFrame(ttk.Labelframe):
     @property
     def community_slug(self) -> str:
         return self._community_slug.get()
+    
+    @property
+    def publication_date_iso(self) -> str:
+        """Return in  format YYYY-MM-DD
+
+        Returns:
+            str: _description_
+        """
+        return self.publication_date.get()
