@@ -4,7 +4,6 @@ import tkinter as tk
 from .create_author_window import CreateAuthorOrgWindow,CreateAuthorPersonWindow
 from typing import Dict,List,Any
 from NekUpload.newFrontend.components.settings_manager import SettingsManager
-
 class UploadInfoFrame(ttk.Labelframe):
     def __init__(self,root,parent,setting_manager: SettingsManager):
         super().__init__(
@@ -52,8 +51,25 @@ class UploadInfoFrame(ttk.Labelframe):
         )
         self.community_slug_entry.grid(row=1,column=1,padx=5,pady=5,sticky=EW)
 
+        publication_date_label = ttk.Label(
+            master=self,
+            text="Publication Date: ",
+            bootstyle=PRIMARY
+        )
+        publication_date_label.grid(row=2,column=0,sticky=EW)
+
+        self.publication_date = tk.StringVar()
+        self.date_entry = ttk.DateEntry(
+            master=self,
+            dateformat=r"%Y-%m-%d"
+        )
+        self.date_entry.grid(row=2,column=1,columnspan=1,padx=5,pady=5,sticky=EW)
+
+
         add_author_frame: ttk.Frame = self._add_authors_frame(self)
-        add_author_frame.grid(row=2,column=0,sticky=NSEW,rowspan=2,columnspan=3)
+        add_author_frame.grid(row=3,column=0,sticky=NSEW,rowspan=2,columnspan=3)
+
+
 
         #update final value of combobox
         self._update_community_slug_value()
