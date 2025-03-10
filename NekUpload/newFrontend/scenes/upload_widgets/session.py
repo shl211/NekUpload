@@ -3,6 +3,7 @@ from ttkbootstrap.constants import *
 import tkinter as tk
 from tkinter import filedialog
 from NekUpload.newFrontend.components.help import HelpNotification
+from NekUpload.newFrontend import style_guide
 
 class UploadSessionFrame(ttk.LabelFrame):
     def __init__(self,parent):
@@ -67,11 +68,15 @@ class UploadSessionFrame(ttk.LabelFrame):
         title_label.grid(row=0,column=0,sticky=NSEW)
         
         self._session_title = tk.StringVar()
-        session_title_entry = ttk.Entry(
+        self.session_title_entry = ttk.Entry(
             master=session_file_frame,
             textvariable=self._session_title,
         )
-        session_title_entry.grid(row=0,column=1,sticky=NSEW)
+        self.session_title_entry.grid(row=0,column=1,sticky=NSEW)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.session_title_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.session_title_entry))
+        self.session_title_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.session_title_entry))
 
         ################################
         # Ask for session file
@@ -82,11 +87,15 @@ class UploadSessionFrame(ttk.LabelFrame):
         session_file_label.grid(row=1,column=0,sticky=NSEW)
 
         self._session_file = tk.StringVar()
-        session_file_entry = ttk.Entry(
+        self.session_file_entry = ttk.Entry(
             master=session_file_frame,
             textvariable=self._session_file,
         )
-        session_file_entry.grid(row=1,column=1,sticky=NSEW)
+        self.session_file_entry.grid(row=1,column=1,sticky=NSEW)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.session_file_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.session_file_entry))
+        self.session_file_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.session_file_entry))
 
         def browse_file():
             file_path = filedialog.askopenfilename(
@@ -118,3 +127,11 @@ class UploadSessionFrame(ttk.LabelFrame):
     @property
     def session_dataset_title(self):
         return self._session_title.get()
+    
+    def add_error_style_to_mandatory_entries(self):
+        if not self.session_file_entry.get():
+            print("H")
+            style_guide.show_error_in_entry(self.session_file_entry)
+
+        if not self.session_title_entry.get():
+            style_guide.show_error_in_entry(self.session_title_entry)

@@ -14,6 +14,7 @@ from NekUpload.metadataModule.user import InvenioOrgInfo,InvenioPersonInfo
 import logging
 from NekUpload.manager import NekManager
 from NekUpload.uploadModule.invenio_db import invenioRDM
+from NekUpload.newFrontend import style_guide
 
 class UploadScene(ScrolledFrame):
     def __init__(self,root,parent,setting_manager: SettingsManager):
@@ -90,7 +91,60 @@ class UploadScene(ScrolledFrame):
 
         return frame
 
+    def _check_dataset_inputs(self) -> bool:
+        """Check all entry data is present, if not change style
+
+        Returns:
+            bool: _description_
+        """
+
+        is_error = True
+
+        #check geometry widgets
+        if not self.geometry_section.geometry_dataset_title:
+            is_error = False
+
+        if not self.geometry_section.geometry_file_name:
+            is_error = False
+
+        self.geometry_section.add_error_style_to_mandatory_entries()
+
+        #check input widgets
+        if not self.input_section.session_dataset_title:
+            is_error = False
+
+        if not self.input_section.session_file_name:
+            is_error = False
+        
+        self.input_section.add_error_style_to_mandatory_entries()
+        
+        #check output widgets 
+        if not self.output_section.output_dataset_title:
+            is_error = False
+
+        if not self.output_section.output_file_name:
+            is_error = False
+
+        self.output_section.add_error_style_to_mandatory_entries()
+
+        return is_error
+    
     def _upload_datasets(self):
+
+        is_all_info_entered = True
+
+        if not self.basic_info_section.author_list:
+            logging.error("No authors entered. Please add authors.")
+            is_all_info_entered = False
+
+        if not self._check_dataset_inputs():
+            logging.error("Missing mandatory dataset inputs. Please see red highlighted entries.")
+            is_all_info_entered = False
+
+        #exit if mandatory inputs not filled
+        if not is_all_info_entered:
+            return
+
         logging.info("UPLOADING...")
 
         #get general info

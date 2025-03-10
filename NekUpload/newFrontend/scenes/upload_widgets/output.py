@@ -3,6 +3,7 @@ from ttkbootstrap.constants import *
 import tkinter as tk
 from tkinter import filedialog
 from NekUpload.newFrontend.components.help import HelpNotification
+from NekUpload.newFrontend import style_guide
 
 class UploadOutputFrame(ttk.LabelFrame):
     def __init__(self,parent):
@@ -67,11 +68,15 @@ class UploadOutputFrame(ttk.LabelFrame):
         title_label.grid(row=0,column=0,sticky=NSEW)
         
         self._output_title = tk.StringVar()
-        output_title_entry = ttk.Entry(
+        self.output_title_entry = ttk.Entry(
             master=output_file_frame,
             textvariable=self._output_title,
         )
-        output_title_entry.grid(row=0,column=1,sticky=NSEW)
+        self.output_title_entry.grid(row=0,column=1,sticky=NSEW)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.output_title_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.output_title_entry))
+        self.output_title_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.output_title_entry))
 
         ################################
         # Ask for output file
@@ -82,11 +87,15 @@ class UploadOutputFrame(ttk.LabelFrame):
         output_file_label.grid(row=1,column=0,sticky=NSEW)
 
         self._output_file = tk.StringVar()
-        output_file_entry = ttk.Entry(
+        self.output_file_entry = ttk.Entry(
             master=output_file_frame,
             textvariable=self._output_file,
         )
-        output_file_entry.grid(row=1,column=1,sticky=NSEW)
+        self.output_file_entry.grid(row=1,column=1,sticky=NSEW)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.output_file_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.output_file_entry))
+        self.output_file_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.output_file_entry))
 
         def browse_file():
             file_path = filedialog.askopenfilename(
@@ -118,3 +127,10 @@ class UploadOutputFrame(ttk.LabelFrame):
     @property
     def output_dataset_title(self):
         return self._output_title.get()
+    
+    def add_error_style_to_mandatory_entries(self):
+        if not self.output_file_entry.get():
+            style_guide.show_error_in_entry(self.output_file_entry)
+
+        if not self.output_title_entry.get():
+            style_guide.show_error_in_entry(self.output_title_entry)

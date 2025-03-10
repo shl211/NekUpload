@@ -3,6 +3,7 @@ from ttkbootstrap.constants import *
 import tkinter as tk
 from tkinter import filedialog
 from NekUpload.newFrontend.components.help import HelpNotification
+from NekUpload.newFrontend import style_guide
 
 class UploadGeometryFrame(ttk.LabelFrame):
     def __init__(self,parent):
@@ -80,11 +81,15 @@ class UploadGeometryFrame(ttk.LabelFrame):
         title_label.grid(row=0,column=0,sticky=NSEW)
         
         self._geometry_title = tk.StringVar()
-        geometry_title_entry = ttk.Entry(
+        self.geometry_title_entry = ttk.Entry(
             master=geometry_file_frame,
             textvariable=self._geometry_title,
         )
-        geometry_title_entry.grid(row=0,column=1,sticky=NSEW)
+        self.geometry_title_entry.grid(row=0,column=1,sticky=NSEW)
+        
+        #for highlighting missing fields and turning off red when user is inputting
+        self.geometry_title_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.geometry_title_entry))
+        self.geometry_title_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.geometry_title_entry))
 
         ################################
         # Ask for geometry file
@@ -95,11 +100,16 @@ class UploadGeometryFrame(ttk.LabelFrame):
         geometry_file_label.grid(row=1,column=0,sticky=NSEW)
 
         self._geometry_file = tk.StringVar()
-        geometry_file_entry = ttk.Entry(
+        self.geometry_file_entry = ttk.Entry(
             master=geometry_file_frame,
             textvariable=self._geometry_file,
         )
-        geometry_file_entry.grid(row=1,column=1,sticky=NSEW)
+        self.geometry_file_entry.grid(row=1,column=1,sticky=NSEW)
+
+        #for highlighting missing fields and turning off red when user is inputting
+        self.geometry_file_entry.bind("<FocusOut>",lambda event: style_guide.highlight_mandatory_entry_on_focus_out(self.geometry_file_entry))
+        self.geometry_file_entry.bind("<FocusIn>",lambda event: style_guide.highlight_mandatory_entry_on_focus_in(self.geometry_file_entry))
+
 
         def browse_file():
             file_path = filedialog.askopenfilename(
@@ -131,3 +141,10 @@ class UploadGeometryFrame(ttk.LabelFrame):
     @property
     def geometry_dataset_title(self):
         return self._geometry_title.get()
+    
+    def add_error_style_to_mandatory_entries(self):
+        if not self.geometry_file_entry.get():
+            style_guide.show_error_in_entry(self.geometry_file_entry)
+
+        if not self.geometry_title_entry.get():
+            style_guide.show_error_in_entry(self.geometry_title_entry)
