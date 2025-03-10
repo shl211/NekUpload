@@ -1,6 +1,5 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-#from NekUpload.newFrontend.scenes
 from NekUpload.newFrontend.components.header import Header
 from NekUpload.newFrontend.components.menu import Menu
 from NekUpload.newFrontend.scenes.info import InfoScene
@@ -9,6 +8,8 @@ from NekUpload.newFrontend.scenes.review import ReviewScene
 from NekUpload.newFrontend.scenes.explore import ExploreScene
 from NekUpload.newFrontend.scenes.help import HelpScene
 from NekUpload.newFrontend.scenes.settings import SettingScene
+from NekUpload.newFrontend.components.terminal import TerminalHandler,TerminalWidget
+import logging
 
 class NekUploadNewGUI:
     def __init__(self):
@@ -49,6 +50,17 @@ class NekUploadNewGUI:
         self.menu.add_link_to_button("HELP",lambda: self.switch_page(help_page))
         self.menu.add_link_to_button("SETTINGS",lambda: self.switch_page(setting_page))
 
+        self.terminal = TerminalWidget(self.root)
+        self.terminal.grid(row=2,column=0,columnspan=2,sticky=(E,W))
+
+        #configure terminal for logging        
+        logger = logging.getLogger()  # Get the root logger
+        logger.setLevel(logging.INFO)
+        terminal_handler = TerminalHandler(self.terminal)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s') #format of message
+        terminal_handler.setFormatter(formatter)
+        logger.addHandler(terminal_handler)
+
     def switch_page(self, new_page: ttk.Frame):
         if self.page != new_page:
             self.page.grid_forget()
@@ -56,6 +68,7 @@ class NekUploadNewGUI:
             self.page.grid(row=1, column=1,sticky=NSEW,ipadx=20,ipady=20)  # Show new page
 
     def run(self):
+        #add welcome message
         self.root.mainloop()
 
 if __name__ == "__main__":
