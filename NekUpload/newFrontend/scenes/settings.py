@@ -35,11 +35,11 @@ class SettingScene(ttk.Frame):
         self.save_settings_button.grid(row=2,column=1,padx=10,sticky=E)
 
         #initialise settings
-        self._update_settings(self.api_key,self.host_url)
+        self._update_settings(self.api_key,self.host_url,self.target_database)
 
     def _save_settings(self,event=None):
-        self._update_settings(self.api_key,self.host_url)
-        logging.info(f"You have saved your settings")
+        self._update_settings(self.api_key,self.host_url,self.target_database)
+        logging.info(f"You have saved your settings: {self.target_database}: {self.host_url}")
 
     def _get_repository_info(self,parent) -> ttk.LabelFrame:
         frame = ttk.LabelFrame(
@@ -191,12 +191,15 @@ class SettingScene(ttk.Frame):
     def target_database(self):
         return self.presets.get()
     
-    def _update_settings(self,token=None,db_url=None):
+    def _update_settings(self,token=None,db_url=None,db_name=None):
         if token:
             self.settings_manager.update_api_key(token)
 
         if db_url:
             self.settings_manager.update_db_url(db_url)
+
+        if db_name:
+            self.settings_manager.update_host_name(db_name)
 
     def get_settings(self) -> SettingsManager:
         return self.settings_manager

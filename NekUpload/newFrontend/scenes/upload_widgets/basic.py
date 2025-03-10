@@ -3,10 +3,10 @@ from ttkbootstrap.constants import *
 import tkinter as tk
 from .create_author_window import CreateAuthorOrgWindow,CreateAuthorPersonWindow
 from typing import Dict,List,Any
-from NekUpload.newFrontend.scenes.settings import SettingScene
+from NekUpload.newFrontend.components.settings_manager import SettingsManager
 
 class UploadInfoFrame(ttk.Labelframe):
-    def __init__(self,root,parent,setting_scene: SettingScene):
+    def __init__(self,root,parent,setting_manager: SettingsManager):
         super().__init__(
             master=parent,
             text="Basic Upload Information",
@@ -14,7 +14,7 @@ class UploadInfoFrame(ttk.Labelframe):
             padding=10
         )
         self.root = root
-        self.setting_scene = setting_scene
+        self.setting_manager = setting_manager
 
         self.columnconfigure(0,weight=1)
         self.columnconfigure(1,weight=1)
@@ -29,14 +29,13 @@ class UploadInfoFrame(ttk.Labelframe):
         )
         community_upload_label.grid(row=0,column=0,sticky=W)
 
-        presets = ttk.Combobox(
+        self.presets = ttk.Combobox(
             master=self,
-            values=["Nektar++","Demo (InvenioRDM Demo Only)","Custom"],
             state="readonly"
         )
-        presets.set("Nektar")
-        presets.grid(row=0, column=1, padx=5, pady=5, sticky=EW)
-        presets.bind("<<ComboboxSelected>>",self._on_combobox_select)
+        self.presets.grid(row=0, column=1, padx=5, pady=5, sticky=EW)
+        self.presets.bind("<<ComboboxSelected>>",self._update_community_slug_value)
+        self.setting_manager.add_callbacks_on_update_host_name(self._update_community_slug_value)
 
         community_slug_label = ttk.Label(
             master=self,
@@ -47,17 +46,17 @@ class UploadInfoFrame(ttk.Labelframe):
 
         self._community_slug = tk.StringVar()
         self._community_slug.set("nektar")
-        community_slug_entry = ttk.Entry(
+        self.community_slug_entry = ttk.Entry(
             master=self,
             textvariable=self._community_slug
         )
-        community_slug_entry.grid(row=1,column=1,padx=5,pady=5,sticky=EW)
+        self.community_slug_entry.grid(row=1,column=1,padx=5,pady=5,sticky=EW)
 
         add_author_frame: ttk.Frame = self._add_authors_frame(self)
         add_author_frame.grid(row=2,column=0,sticky=NSEW,rowspan=2,columnspan=3)
 
-    def add_listener_to_settings(self,setting_scene: SettingScene):
-        self.setting_scene = setting_scene
+        #update final value of combobox
+        self._update_community_slug_value()
 
     def _add_authors_frame(self,parent) -> ttk.Frame:
         frame = ttk.Frame(
@@ -180,20 +179,52 @@ class UploadInfoFrame(ttk.Labelframe):
 
         window.destroy()
     
-    def _on_combobox_select(self,event: tk.Event):
+    def _update_community_slug_value(self,event: tk.Event=None):
         """Callback for combobox selection, sets default values in some fields
 
         Args:
             event (Event): _description_
         """
-        selected_value = event.widget.get()
+        #update options based on database url
+        database_name: str = self.setting_manager.database_name        
+        if database_name == "AE Datastore":
+            self.presets.configure(values=["Nektar++","Custom"])
+        elif database_name == "InvenioRDM Demo":
+            self.presets.configure(values=["NekUpload Demo","Custom"])
+        else:
+            self.presets.configure(values=["Custom"])
+        
+        if event:
+            selected_value = event.widget.get()
+        else:
+            selected_value = self.presets.get()
 
-        if selected_value == "Nektar++":
-            self._community_slug.set("nektar")#tbc
-        elif selected_value == "Demo (InvenioRDM Demo Only)":
-            self._community_slug.set("test_nekupload")
-        elif selected_value == "Custom":
+        if database_name == "AE Datastore":
+            if selected_value == "Nektar++":
+                self._community_slug.set("nektar")#tbc
+            else:
+                self._community_slug.set("")
+        elif database_name == "InvenioRDM Demo":
+            if selected_value == "NekUpload Demo":
+                self._community_slug.set("test_nekupload")
+            else:
+                self._community_slug.set("")
+        else:
             self._community_slug.set("")
+
+        #if not an event, then that means switched due to settings
+        #hence, set a default config
+        #brute force for now
+        if not event:
+            if database_name == "AE Datastore":
+                self.presets.set("Nektar++")
+                self._community_slug.set("nektar")
+            elif database_name == "InvenioRDM Demo":
+                self.presets.set("InvenioRDM Demo")
+                self._community_slug.set("test_nekupload")
+            else:
+                self.presets.set("Custom")
+                self._community_slug.set("")
 
     #Sets settings for default config
     def set_AE_db_default(self):
@@ -205,7 +236,6 @@ class UploadInfoFrame(ttk.Labelframe):
         """No default settings
         """
         self.host_url = ""
-
 
     @property
     def author_list(self) -> List[Dict[str,Any]]:
