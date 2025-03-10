@@ -8,7 +8,9 @@ from .upload_widgets.session import UploadSessionFrame
 from .upload_widgets.output import UploadOutputFrame
 from .upload_widgets.basic import UploadInfoFrame
 from NekUpload.newFrontend.components.settings_manager import SettingsManager
-
+from NekUpload.metadataModule.invenioMetadata import InvenioMetadata
+from NekUpload.metadataModule.user import InvenioOrgInfo,InvenioPersonInfo
+from NekUpload.metadataModule.extractor import AutoExtractor
 class UploadScene(ScrolledFrame):
     def __init__(self,root,parent,setting_manager: SettingsManager):
         super().__init__(parent,autohide=True)
@@ -34,6 +36,14 @@ class UploadScene(ScrolledFrame):
         output_section.grid(row=4,column=0,sticky=(NSEW),padx=10,pady=5)
 
         self.bind("<Configure>", self.update_wraplength)
+
+        #upload button
+        submit_button = ttk.Button(
+            master=self,
+            bootstyle=PRIMARY,
+            text="Upload Datasets"
+        )
+        submit_button.grid(row=10,column=0,columnspan=10,sticky=NSEW,padx=10,pady=5)
 
     def update_wraplength(self, event):
         # Dynamically set the wraplength based on the width of the parent frame
