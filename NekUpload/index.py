@@ -9,6 +9,7 @@ from NekUpload.newFrontend.scenes.explore import ExploreScene
 from NekUpload.newFrontend.scenes.help import HelpScene
 from NekUpload.newFrontend.scenes.settings import SettingScene
 from NekUpload.newFrontend.components.terminal import TerminalHandler,TerminalWidget
+from NekUpload.newFrontend.components.settings_manager import SettingsManager
 import logging
 
 class NekUploadNewGUI:
@@ -21,6 +22,8 @@ class NekUploadNewGUI:
         self.root.rowconfigure(1, weight=1)
         self.root.columnconfigure(0, weight=0)
         self.root.columnconfigure(1, weight=20)
+
+        setting_manager = SettingsManager("","")
 
         #create a header
         self.header: ttk.Frame = Header(self.root)
@@ -35,7 +38,7 @@ class NekUploadNewGUI:
         review_page = ReviewScene(self.root)
         explore_page = ExploreScene(self.root)
         help_page = HelpScene(self.root)
-        setting_page = SettingScene(self.root)
+        setting_page = SettingScene(self.root,setting_manager)
         upload_page = UploadScene(self.root,self.root,setting_page)
 
         #create page frame and default to INFO
@@ -66,6 +69,8 @@ class NekUploadNewGUI:
             self.page.grid_forget()
             self.page = new_page
             self.page.grid(row=1, column=1,sticky=NSEW,ipadx=20,ipady=20)  # Show new page
+
+
 
     def run(self):
         #add welcome message

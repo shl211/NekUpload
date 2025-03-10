@@ -1,12 +1,13 @@
 import ttkbootstrap as ttk
 import tkinter as tk
 from ttkbootstrap.constants import *
-from ttkbootstrap.toast import ToastNotification
+import logging
 import os
-
+from NekUpload.newFrontend.components.settings_manager import SettingsManager
 class SettingScene(ttk.Frame):
-    def __init__(self,parent):
+    def __init__(self,parent,settings_manager: SettingsManager):
         super().__init__(parent)
+        self.settings_manager = settings_manager
 
         self.columnconfigure(0,weight=1)
 
@@ -16,27 +17,20 @@ class SettingScene(ttk.Frame):
         self.api_key_info: ttk.LabelFrame = self._get_api_key(self)
         self.api_key_info.grid(row=1,column=0,padx=10,pady=10,sticky=NSEW)
 
-        #add a debug button for now
-        self.debug_button = ttk.Button(
+        #add a save button to save the settings configuration
+        self.save_settings_button = ttk.Button(
             master=self,
-            text="DEBUG",
-            command=self.debug_notify
+            text="SAVE",
+            command=self._save_settings
         )
-        self.debug_button.grid(row=2,column=0,sticky=E)
+        self.save_settings_button.grid(row=2,column=0,padx=10,sticky=E)
 
-    def debug_notify(self,event:tk.Event=None):
-        """Utility debugger
+        #initialise settings
+        self._update_settings(self.api_key,self.host_url)
 
-        Args:
-            event (tk.Event, optional): _description_. Defaults to None.
-        """
-        toast = ToastNotification(
-            title="Check api message",
-            message=f"API KEY: {self.api_key}",
-            duration=3000,
-            position=(100,100,'se')
-        )
-        toast.show_toast()
+    def _save_settings(self,event=None):
+        self._update_settings(self.api_key,self.host_url)
+        logging.info(f"You have saved your settings")
 
     def _get_repository_info(self,parent) -> ttk.LabelFrame:
         frame = ttk.LabelFrame(
@@ -183,7 +177,17 @@ class SettingScene(ttk.Frame):
         elif self._api_radio_value.get() == "Option2":
             #if given as environment variable
             return os.getenv(self._api_key.get(),None)
-        
+    
     @property
     def target_database(self):
         return self.presets.get()
+    
+    def _update_settings(self,token=None,db_url=None):
+        if token:
+            self.settings_manager.update_api_key(token)
+
+        if db_url:
+            self.settings_manager.update_db_url(db_url)
+
+    def get_settings(self) -> SettingsManager:
+        return self.settings_manager
