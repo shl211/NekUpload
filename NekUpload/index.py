@@ -11,7 +11,8 @@ from NekUpload.newFrontend.scenes.settings import SettingScene
 from NekUpload.newFrontend.components.terminal import TerminalHandler,TerminalWidget
 from NekUpload.newFrontend.components.settings_manager import SettingsManager
 import logging
-
+import psutil
+import os
 class NekUploadNewGUI:
     def __init__(self):
         self.root = ttk.Window(themename="sandstone")
@@ -71,7 +72,22 @@ class NekUploadNewGUI:
             self.page.grid(row=1, column=1,sticky=NSEW,ipadx=20,ipady=20)  # Show new page
 
     def run(self):
-        #add welcome message
+        #show live memory footprint
+        def get_memory_usage():
+            process = psutil.Process(os.getpid())
+            memory_info = process.memory_info()
+            return memory_info.rss / (1024 * 1024)  # Return memory usage in MB
+
+        def update_memory_label():
+            memory_usage = get_memory_usage()
+            memory_label.config(text=f"Memory Usage: {memory_usage:.2f} MB")
+            self.root.after(1000, update_memory_label) # Update every 1 second
+
+        memory_label = ttk.Label(self.root, text="Memory Usage: 0.00 MB")
+        memory_label.grid(row=10,column=0)
+
+        update_memory_label()
+
         self.root.mainloop()
 
 if __name__ == "__main__":
