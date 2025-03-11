@@ -11,13 +11,17 @@ from NekUpload.newFrontend.scenes.settings import SettingScene
 from NekUpload.newFrontend.components.terminal import TerminalHandler,TerminalWidget
 from NekUpload.newFrontend.components.settings_manager import SettingsManager
 import logging
+import platform
 
 class NekUploadNewGUI:
     def __init__(self):
         self.root = ttk.Window(themename="sandstone")
         self.root.title("NekUpload")
-        self.root.attributes('-zoomed', True)
-
+        if platform.system() == 'Windows':
+            self.root.state('zoomed')  # Maximize on Windows
+        else:
+            self.root.attributes('-zoomed', True)  # Maximize on macOS/Linux
+            
         self.root.rowconfigure(0, weight=0)
         self.root.rowconfigure(1, weight=1)
         self.root.columnconfigure(0, weight=0)
