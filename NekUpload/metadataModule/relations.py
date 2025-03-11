@@ -47,6 +47,14 @@ class Relations:
         self.relation_type: RelationType = relation
         self.resource_type: ResourceType = resource
 
+    def __eq__(self, other):
+        if not isinstance(other, Relations):
+            return NotImplemented
+        return (self.id == other.id and
+                self.scheme == other.scheme and
+                self.relation_type == other.relation_type and
+                self.resource_type == other.resource_type)
+
     def to_json(self):
         return {
             "identifier": self.id,

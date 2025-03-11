@@ -1,6 +1,7 @@
 from .metadata import Metadata
 from typing import Dict,Any,List,Union
 from .user import UserInfo
+from .relations import Relations
 
 class InvenioMetadata(Metadata):
     """_summary_
@@ -27,6 +28,7 @@ class InvenioMetadata(Metadata):
         self.version: str = None
         self.description: str = None
         self.publisher: str = None
+        self.related_identifiers: List[Relations] = []
 
     def get_metadata_payload(self) -> Dict[str,Any]:
         """_summary_
@@ -56,6 +58,10 @@ class InvenioMetadata(Metadata):
         if self.publisher:
             data["publisher"] = self.publisher
 
+        if self.related_identifiers:
+            relation_list_json = [relation.to_json() for relation in self.related_identifiers]
+            data["related_identifiers"] = relation_list_json
+
         return data
 
     def add_version(self, version: str) -> None:
@@ -82,6 +88,9 @@ class InvenioMetadata(Metadata):
         """
         self.publisher = publisher
 
+    def add_related_identifier(self,relation: Relations):
+        self.related_identifiers.append(relation)
+
     def to_json_serialisable(self):        
         """_summary_
 
@@ -103,6 +112,10 @@ class InvenioMetadata(Metadata):
 
         if self.publisher:
             data["publisher"] = self.publisher
+
+        if self.related_identifiers:
+            relation_list_json = [relation.to_json() for relation in self.related_identifiers]
+            data["related_identifiers"] = relation_list_json
 
         return data    
     
@@ -132,5 +145,11 @@ class InvenioMetadata(Metadata):
 
         if publisher := data.get("publisher",None):
             metadata.add_publisher(publisher)
+
+        if related_identifiers := data.get("related_identifiers",None):
+            for identifier_json in related_identifiers:
+                import logging
+                logging.error(identifier_json)
+                metadata.add_related_identifier(Relations.from_json(identifier_json))
 
         return metadata
