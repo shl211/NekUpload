@@ -183,6 +183,10 @@ class UploadScene(ScrolledFrame):
         metadata_input = InvenioMetadata(input_title,publication_date,author_list,"dataset")
         metadata_output = InvenioMetadata(output_title,publication_date,author_list,"dataset")
 
+        metadata_geometry.add_publisher("NekRDM")
+        metadata_input.add_publisher("NekRDM")
+        metadata_output.add_publisher("NekRDM")
+
         #get files
         geometry_file = self.geometry_section.geometry_file_name
         session_file = self.input_section.session_file_name

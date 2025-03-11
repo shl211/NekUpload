@@ -15,22 +15,23 @@ class NekManager:
         self.input_uploader: SessionManager = input_uploader
         self.output_uploader: OutputManager = output_uploader
 
-        """self.auto_metadata_extractor = AutoExtractor(
+        self.auto_metadata_extractor = AutoExtractor(
                                     self.input_uploader.session_file,
                                     self.geometry_uploader.geometry_file,
         self.output_uploader.output_fld_file)
-        """                            
 
         self.session_validator = ValidateSession(self.input_uploader.session_file)
         self.geometry_validator = ValidateGeometry(self.geometry_uploader.geometry_file)
         self.output_validator = ValidateOutput(self.output_uploader.output_fld_file)
 
     def execute_upload(self,url:str,token:str,community_id:str):
+        #pass by reference, so all uploaders get updated version of metadata
+        self._update_metadata_with_auto_extraction()
+
         self.geometry_uploader.execute_upload(url,token,community_id)
         self.input_uploader.execute_upload(url,token,community_id)
         self.output_uploader.execute_upload(url,token,community_id)
 
-        """
     def _update_metadata_with_auto_extraction(self):
         results = self.auto_metadata_extractor.extract_data()
         
@@ -40,7 +41,7 @@ class NekManager:
             self.output_uploader.metadata_manager.add_version(version)
 
         #TODO implement everything else
-    """
+
 
     def validate(self):
         self.session_validator.check_schema()
