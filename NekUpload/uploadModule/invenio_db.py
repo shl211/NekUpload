@@ -19,6 +19,10 @@ class InvenioRDM(db):
         #acquired after submitting request to community
         self.request_id: str = None
 
+        #acquired after reserving doi during draft creation 
+        self.doi: str=None
+        self.record_link: str=None
+
     def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],community_id: str) -> None:  
         """Upload files to an InvenioRDM repository and submit to community for review
 
@@ -55,6 +59,9 @@ class InvenioRDM(db):
             file_name_list = [self._get_file_name(file) for file in file_paths]
             invenioAPI.prepare_file_upload(url,token,self.record_id,file_name_list) #does batch
             logging.info(f"Draft {self.record_id} now ready for file uploads.")
+
+            doi_response = invenioAPI.reserve_doi_draft(url,token,self.record_id)
+
 
             #upload each file and commit
             for file,filename in zip(file_paths,file_name_list):
@@ -131,6 +138,17 @@ class InvenioRDM(db):
         """
         data = response.json()
         self.community_uuid = data["id"]
+
+    def _handle_doi_response(self,response: requests.Response) -> None:
+        """Handles the doi reservation request response
+
+        Args:
+            response (requests.Response): DOI reservation request response
+        """
+        data: Dict[str,Any] = response.json()
+        
+        self.doi = data["pids"]["doi"]["identifier"]
+        self.record_link = data["links"]["record_html"]
 
     def _handle_create_review_request_response(self,response: requests.Response) -> None:
         """Handles create review request response
