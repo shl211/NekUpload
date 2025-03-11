@@ -53,6 +53,10 @@ class Metadata:
         pass
 
     @abstractmethod
+    def add_related_identifier(self):
+        pass
+
+    @abstractmethod
     def to_json_serialisable(self) -> Dict[str,Any]:
         """_summary_
 
