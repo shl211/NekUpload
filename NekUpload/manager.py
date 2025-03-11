@@ -4,6 +4,7 @@ from NekUpload.metadataModule.extractor import AutoExtractor
 from .validationModule import ValidateSession,ValidateOutput,ValidateGeometry
 from typing import List,Optional,Dict
 from abc import ABC,abstractmethod
+from NekUpload.metadataModule.relations import Relations,RelationsSchemes,RelationType,ResourceType
 
 class NekManager:
     def __init__(self,
@@ -18,7 +19,7 @@ class NekManager:
         self.auto_metadata_extractor = AutoExtractor(
                                     self.input_uploader.session_file,
                                     self.geometry_uploader.geometry_file,
-        self.output_uploader.output_fld_file)
+                                    self.output_uploader.output_fld_file)
 
         self.session_validator = ValidateSession(self.input_uploader.session_file)
         self.geometry_validator = ValidateGeometry(self.geometry_uploader.geometry_file)
@@ -29,6 +30,23 @@ class NekManager:
         self._update_metadata_with_auto_extraction()
 
         self.geometry_uploader.execute_upload(url,token,community_id)
+
+        #update input and output with geometry upload link
+        geometry_doi = self.geometry_uploader.upload_manager.doi
+        geometry_record_html = self.geometry_uploader.upload_manager.record_link
+        geometry_self_html = self.geometry_uploader.upload_manager.self_link
+        geometry_relation = Relations(geometry_doi,RelationsSchemes.DOI,RelationType.CONTINUES,ResourceType.DATASET)
+        geometry_relation_html = Relations(geometry_record_html,RelationsSchemes.URL,RelationType.CONTINUES,ResourceType.DATASET)
+        geometry_relation_draft_link = Relations(geometry_self_html,RelationsSchemes.URL,RelationType.CONTINUES,ResourceType.DATASET)
+
+
+        self.input_uploader.metadata_manager.add_related_identifier(geometry_relation)
+        self.input_uploader.metadata_manager.add_related_identifier(geometry_relation_html)
+        self.input_uploader.metadata_manager.add_related_identifier(geometry_relation_draft_link)
+        self.output_uploader.metadata_manager.add_related_identifier(geometry_relation)
+        self.output_uploader.metadata_manager.add_related_identifier(geometry_relation_html)
+        self.output_uploader.metadata_manager.add_related_identifier(geometry_relation_draft_link)
+
         self.input_uploader.execute_upload(url,token,community_id)
         self.output_uploader.execute_upload(url,token,community_id)
 

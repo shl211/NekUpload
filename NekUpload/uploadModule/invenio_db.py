@@ -22,6 +22,7 @@ class InvenioRDM(db):
         #acquired after reserving doi during draft creation 
         self.doi: str=None
         self.record_link: str=None
+        self.self_link: str=None
 
     def upload_files(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any],community_id: str) -> None:  
         """Upload files to an InvenioRDM repository and submit to community for review
@@ -61,7 +62,7 @@ class InvenioRDM(db):
             logging.info(f"Draft {self.record_id} now ready for file uploads.")
 
             doi_response = invenioAPI.reserve_doi_draft(url,token,self.record_id)
-
+            self._handle_doi_response(doi_response)
 
             #upload each file and commit
             for file,filename in zip(file_paths,file_name_list):
@@ -149,6 +150,7 @@ class InvenioRDM(db):
         
         self.doi = data["pids"]["doi"]["identifier"]
         self.record_link = data["links"]["record_html"]
+        self.self_link = data["links"]["self_html"]
 
     def _handle_create_review_request_response(self,response: requests.Response) -> None:
         """Handles create review request response
@@ -165,3 +167,6 @@ class InvenioRDM(db):
         self.record_id = None
         self.community_uuid = None
         self.request_id = None
+        self.doi = None
+        self.record_link = None
+        self.self_link = None
