@@ -8,7 +8,7 @@ import os
 # Note that all private functions will return requests.Response for flexibility and testing purposes
 # Each member function is responsible for handling that requests.Response and parsing relevant data, stored in class files
 
-class invenioRDM(db):
+class InvenioRDM(db):
     def __init__(self):
         #instantiated after draft record is created
         self.record_id: str = None

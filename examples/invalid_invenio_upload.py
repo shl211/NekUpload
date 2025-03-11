@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from NekUpload.uploadModule import invenioRDM
+from NekUpload.uploadModule import InvenioRDM
 
 #integration test for uploading files
 #this one should fail, and draft deleted
@@ -34,7 +34,7 @@ if __name__ == "__main__":
             }
         }
 
-        database = invenioRDM()
+        database = InvenioRDM()
         #take tests/ as the root directory
         #error is these files do not exist in the specified paths
         #record will be created succesfully, and should then be deleted

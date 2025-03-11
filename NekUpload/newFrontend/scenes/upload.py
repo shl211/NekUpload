@@ -12,8 +12,8 @@ from NekUpload.metadataModule.invenioMetadata import InvenioMetadata
 from NekUpload.metadataModule.identifier import Identifier,IdentifierType
 from NekUpload.metadataModule.user import InvenioOrgInfo,InvenioPersonInfo
 import logging
-from NekUpload.manager import NekManager
-from NekUpload.uploadModule.invenio_db import invenioRDM
+from NekUpload.manager import NekManager,GeometryManager,SessionManager,OutputManager
+from NekUpload.uploadModule.invenio_db import InvenioRDM
 from NekUpload.newFrontend import style_guide
 
 class UploadScene(ScrolledFrame):
@@ -189,18 +189,12 @@ class UploadScene(ScrolledFrame):
         output_file = self.output_section.output_file_name
 
         #use geometry title for now
-        #TODO in future, look to splinter records based on geometry, input, output
-        geometry_uploader = invenioRDM()
-        #geometry_uploader = invenioRDM()
-        #geometry_uploader = invenioRDM()
+        #TODO in future, look to splinter records based on geometry, input, output        
+        geometry_uploader = GeometryManager(geometry_file,[],metadata_geometry,InvenioRDM())
+        input_uploader = SessionManager(session_file,[],metadata_input,InvenioRDM())
+        output_uploader = OutputManager(output_file,metadata=metadata_output,uploader=InvenioRDM())
 
-        manager = NekManager(geometry_file,
-                            session_file,
-                            output_file,
-                            [],
-                            [],
-                            metadata_geometry,
-                            geometry_uploader)
+        manager = NekManager(geometry_uploader,input_uploader,output_uploader)
         
         manager.execute_upload(URL,
                             self.setting_manager.token,

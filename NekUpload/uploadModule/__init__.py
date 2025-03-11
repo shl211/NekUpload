@@ -1,4 +1,4 @@
 from .db import db
-from .invenio_db import invenioRDM
+from .invenio_db import InvenioRDM
 
-__all__ = ["db","invenioRDM"]
+__all__ = ["db","InvenioRDM"]

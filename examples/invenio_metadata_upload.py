@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from NekUpload.uploadModule import invenioRDM
+from NekUpload.uploadModule import InvenioRDM
 from NekUpload.metadataModule import *
 from memory_profiler import profile
 
@@ -35,7 +35,7 @@ def demo():
 
         metadata = {"metadata" : metadata_payload}
 
-        database = invenioRDM()
+        database = InvenioRDM()
         files = ["../tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
                 "../tests/datasets/ADRSolver/ADR_2D_TriQuad.xml",
                 "../tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",

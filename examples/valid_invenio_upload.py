@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from NekUpload.uploadModule import invenioRDM
+from NekUpload.uploadModule import InvenioRDM
 from memory_profiler import profile
 
 #integration test for uploading files
@@ -35,7 +35,7 @@ def demo():
             }
         }
 
-        database = invenioRDM()
+        database = InvenioRDM()
         files = ["../tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
                 "../tests/datasets/ADRSolver/ADR_2D_TriQuad.xml",
                 "../tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",

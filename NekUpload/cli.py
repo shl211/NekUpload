@@ -1,5 +1,5 @@
 import click
-from NekUpload.uploadModule import invenioRDM
+from NekUpload.uploadModule import InvenioRDM
 from NekUpload.metadataModule import *
 from NekUpload.metadataModule.user import UserInfo
 from typing import Dict,List,Tuple,Any
@@ -226,7 +226,7 @@ def upload(ctx: click.Context,api_key: str=None, host: str=None, community_slug:
         click.echo("Error: No authors set. Please set an author with command add_author_person or add_author_org")
         return 
     
-    db = invenioRDM()
+    db = InvenioRDM()
     metadata = {"metadata": config.metadata.get_metadata_payload()}
     db.upload_files(host,api_key,files,metadata,community_slug)
 
@@ -250,7 +250,7 @@ def upload_user_config(user_config_file: str):
             files = [os.path.join(dir, f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
             upload_files.append(files)
 
-    db = invenioRDM()
+    db = InvenioRDM()
     metadata = {"metadata": config.metadata.get_metadata_payload()}
     
     db.upload_files(host_name,api_key,upload_files,metadata,community_slug)

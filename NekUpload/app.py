@@ -3,7 +3,7 @@ from tkinter import ttk #holds the more modern widgets
 
 from typing import List
 from NekUpload.metadataModule import *
-from NekUpload.uploadModule import invenioRDM
+from NekUpload.uploadModule import InvenioRDM
 from NekUpload.validator import NektarValidator
 import os
 from dotenv import load_dotenv
@@ -170,7 +170,7 @@ class NekUploadGUI:
         API_KEY_ENV_VAR = self.static_fields_frame.api_key_env_var
         load_dotenv()
 
-        upload_manager = invenioRDM()
+        upload_manager = InvenioRDM()
         manager = NekManager(geometry_file_list[0],
                             session_file_list[0],
                             output_files_list[0],

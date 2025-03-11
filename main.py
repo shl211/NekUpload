@@ -1,4 +1,4 @@
-from NekUpload.uploadModule.invenio_db import invenioRDM
+from NekUpload.uploadModule.invenio_db import InvenioRDM
 from dotenv import load_dotenv
 import os
 
@@ -26,7 +26,7 @@ metadata = {
     }
 }
 
-database = invenioRDM()
+database = InvenioRDM()
 files = ["tests/datasets/ADRSolver/ADR_2D_TriQuad.nekg",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad.xml",
          "tests/datasets/ADRSolver/ADR_2D_TriQuad.fld",

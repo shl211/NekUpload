@@ -1,7 +1,7 @@
 import pytest
 from dotenv import load_dotenv
 import os
-from NekUpload.uploadModule import invenioRDM
+from NekUpload.uploadModule import InvenioRDM
 import NekUpload.uploadModule.invenio_rdm_api as invenioAPI 
 from typing import Tuple
 import requests
@@ -61,7 +61,7 @@ def test_valid_invenio_upload(load_env):
         }
     }
 
-    database = invenioRDM()
+    database = InvenioRDM()
     
     #take tests as root
     files = ["../datasets/ADRSolver/ADR_2D_TriQuad.nekg",
