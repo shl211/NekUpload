@@ -32,6 +32,18 @@ class InvenioRDM(db):
         #prevent mixup of files from previous uploads
         self._clear()
 
+        self.create_record(url,token,file_paths,metadata)
+        self.submit_to_community(url,token,community_id)
+
+    def create_record(self,url: str, token: str, file_paths: List[str], metadata: Dict[str,Any]):
+        """Create a draft record with the files
+
+        Args:
+            url (str): _description_
+            token (str): _description_
+            file_paths (List[str]): _description_
+            metadata (Dict[str,Any]): _description_
+        """
         #create the draft
         create_record_response = invenioAPI.create_draft_record(url,token,metadata)
         self._handle_create_draft_response(create_record_response)
@@ -55,6 +67,14 @@ class InvenioRDM(db):
             logging.info(f"Record draft {self.record_id} has been deleted due to error: {e}")
             raise
 
+    def submit_to_community(self,url:str,token:str,community_id:str):
+        """Submit draft record for community review
+
+        Args:
+            url (str): _description_
+            token (str): _description_
+            community_id (str): _description_
+        """
         #now try submitting to community, if fails here, ask user to manuallyu submit to community
         try:
             #get community uuid, then submit record to communtiy for review
