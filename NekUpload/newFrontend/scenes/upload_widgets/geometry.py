@@ -6,6 +6,7 @@ from NekUpload.newFrontend.components.help import HelpNotification
 from NekUpload.newFrontend import style_guide
 from ttkbootstrap.scrolled import ScrolledText
 from NekUpload.newFrontend.components.scrollbox import ScrolledListbox
+from typing import List
 
 class UploadGeometryFrame(ttk.LabelFrame):
     def __init__(self,parent):
@@ -179,7 +180,8 @@ class UploadGeometryFrame(ttk.LabelFrame):
         optional_files_button = ttk.Button(
             master=frame,
             bootstyle=SECONDARY,
-            text="Browse Files"
+            text="Browse Files",
+            command=self._select_files_listbox
         )
         optional_files_button.grid(row=0,column=5,sticky=NSEW)
 
@@ -204,11 +206,46 @@ class UploadGeometryFrame(ttk.LabelFrame):
 
     @property
     def geometry_optional_files(self):
-        pass
-
+        return [self.optional_files_listbox.get(i) for i in range(self.optional_files_listbox.size())]
+    
     def add_error_style_to_mandatory_entries(self):
         if not self.geometry_file_entry.get():
             style_guide.show_error_in_entry(self.geometry_file_entry)
 
         if not self.geometry_title_entry.get():
             style_guide.show_error_in_entry(self.geometry_title_entry)
+
+    def _select_files_listbox(self) -> None:
+        """Add files selected from filedialogue into listbox, ensuring no duplication
+        """
+        filetype = ("All Files","*")
+        selected_files = filedialog.askopenfilenames(title="Select Files", filetypes=(filetype,))
+
+        if selected_files:
+            existing_files = set(self.geometry_optional_files)  # Use a set for efficient lookup
+
+            for file in selected_files:
+                if file not in existing_files:  # Check for duplicates
+                    self.optional_files_listbox.insert(END, file)
+                    existing_files.add(file)  # Keep the set updated
+                else:
+                    print(f"Duplicate file: {file} - not added.")
+
+            print(f"Files: {self.geometry_optional_files}")  # Print updated file list
+        else:
+            print("No Files Selected")
+
+    def _delete_files_listbox(self) -> None:
+        """Delete selected files in the listbox
+        """
+        selection_indices = self.optional_files_listbox.curselection()
+
+        if selection_indices:
+            # 1. Get the items to delete *before* modifying the listbox
+            items_to_delete = [self.optional_files_listbox.get(index) for index in selection_indices]
+
+            # 2. Delete from the listbox (reverse order to prevent issues with shifting indices)
+            for index,item in zip(sorted(selection_indices, reverse=True),sorted(items_to_delete,reverse=True)):
+                self.optional_files_listbox.delete(index)
+
+            print(f"Deleted files. Remaining: {self.geometry_optional_files}")
