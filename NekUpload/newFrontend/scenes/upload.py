@@ -187,19 +187,28 @@ class UploadScene(ScrolledFrame):
         metadata_input.add_publisher("NekRDM")
         metadata_output.add_publisher("NekRDM")
 
+        if geometry_description := self.geometry_section.geometry_description:
+            metadata_geometry.add_description(geometry_description)
+
         #get files
-        geometry_file = self.geometry_section.geometry_file_name
-        session_file = self.input_section.session_file_name
-        output_file = self.output_section.output_file_name
+        geometry_file: str = self.geometry_section.geometry_file_name
+        session_file: str = self.input_section.session_file_name
+        output_file: str = self.output_section.output_file_name
+
+        geometry_optional_files: List[str] = self.geometry_section.geometry_optional_files
 
         #use geometry title for now
         #TODO in future, look to splinter records based on geometry, input, output        
-        geometry_uploader = GeometryManager(geometry_file,[],metadata_geometry,InvenioRDM())
+        geometry_uploader = GeometryManager(geometry_file,geometry_optional_files,metadata_geometry,InvenioRDM())
         input_uploader = SessionManager(session_file,[],metadata_input,InvenioRDM())
         output_uploader = OutputManager(output_file,metadata=metadata_output,uploader=InvenioRDM())
 
         manager = NekManager(geometry_uploader,input_uploader,output_uploader)
         
+        try:
+            manager.validate()
+        except Exception as e:
+            logging.error(e)
         manager.execute_upload(URL,
                             self.setting_manager.token,
                             COMMUNITY_SLUG)

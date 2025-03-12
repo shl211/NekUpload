@@ -60,7 +60,6 @@ class NekManager:
 
         #TODO implement everything else
 
-
     def validate(self):
         self.session_validator.check_schema()
         self.geometry_validator.check_schema()

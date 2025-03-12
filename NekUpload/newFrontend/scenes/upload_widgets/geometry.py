@@ -202,8 +202,8 @@ class UploadGeometryFrame(ttk.LabelFrame):
     
     @property
     def geometry_description(self):
-        return self._description_text.text.get()
-
+        return self._description_text.text.get("1.0", "end-1c")
+    
     @property
     def geometry_optional_files(self):
         return [self.optional_files_listbox.get(i) for i in range(self.optional_files_listbox.size())]
