@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 from NekUpload.newFrontend.components.help import HelpNotification
 from NekUpload.newFrontend import style_guide
+from ttkbootstrap.scrolled import ScrolledText
 
 class UploadGeometryFrame(ttk.LabelFrame):
     def __init__(self,parent):
@@ -55,10 +56,11 @@ class UploadGeometryFrame(ttk.LabelFrame):
         frame.rowconfigure(1,weight=1)
         frame.columnconfigure(0,weight=1)
         frame.columnconfigure(1,weight=1)
-        frame.columnconfigure(2,weight=1)
 
         geometry_file_frame: ttk.Labelframe = self._geometry_mandatory_info(frame)
         geometry_file_frame.grid(row=0,column=0,sticky=NSEW)
+        geometry_optional_data_frame = self._optional_geometry_upload_frame(frame)
+        geometry_optional_data_frame.grid(row=1,column=0,columnspan=2,sticky=NSEW)
 
         return frame
     
@@ -134,6 +136,66 @@ class UploadGeometryFrame(ttk.LabelFrame):
 
         return geometry_file_frame
     
+    #OPTIONAL INFO
+    def _optional_geometry_upload_frame(self,parent) -> ttk.Labelframe:
+        frame = ttk.Labelframe(
+            master=parent,
+            bootstyle=DEFAULT,
+            text="Optional"
+        )
+
+        frame.columnconfigure(0,weight=1)
+        frame.columnconfigure(1,weight=1)
+        frame.columnconfigure(2,weight=1)
+        frame.columnconfigure(3,weight=1)
+        frame.columnconfigure(4,weight=1)
+        frame.columnconfigure(5,weight=1)
+
+        label = ttk.Label(
+            master=frame,
+            bootstyle=DEFAULT,
+            text="Description: ",
+            anchor="w"
+        )
+        label.grid(row=0,column=0,sticky=EW)
+
+        self._description_text = ScrolledText(
+            master=frame,
+            autohide=True,
+            bootstyle=DEFAULT
+        )
+        self._description_text.text.configure(height=5)
+        self._description_text.grid(row=1,column=0,columnspan=3,sticky=NSEW)
+
+        optional_files = ttk.Label(
+            master=frame,
+            bootstyle=DEFAULT,
+            text="Optional Files: ",
+            anchor="w"
+        )
+        optional_files.grid(row=0,column=3,sticky=EW)
+
+        optional_files_button = ttk.Button(
+            master=frame,
+            bootstyle=SECONDARY,
+            text="Browse Files"
+        )
+        optional_files_button.grid(row=0,column=5,sticky=NSEW)
+
+        #have a listbox to specify the creation
+        self.optional_files = tk.Listbox(frame,selectmode=EXTENDED)
+        scrollbar_y= ttk.Scrollbar(frame,command=self.optional_files.yview)
+        scrollbar_x = ttk.Scrollbar(frame,command=self.optional_files.xview,orient=HORIZONTAL)
+        self.optional_files.config(yscrollcommand=scrollbar_y.set,xscrollcommand=scrollbar_x)
+        scrollbar_y.config(command=self.optional_files.yview)
+        scrollbar_x.config(command=self.optional_files.xview)
+
+        self.optional_files.grid(row=1,column=3,columnspan=3,sticky=(NSEW))
+        scrollbar_x.grid(row=2,column=3,columnspan=3,sticky=(W,E))
+        scrollbar_y.grid(row=1,column=6,sticky=(N,S,W))
+
+        return frame
+
     @property
     def geometry_file_name(self):
         return self._geometry_file.get()
@@ -142,6 +204,14 @@ class UploadGeometryFrame(ttk.LabelFrame):
     def geometry_dataset_title(self):
         return self._geometry_title.get()
     
+    @property
+    def geometry_description(self):
+        return self._description_text.text.get()
+
+    @property
+    def geometry_optional_files(self):
+        pass
+
     def add_error_style_to_mandatory_entries(self):
         if not self.geometry_file_entry.get():
             style_guide.show_error_in_entry(self.geometry_file_entry)
