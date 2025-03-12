@@ -5,6 +5,7 @@ from tkinter import filedialog
 from NekUpload.newFrontend.components.help import HelpNotification
 from NekUpload.newFrontend import style_guide
 from ttkbootstrap.scrolled import ScrolledText
+from NekUpload.newFrontend.components.scrollbox import ScrolledListbox
 
 class UploadGeometryFrame(ttk.LabelFrame):
     def __init__(self,parent):
@@ -164,7 +165,7 @@ class UploadGeometryFrame(ttk.LabelFrame):
             autohide=True,
             bootstyle=DEFAULT
         )
-        self._description_text.text.configure(height=5)
+        self._description_text.text.configure(height=10)
         self._description_text.grid(row=1,column=0,columnspan=3,sticky=NSEW)
 
         optional_files = ttk.Label(
@@ -183,16 +184,9 @@ class UploadGeometryFrame(ttk.LabelFrame):
         optional_files_button.grid(row=0,column=5,sticky=NSEW)
 
         #have a listbox to specify the creation
-        self.optional_files = tk.Listbox(frame,selectmode=EXTENDED)
-        scrollbar_y= ttk.Scrollbar(frame,command=self.optional_files.yview)
-        scrollbar_x = ttk.Scrollbar(frame,command=self.optional_files.xview,orient=HORIZONTAL)
-        self.optional_files.config(yscrollcommand=scrollbar_y.set,xscrollcommand=scrollbar_x)
-        scrollbar_y.config(command=self.optional_files.yview)
-        scrollbar_x.config(command=self.optional_files.xview)
-
-        self.optional_files.grid(row=1,column=3,columnspan=3,sticky=(NSEW))
-        scrollbar_x.grid(row=2,column=3,columnspan=3,sticky=(W,E))
-        scrollbar_y.grid(row=1,column=6,sticky=(N,S,W))
+        self.optional_files_listbox_frame = ScrolledListbox(frame)
+        self.optional_files_listbox = self.optional_files_listbox_frame.listbox
+        self.optional_files_listbox_frame.grid(row=1,column=3,columnspan=3,rowspan=2,sticky=NSEW)
 
         return frame
 

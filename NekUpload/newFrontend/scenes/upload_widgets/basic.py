@@ -4,6 +4,7 @@ import tkinter as tk
 from .create_author_window import CreateAuthorOrgWindow,CreateAuthorPersonWindow
 from typing import Dict,List,Any
 from NekUpload.newFrontend.components.settings_manager import SettingsManager
+from NekUpload.newFrontend.components.scrollbox import ScrolledListbox
 class UploadInfoFrame(ttk.Labelframe):
     def __init__(self,root,parent,setting_manager: SettingsManager):
         super().__init__(
@@ -98,16 +99,9 @@ class UploadInfoFrame(ttk.Labelframe):
         add_author_org_button.grid(row=1,column=1,padx=5,pady=5,sticky=NSEW)
 
         #have a listbox to specify the creation
-        self.author_listbox = tk.Listbox(frame,selectmode=EXTENDED)
-        scrollbar_y= ttk.Scrollbar(frame,command=self.author_listbox.yview)
-        scrollbar_x = ttk.Scrollbar(frame,command=self.author_listbox.xview,orient=HORIZONTAL)
-        self.author_listbox.config(yscrollcommand=scrollbar_y.set,xscrollcommand=scrollbar_x)
-        scrollbar_y.config(command=self.author_listbox.yview)
-        scrollbar_x.config(command=self.author_listbox.xview)
-
-        self.author_listbox.grid(row=2,column=0,columnspan=2,sticky=(NSEW))
-        scrollbar_x.grid(row=3,column=0,columnspan=2,sticky=(W,E))
-        scrollbar_y.grid(row=2,column=2,sticky=(N,S,W))
+        self.author_listbox_frame = ScrolledListbox(frame)
+        self.author_listbox = self.author_listbox_frame.listbox
+        self.author_listbox_frame.grid(row=2,column=0,columnspan=2,rowspan=2,sticky=(NSEW))
 
         #add a delete button
         delete_button = ttk.Button(frame,text="Delete",command=self._delete_selected_author)
