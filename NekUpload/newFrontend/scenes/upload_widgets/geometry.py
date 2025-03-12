@@ -179,11 +179,19 @@ class UploadGeometryFrame(ttk.LabelFrame):
 
         optional_files_button = ttk.Button(
             master=frame,
-            bootstyle=SECONDARY,
+            bootstyle=SUCCESS,
             text="Browse Files",
             command=self._select_files_listbox
         )
-        optional_files_button.grid(row=0,column=5,sticky=NSEW)
+        optional_files_button.grid(row=0,column=4,padx=5,sticky=NSEW)
+
+        optional_files_delete_button = ttk.Button(
+            master=frame,
+            bootstyle=(DANGER),
+            text="Delete Files",
+            command=self._delete_files_listbox
+        )
+        optional_files_delete_button.grid(row=0,column=5,padx=5,sticky=NSEW)
 
         #have a listbox to specify the creation
         self.optional_files_listbox_frame = ScrolledListbox(frame)
