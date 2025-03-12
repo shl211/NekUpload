@@ -1,0 +1,12 @@
+NekUpload.newFrontend.scenes.info
+=================================
+
+.. automodule:: NekUpload.newFrontend.scenes.info
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InfoScene
+   

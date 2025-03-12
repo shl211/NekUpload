@@ -1,0 +1,15 @@
+NekUpload.newFrontend.style\_guide
+==================================
+
+.. automodule:: NekUpload.newFrontend.style_guide
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_styles
+      highlight_mandatory_entry_on_focus_in
+      highlight_mandatory_entry_on_focus_out
+      show_error_in_entry
+   

@@ -1,0 +1,21 @@
+NekUpload.cli
+=============
+
+.. automodule:: NekUpload.cli
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      main
+      read_yaml_file
+      save_config
+      upload_user_config
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Config
+   

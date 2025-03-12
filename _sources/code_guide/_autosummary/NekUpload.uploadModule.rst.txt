@@ -1,0 +1,16 @@
+NekUpload.uploadModule
+======================
+
+.. automodule:: NekUpload.uploadModule
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   custom_exceptions
+   db
+   invenio_db
+   invenio_rdm_api

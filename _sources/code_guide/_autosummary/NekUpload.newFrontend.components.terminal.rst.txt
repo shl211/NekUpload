@@ -1,0 +1,13 @@
+NekUpload.newFrontend.components.terminal
+=========================================
+
+.. automodule:: NekUpload.newFrontend.components.terminal
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TerminalHandler
+      TerminalWidget
+   

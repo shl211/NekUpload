@@ -1,0 +1,18 @@
+NekUpload.newFrontend.components
+================================
+
+.. automodule:: NekUpload.newFrontend.components
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   header
+   help
+   menu
+   scrollbox
+   settings_manager
+   terminal

@@ -1,0 +1,14 @@
+NekUpload.uploadModule.custom\_exceptions
+=========================================
+
+.. automodule:: NekUpload.uploadModule.custom_exceptions
+
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      APIError
+      ClientError
+      ServerError
+   

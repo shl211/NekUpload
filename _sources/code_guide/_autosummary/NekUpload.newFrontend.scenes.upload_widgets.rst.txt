@@ -1,0 +1,17 @@
+NekUpload.newFrontend.scenes.upload\_widgets
+============================================
+
+.. automodule:: NekUpload.newFrontend.scenes.upload_widgets
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   basic
+   create_author_window
+   geometry
+   output
+   session

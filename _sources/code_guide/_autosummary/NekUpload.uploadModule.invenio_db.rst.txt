@@ -1,0 +1,12 @@
+NekUpload.uploadModule.invenio\_db
+==================================
+
+.. automodule:: NekUpload.uploadModule.invenio_db
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InvenioRDM
+   

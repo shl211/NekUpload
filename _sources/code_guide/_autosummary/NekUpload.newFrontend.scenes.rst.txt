@@ -1,0 +1,19 @@
+NekUpload.newFrontend.scenes
+============================
+
+.. automodule:: NekUpload.newFrontend.scenes
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   explore
+   help
+   info
+   review
+   settings
+   upload
+   upload_widgets

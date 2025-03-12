@@ -1,0 +1,14 @@
+NekUpload.NekData
+=================
+
+.. automodule:: NekUpload.NekData
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   data_type
+   expansions

@@ -1,0 +1,12 @@
+NekUpload.newFrontend.scenes.upload\_widgets.session
+====================================================
+
+.. automodule:: NekUpload.newFrontend.scenes.upload_widgets.session
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      UploadSessionFrame
+   

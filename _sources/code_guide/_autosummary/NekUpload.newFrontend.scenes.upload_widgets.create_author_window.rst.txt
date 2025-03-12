@@ -1,0 +1,13 @@
+NekUpload.newFrontend.scenes.upload\_widgets.create\_author\_window
+===================================================================
+
+.. automodule:: NekUpload.newFrontend.scenes.upload_widgets.create_author_window
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CreateAuthorOrgWindow
+      CreateAuthorPersonWindow
+   

@@ -1,0 +1,15 @@
+NekUpload.metadataModule.relations
+==================================
+
+.. automodule:: NekUpload.metadataModule.relations
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RelationType
+      Relations
+      RelationsSchemes
+      ResourceType
+   

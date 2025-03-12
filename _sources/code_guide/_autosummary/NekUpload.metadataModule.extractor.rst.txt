@@ -1,0 +1,14 @@
+NekUpload.metadataModule.extractor
+==================================
+
+.. automodule:: NekUpload.metadataModule.extractor
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      AutoExtractor
+      Extractor
+      HDF5Extractor
+   

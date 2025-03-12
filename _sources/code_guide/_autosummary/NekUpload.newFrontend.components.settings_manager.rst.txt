@@ -1,0 +1,12 @@
+NekUpload.newFrontend.components.settings\_manager
+==================================================
+
+.. automodule:: NekUpload.newFrontend.components.settings_manager
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SettingsManager
+   

@@ -1,0 +1,16 @@
+NekUpload.utils
+===============
+
+.. automodule:: NekUpload.utils
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   custom_exception
+   hdf5_reader
+   parsing
+   xml_reader

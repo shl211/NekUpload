@@ -1,0 +1,14 @@
+NekUpload.frontend.file\_selector
+=================================
+
+.. automodule:: NekUpload.frontend.file_selector
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FileSelectorFrame
+      FileSelectorNotebookFrame
+      FileType
+   

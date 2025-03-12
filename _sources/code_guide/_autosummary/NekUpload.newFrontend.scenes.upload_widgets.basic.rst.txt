@@ -1,0 +1,12 @@
+NekUpload.newFrontend.scenes.upload\_widgets.basic
+==================================================
+
+.. automodule:: NekUpload.newFrontend.scenes.upload_widgets.basic
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      UploadInfoFrame
+   

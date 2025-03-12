@@ -1,0 +1,12 @@
+NekUpload.newFrontend.components.menu
+=====================================
+
+.. automodule:: NekUpload.newFrontend.components.menu
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Menu
+   

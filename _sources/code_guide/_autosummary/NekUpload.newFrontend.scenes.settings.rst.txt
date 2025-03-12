@@ -1,0 +1,12 @@
+NekUpload.newFrontend.scenes.settings
+=====================================
+
+.. automodule:: NekUpload.newFrontend.scenes.settings
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SettingScene
+   

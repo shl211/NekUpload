@@ -1,0 +1,12 @@
+NekUpload.newFrontend.scenes.upload\_widgets.geometry
+=====================================================
+
+.. automodule:: NekUpload.newFrontend.scenes.upload_widgets.geometry
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      UploadGeometryFrame
+   

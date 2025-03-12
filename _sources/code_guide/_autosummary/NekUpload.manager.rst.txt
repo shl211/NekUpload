@@ -1,0 +1,16 @@
+NekUpload.manager
+=================
+
+.. automodule:: NekUpload.manager
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      GeometryManager
+      NekManager
+      OutputManager
+      SessionManager
+      UploadManager
+   

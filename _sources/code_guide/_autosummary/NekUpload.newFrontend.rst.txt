@@ -1,0 +1,15 @@
+NekUpload.newFrontend
+=====================
+
+.. automodule:: NekUpload.newFrontend
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   components
+   scenes
+   style_guide

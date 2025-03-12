@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart &mdash; NekUpload 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="User Guide" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NekUpload
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="usage.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#store-in-env-file">Store in <em>.env</em> file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#export-as-environment-variable">Export as Environment variable</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#local-application">Local Application</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nektar.html">Nektar++</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Common Issues</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/developer.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_guide/code.html">Code Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NekUpload</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="usage.html">User Guide</a></li>
+      <li class="breadcrumb-item active">Quickstart</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/quickstart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
+<p>For the quickstart guide, it is assumed that users are attempting to upload Nektar++ datasets to the Department of Aeronautics (Imperial College London) database hosted at <a class="reference external" href="https://data.ae.ic.ac.uk">https://data.ae.ic.ac.uk</a>.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>With all python-based projects, it is highly recommended to create a virtual environment to prevent depdendency conflicts. Once your virtual environment is established, install the local application and CLI tool using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">NekUpload</span>
+</pre></div>
+</div>
+</section>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h2>
+<p>An API key is required to utilise this application. To access an API key, go to the online repository host (in this case <a class="reference external" href="https://data.ae.ic.ac.uk">https://data.ae.ic.ac.uk</a>). Login to your account and select your profile. You will see an option: <em>Applications</em>, as shown in the following image:</p>
+<img alt="Image showing where to find *Applications*" class="align-center" src="../_images/quickstart1.png" />
+<p>Under <em>Personal access tokens</em>, click <em>new token</em> to generate an API key. Provide it with a name, and under <em>scopes</em> you should select <strong>deposit:write</strong>. Then create the API key.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you do not see the option to select <strong>deposit:write</strong> under scopes, then you already have those permissions. Continue and create the API key.</p>
+</div>
+<p>You will have one chance to see your API key. You now have two choices:</p>
+<ol class="arabic simple">
+<li><p>Store in <em>.env</em> file</p></li>
+<li><p>Export as environment variable</p></li>
+</ol>
+<section id="store-in-env-file">
+<h3>Store in <em>.env</em> file<a class="headerlink" href="#store-in-env-file" title="Link to this heading"></a></h3>
+<blockquote>
+<div><p>Create a <em>.env</em> file in your current working directory (same directory as where you will later open the program) and store the key as follows:</p>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># You can choose how you would like to name it</span>
+<span class="n">QUICKSTART_DB_KEY</span><span class="o">=&lt;</span><span class="n">YOUR</span> <span class="n">KEY</span> <span class="n">HERE</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Never commit the .env file to version control, as this will expose your API key.</p>
+</div>
+<p>This is the preferred method when working locally, as it will be easier to remember what environment variable you have used.</p>
+</section>
+<section id="export-as-environment-variable">
+<h3>Export as Environment variable<a class="headerlink" href="#export-as-environment-variable" title="Link to this heading"></a></h3>
+<p>Add the API key as an environment variable.</p>
+<p>For Linux/macOS:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">QUICKSTART_DB_KEY</span><span class="o">=&lt;</span><span class="n">YOUR</span> <span class="n">KEY</span> <span class="n">HERE</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>You can also add these to your .bashrc or other shell configuration files for persistence.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Adding API keys to shell configuration files can be useful if you need to run multiple times, but API keys should be deleted after use anyway.</p>
+</div>
+<p>For Windows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">QUICKSTART_DB_KEY</span><span class="o">=&lt;</span><span class="n">YOUR</span> <span class="n">KEY</span> <span class="n">HERE</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>You can use the System Properties dialog to set persistent environment variables.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Once again, persistent keys are useful for re-use, but it is recommended that API keys are deleted after use for security reasons. Decide whether you would benefit from persistent keys before setting them persistently.</p>
+</div>
+</section>
+</section>
+<section id="local-application">
+<h2>Local Application<a class="headerlink" href="#local-application" title="Link to this heading"></a></h2>
+<p>To execute the local application, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nekupload</span><span class="o">-</span><span class="n">app</span>
+</pre></div>
+</div>
+<p>This should open up a tkinter application:</p>
+<img alt="NekUpload app user interface" class="align-center" src="../_images/app.png" />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This app requires a modern version of TKinter, (versions &gt;= 8.5). This is usually packaged with Python installations. The app may appear different in different environments, as it uses system native widgets.</p>
+</div>
+<p>For <em>setting</em>, select AE Database. This should be the default. This prepopulates information on where the online repository is hosted and which community to upload the dataset to. Mandatory fields under basic info to be filled out are:</p>
+<ul class="simple">
+<li><p><strong>Environment Variable for API Key:</strong> The name of the environment variable holding the API key. In our case this would be <em>QUICKSTART_DB_KEY</em></p></li>
+<li><p><strong>Title:</strong> Provide a title describing the dataset e.g. NACA 0012 simulation at Re = …</p></li>
+<li><p><strong>Publication Data:</strong> Prepopulated with today’s date, but any valid YYYY-MM-DD format is accepted</p></li>
+</ul>
+<p>At least one author is required, and can be added by selecting <em>Add Person</em> or <em>Add Org</em> (organisation). At minimum, one session file, one geometry file and one output file should be specified. This should follow Nektar++ best practices.</p>
+<p>Once complete, hit submit. Watch the terminal messages to be notified of failure (and reason of failure) or successful upload. You can check the online portal hosted at <a class="reference external" href="https://data.ae.ic.ac.uk">https://data.ae.ic.ac.uk</a> to check that data has indeed been uploaded for successful uploads.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For security reasons, once you are done uploading, please delete your API key by logging back onto the online portal and deleting the key. You can always regenerate a new one at a future date.</p>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="User Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Stephen Liu.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

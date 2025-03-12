@@ -1,0 +1,12 @@
+NekUpload.utils.hdf5\_reader
+============================
+
+.. automodule:: NekUpload.utils.hdf5_reader
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HDF5Reader
+   

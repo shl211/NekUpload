@@ -1,0 +1,35 @@
+NekUpload.NekData.expansions
+============================
+
+.. automodule:: NekUpload.NekData.expansions
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ChebyshevExpansionFactory
+      ChebyshevFourierExpansionFactory
+      ExpansionDefinition
+      ExpansionFactory
+      FourierChebyshevExpansionFactory
+      FourierExpansionFactory
+      FourierHalfModeImExpansionFactory
+      FourierHalfModeReExpansionFactory
+      FourierSingleModeExpansionFactory
+      GLLLagranageExpansionFactory
+      GLLLagrangeSEMExpansionFactory
+      GaussLagrangeExpansionFactory
+      ModifiedExpansionFactory
+      ModifiedFourierExpansionFactory
+      ModifiedGLLRadau10ExpansionFactory
+      ModifiedQuadPlus1ExpansionFactory
+      ModifiedQuadPlus2ExpansionFactory
+      OrthogonalExpansionFactory
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      ExpansionValidationException
+   

@@ -1,0 +1,19 @@
+NekUpload.frontend
+==================
+
+.. automodule:: NekUpload.frontend
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   create_author_window
+   dynamic_fields_frame
+   file_selector
+   header_frame
+   static_fields_frame
+   style_guide
+   terminal_widget

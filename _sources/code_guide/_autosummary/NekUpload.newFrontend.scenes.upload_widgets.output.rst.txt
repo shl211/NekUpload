@@ -1,0 +1,12 @@
+NekUpload.newFrontend.scenes.upload\_widgets.output
+===================================================
+
+.. automodule:: NekUpload.newFrontend.scenes.upload_widgets.output
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      UploadOutputFrame
+   

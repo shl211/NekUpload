@@ -1,0 +1,12 @@
+NekUpload.utils.xml\_reader
+===========================
+
+.. automodule:: NekUpload.utils.xml_reader
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      XMLReader
+   

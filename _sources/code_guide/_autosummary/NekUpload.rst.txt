@@ -1,0 +1,24 @@
+﻿NekUpload
+=========
+
+.. automodule:: NekUpload
+
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   NekData
+   app
+   cli
+   frontend
+   index
+   manager
+   metadataModule
+   newFrontend
+   uploadModule
+   utils
+   validationModule
+   validator

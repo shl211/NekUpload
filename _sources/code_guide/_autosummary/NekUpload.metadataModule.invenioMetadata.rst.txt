@@ -1,0 +1,12 @@
+NekUpload.metadataModule.invenioMetadata
+========================================
+
+.. automodule:: NekUpload.metadataModule.invenioMetadata
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InvenioMetadata
+   
